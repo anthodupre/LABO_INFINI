@@ -814,10 +814,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
 input,textarea{font-family:inherit;font-size:20px;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 ::-webkit-scrollbar{width:10px;height:10px} ::-webkit-scrollbar-track{background:#120e1e} ::-webkit-scrollbar-thumb{background:var(--line);border:2px solid #120e1e}
 
-#app{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;padding-top:var(--st);padding-bottom:var(--sb);padding-left:var(--sl);padding-right:var(--sr)}
+#app{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;padding-left:var(--sl);padding-right:var(--sr);background:var(--bg)}
 
 /* ---------- Barre du haut ---------- */
-#top{display:flex;align-items:center;gap:8px;padding:4px 8px;background:#0e0b18;border-bottom:2px solid var(--line);min-height:42px;flex:0 0 auto}
+#top{display:flex;align-items:center;gap:8px;padding:calc(4px + var(--st)) 8px 4px;background:#0e0b18;border-bottom:2px solid var(--line);min-height:calc(42px + var(--st));flex:0 0 auto}
 #labName{background:none;border:0;padding:2px 4px;text-align:left;min-width:0;flex:1;overflow:hidden;line-height:1}
 #labName .ln{display:block;font-family:"Pixelify Sans",monospace;font-size:19px;color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #labName .rk{display:block;font-size:16px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -883,7 +883,7 @@ input,textarea{font-family:inherit;font-size:20px;-webkit-user-select:text;user-
 .tab .dot{position:absolute;top:3px;right:6px;width:9px;height:9px;background:var(--red);border:2px solid #000;display:none}
 .tab.notif .dot{display:block}
 .pages{flex:1;position:relative;min-height:0}
-.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:8px 8px 24px;display:none}
+.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:8px 8px calc(24px + var(--sb));display:none}
 .page.on{display:block}
 #page-lab{padding:0}
 .ptitle{font-family:"Pixelify Sans";font-size:21px;color:var(--cyan);margin:4px 0 6px;display:flex;align-items:center;gap:8px}
@@ -1062,7 +1062,7 @@ input[type=range]{width:150px;height:32px;accent-color:var(--cyan)}
 #tip hr{border:0;border-top:1px dashed var(--line);margin:4px 0}
 
 /* ---------- Modale ---------- */
-#modal{position:absolute;top:0;right:0;bottom:0;left:0;z-index:60;background:rgba(8,6,14,.78);display:flex;align-items:center;justify-content:center;padding:14px}
+#modal{position:absolute;top:0;right:0;bottom:0;left:0;z-index:60;background:rgba(8,6,14,.78);display:flex;align-items:center;justify-content:center;padding:calc(14px + var(--st)) 14px calc(14px + var(--sb))}
 #modal.hidden{display:none}
 .mbox{background:var(--panel);border:3px solid var(--line2);box-shadow:5px 5px 0 #000;max-width:520px;width:100%;max-height:92%;display:flex;flex-direction:column}
 .mtitle{font-family:"Pixelify Sans";font-size:22px;color:var(--cyan);padding:8px 12px;border-bottom:2px solid var(--line);background:#0e0b18}
@@ -1129,6 +1129,9 @@ input[type=range]{width:150px;height:32px;accent-color:var(--cyan)}
   #buffs{flex-direction:row;flex-wrap:wrap;max-width:60%}.buff .bn{display:none}
   #ticker{height:22px;line-height:20px;font-size:17px}
 }
+
+/* paysage : la jauge et les toasts restent au-dessus de la barre d'accueil */
+.L-land #eurekaWrap,.L-wide #eurekaWrap{bottom:calc(6px + var(--sb))}
 
 </style>
 </head>
@@ -7563,7 +7566,19 @@ function pressable(el, onTap, tipFn) {
 }
 
 /* ---------- Disposition & onglets ---------- */
+// iOS, app lancée depuis l'écran d'accueil : la hauteur de la page oublie la barre d'état
+// (bande vide en bas). On mesure la vraie hauteur de l'écran et on étire le jeu.
+function fixStandaloneHeight() {
+  const app = U.$('#app');
+  const standalone = navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  app.style.bottom = ''; app.style.height = '';
+  if (!standalone || !window.screen) return;
+  const portrait = window.innerHeight >= window.innerWidth;
+  const full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
+  if (full && window.innerHeight < full - 4 && full - window.innerHeight < 120) { app.style.bottom = 'auto'; app.style.height = full + 'px'; }
+}
 function computeLayout() {
+  fixStandaloneHeight();
   const W = window.innerWidth, H = window.innerHeight;
   const L = W >= 1100 ? 'wide' : (W > H && W >= 640 ? 'land' : 'port');
   const app = U.$('#app');
