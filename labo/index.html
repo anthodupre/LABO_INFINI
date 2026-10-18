@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Labo Infini">
 <link rel="apple-touch-icon" href="data:image/png;base64,
 iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAQAElEQVR4AeydC7QsZ1Xn/99Xfc6599ybe0MgD2JC5Dkg4bGS
@@ -7573,15 +7573,24 @@ function screenInfo() {
   const app = U.$('#app'), r = app.getBoundingClientRect();
   return { standalone: isStandalone(), inner: window.innerHeight, client: document.documentElement.clientHeight, app: Math.round(r.height), screenH: screen.height, screenW: screen.width };
 }
+// Hauteur de la marge de sécurité du haut (barre d'état qui recouvre la page), mesurée pour de vrai
+function safeTop() {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none';
+  document.body.appendChild(d); const h = d.getBoundingClientRect().height; d.remove(); return h;
+}
+// iOS, app de l'écran d'accueil avec barre d'état transparente : la page est plus courte que l'écran
+// d'exactement la hauteur de la barre d'état (bande vide en bas). On étire le jeu de cette hauteur, seulement dans ce cas.
 function fixStandaloneHeight() {
   const app = U.$('#app');
   app.style.bottom = ''; app.style.height = '';
   if (!isStandalone() || !window.screen) return;
+  const st = safeTop(); if (st < 1) return;           // barre d'état opaque : rien à corriger
+  const real = Math.min(app.getBoundingClientRect().height, document.documentElement.clientHeight, window.innerHeight);
   const portrait = window.innerHeight >= window.innerWidth;
   const full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
-  // hauteur réellement occupée par le jeu (iOS peut annoncer innerHeight correct alors que la page est plus courte)
-  const real = Math.min(app.getBoundingClientRect().height, document.documentElement.clientHeight, window.innerHeight);
-  if (full && real < full - 4 && full - real < 140) { app.style.bottom = 'auto'; app.style.height = full + 'px'; }
+  const missing = full - real;
+  if (missing > 4 && missing <= st + 8) { app.style.bottom = 'auto'; app.style.height = full + 'px'; }
 }
 function computeLayout() {
   fixStandaloneHeight();
@@ -8135,7 +8144,7 @@ function renderDev() {
     'Petri : cycle': () => petriTick(), 'Petri : tout mûrir': () => { S.petri.grid.forEach(c => { if (c && SMAP[c.s]) c.a = Math.max(c.a, SMAP[c.s].grow); }); recalc(); UI.dirtyPetri = true; },
     'Réussir le protocole': () => { if (S.challenge) earn(CMAP[S.challenge].goal); },
     'Hors-ligne 8 h (test)': () => { const r = applyOffline(8 * 3600); if (r) offlineModal(r); },
-    'Infos écran': () => { const i = screenInfo(); toast('standalone ' + i.standalone + ' · inner ' + i.inner + ' · client ' + i.client + ' · jeu ' + i.app + ' · écran ' + i.screenW + '×' + i.screenH, 'save'); },
+    'Infos écran': () => { const i = screenInfo(); toast('standalone ' + i.standalone + ' · barre ' + Math.round(safeTop()) + ' · inner ' + i.inner + ' · client ' + i.client + ' · jeu ' + i.app + ' · écran ' + i.screenW + '×' + i.screenH, 'save'); },
     'Verrouiller DEV': () => { S.set.dev = false; S.set.god = false; S.set.speed = 1; applySettings(); recalc(); },
   };
   z.innerHTML = '<div class="sub" style="color:var(--yellow)">Mode développeur actif. Mode Dieu = molécules infinies (achats gratuits).</div><div class="devgrid" style="margin-top:6px">' + Object.keys(acts).map(k => B(k, null, k.startsWith('Mode') ? 'gold' : k.startsWith('Verr') ? 'warn' : '')).join('') + '</div>';
@@ -8984,6 +8993,9 @@ function boot() {
   window.addEventListener('beforeunload', () => saveGame());
   document.addEventListener('pointerdown', e => { SFX.unlock(); if (UI.tipEl && !UI.tipEl.contains(e.target) && e.target.id !== 'scene') hideTip(); }, true);
   document.addEventListener('gesturestart', e => e.preventDefault());
+  // iOS : après la fermeture du clavier, la page peut rester décalée -> on la remet en place UNE fois
+  // (le document lui-même ne peut plus défiler : body en position fixe, voir style.css)
+  document.addEventListener('focusout', () => setTimeout(() => { if (window.scrollY || window.scrollX) window.scrollTo(0, 0); }, 120));
   ['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => SFX.unlock(), { capture: true, passive: true }));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) SFX.unlock(); });
   setInterval(() => saveGame(false), 30000);
