@@ -14,7 +14,7 @@
 :root{
   --bg:#141020; --panel:#1c1830; --panel2:#262b44; --line:#3a4466; --line2:#5a6988; --ink:#eef1f8; --dim:#8b9bb4; --dim2:#5a6988;
   --cyan:#2ce8f5; --amber:#feae34; --yellow:#fee761; --green:#63c74d; --red:#e43b44; --violet:#9b5de5; --pink:#f6757a; --lav:#d4b8ff;
-  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px); --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;overscroll-behavior:none}
@@ -25,17 +25,17 @@ b,strong{font-weight:400;color:var(--yellow)}
 img{image-rendering:pixelated;image-rendering:crisp-edges;-webkit-user-drag:none}
 canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
-input,textarea{font-family:inherit;font-size:20px}
+input,textarea{font-family:inherit;font-size:20px;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 ::-webkit-scrollbar{width:10px;height:10px} ::-webkit-scrollbar-track{background:#120e1e} ::-webkit-scrollbar-thumb{background:var(--line);border:2px solid #120e1e}
 
-#app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:var(--st);padding-bottom:var(--sb)}
+#app{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;padding-top:var(--st);padding-bottom:var(--sb);padding-left:var(--sl);padding-right:var(--sr)}
 
 /* ---------- Barre du haut ---------- */
 #top{display:flex;align-items:center;gap:8px;padding:4px 8px;background:#0e0b18;border-bottom:2px solid var(--line);min-height:42px;flex:0 0 auto}
 #labName{background:none;border:0;padding:2px 4px;text-align:left;min-width:0;flex:1;overflow:hidden;line-height:1}
 #labName .ln{display:block;font-family:"Pixelify Sans",monospace;font-size:19px;color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #labName .rk{display:block;font-size:16px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ibtn{background:var(--panel2);border:2px solid var(--line2);padding:3px;width:40px;height:36px;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 #000;flex:0 0 auto}
+.ibtn{background:var(--panel2);border:2px solid var(--line2);padding:3px;width:44px;height:40px;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 #000;flex:0 0 auto}
 .ibtn img{width:28px;height:28px}
 .ibtn:active{transform:translate(2px,2px);box-shadow:none}
 #godBadge{display:none;color:#1a1000;background:var(--yellow);font-family:"Pixelify Sans";font-size:14px;padding:1px 5px;border:2px solid #000;flex:0 0 auto}
@@ -59,16 +59,16 @@ input,textarea{font-family:inherit;font-size:20px}
 #paneSide{flex:1;display:flex;flex-direction:column;min-height:0;min-width:0;border-left:2px solid var(--line);background:var(--panel)}
 .L-port #paneSide{border-left:0;border-top:2px solid var(--line)}
 #paneMid{background:var(--panel)}
-#scene{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer}
+#scene{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;touch-action:none;cursor:pointer}
 
 /* ---------- HUD (compteur) ---------- */
 #hud{position:absolute;left:0;right:0;top:4px;text-align:center;pointer-events:none;z-index:2;padding:0 6px}
 #hud .box{display:inline-block;background:rgba(14,11,24,.78);border:2px solid rgba(90,105,136,.55);padding:3px 12px 4px;box-shadow:3px 3px 0 rgba(0,0,0,.5);max-width:100%}
-#molCount{font-family:"Pixelify Sans",monospace;font-size:27px;line-height:1.05;color:#fff;text-shadow:2px 2px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#molCount{font-family:"VT323",monospace;font-size:34px;line-height:1.05;color:#fff;text-shadow:2px 2px 0 #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #molLabel{font-size:17px;color:var(--dim);line-height:1}
 #cpsLine{font-size:18px;color:var(--cyan);line-height:1.05;text-shadow:1px 1px 0 #000;white-space:nowrap}
 #cpsLine.buffed{color:var(--yellow)}
-#buffs{position:absolute;left:6px;top:78px;display:flex;flex-direction:column;gap:4px;z-index:3;pointer-events:auto}
+#buffs{position:absolute;left:6px;top:78px;display:flex;flex-direction:column;gap:4px;z-index:3;pointer-events:none}
 .buff{display:flex;align-items:center;gap:4px;background:rgba(14,11,24,.82);border:2px solid var(--amber);padding:1px 4px 1px 1px;font-size:15px;max-width:190px}
 .buff img{width:24px;height:24px}
 .buff .bt{display:flex;flex-direction:column;line-height:1;min-width:0}
@@ -97,7 +97,7 @@ input,textarea{font-family:inherit;font-size:20px}
 .tab .dot{position:absolute;top:3px;right:6px;width:9px;height:9px;background:var(--red);border:2px solid #000;display:none}
 .tab.notif .dot{display:block}
 .pages{flex:1;position:relative;min-height:0}
-.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:8px 8px 24px;display:none}
+.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:8px 8px 24px;display:none}
 .page.on{display:block}
 #page-lab{padding:0}
 .ptitle{font-family:"Pixelify Sans";font-size:21px;color:var(--cyan);margin:4px 0 6px;display:flex;align-items:center;gap:8px}
@@ -119,19 +119,19 @@ input,textarea{font-family:inherit;font-size:20px}
 
 /* ---------- Boutique ---------- */
 .shopbar{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
-.shopbar .btn{padding:3px 8px;font-size:18px}
+.shopbar .btn{padding:3px 9px;font-size:18px;min-height:38px}
 .shopbar .sep{width:6px}
 #upsGrid{display:flex;flex-wrap:wrap;gap:4px;min-height:10px}
 .upt{width:48px;height:48px;padding:0;border:0;background:none;position:relative;opacity:.55;filter:saturate(.5)}
 .upt img{width:48px;height:48px;display:block}
 .upt.can{opacity:1;filter:none}
-.upt.can::after{content:"";position:absolute;inset:-2px;border:2px solid var(--yellow);animation:pulse 1.2s steps(2) infinite}
+.upt.can::after{content:"";position:absolute;top:-2px;right:-2px;bottom:-2px;left:-2px;border:2px solid var(--yellow);animation:pulse 1.2s steps(2) infinite}
 .upt.sel{outline:3px solid var(--cyan);outline-offset:1px}
 @keyframes pulse{50%{border-color:transparent}}
 .updet{margin:6px 0;background:#141026;border:2px solid var(--line);padding:6px 8px;display:none}
 .updet.on{display:block}
 .updet .h{display:flex;gap:8px;align-items:center}
-.updet .h img{width:40px;height:40px;flex:0 0 auto}
+.updet .h > img{width:40px;height:40px;flex:0 0 auto}
 .updet .nm{font-family:"Pixelify Sans";font-size:18px;color:#fff}
 .updet .ds{font-size:18px;margin:3px 0}
 .updet .qq{font-size:17px;color:var(--dim);font-style:italic}
@@ -149,7 +149,7 @@ input,textarea{font-family:inherit;font-size:20px}
 .bItem .bInfo{flex:1;min-width:0}
 .bItem .bName{font-family:"Pixelify Sans";font-size:18px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bItem .bCost{font-size:18px}
-.bItem .bOwned{font-family:"Pixelify Sans";font-size:28px;color:rgba(255,255,255,.35);min-width:40px;text-align:right}
+.bItem .bOwned{font-family:"VT323";font-size:34px;color:rgba(255,255,255,.35);min-width:40px;text-align:right}
 .bItem .bAmt{font-size:15px;color:var(--dim);margin-left:6px}
 .sellmode .bItem{border-color:#6a3040}
 .sellmode .bItem .bCost{color:#ffb0b4}
@@ -162,21 +162,22 @@ input,textarea{font-family:inherit;font-size:20px}
 .ic.sel{outline:3px solid var(--cyan);outline-offset:1px}
 .det{background:#141026;border:2px solid var(--line);padding:6px 8px;margin:6px 0;min-height:52px}
 .det .h{display:flex;gap:8px;align-items:center}
-.det .h img{width:40px;height:40px;flex:0 0 auto}
+.det .h > img{width:40px;height:40px;flex:0 0 auto}
 .det .nm{font-family:"Pixelify Sans";font-size:18px;color:#fff}
+.det.pin{position:sticky;top:-8px;z-index:3;box-shadow:0 3px 0 #000}
 
 /* ---------- Nobel ---------- */
 .card{background:#141026;border:2px solid var(--line);padding:8px;margin:6px 0;box-shadow:3px 3px 0 #000}
 .card.gold{border-color:var(--amber)}
 .card.violet{border-color:var(--violet)}
-.card .big{font-family:"Pixelify Sans";font-size:24px;color:var(--yellow)}
+.card .big{font-family:"VT323";font-size:32px;color:var(--yellow)}
 .trow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:6px 0;border-bottom:1px dashed #2c2645}
 .node{width:52px;height:52px;padding:0;border:0;background:none;position:relative}
 .node img{width:52px;height:52px;display:block}
 .node.lock{opacity:.25}
 .node.avail img{filter:brightness(.75) saturate(.6)}
 .node.avail.can img{filter:none}
-.node.avail.can::after{content:"";position:absolute;inset:-2px;border:2px solid var(--yellow);animation:pulse 1.2s steps(2) infinite}
+.node.avail.can::after{content:"";position:absolute;top:-2px;right:-2px;bottom:-2px;left:-2px;border:2px solid var(--yellow);animation:pulse 1.2s steps(2) infinite}
 .node.own::before{content:"";position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;background:var(--green);border:2px solid #000;z-index:1}
 .node.sel{outline:3px solid var(--cyan);outline-offset:1px}
 .chal{border:2px solid #3b2a5a;background:#191230;padding:6px 8px;margin:6px 0}
@@ -187,15 +188,15 @@ input,textarea{font-family:inherit;font-size:20px}
 .pgrid{display:grid;gap:3px;margin:6px auto;width:max-content;background:#0e0b18;border:3px solid #2c2645;padding:4px}
 .pcell{width:52px;height:52px;padding:0;border:0;position:relative;background:none}
 .pcell img{position:absolute;image-rendering:pixelated}
-.pcell .dish{inset:0;width:52px;height:52px;opacity:.95}
+.pcell .dish{top:0;right:0;bottom:0;left:0;width:52px;height:52px;opacity:.95}
 .pcell .str{left:8px;top:8px;width:36px;height:36px}
-.pcell.ripe::after{content:"";position:absolute;inset:0;border:2px solid var(--green);animation:pulse 1.4s steps(2) infinite}
+.pcell.ripe::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border:2px solid var(--green);animation:pulse 1.4s steps(2) infinite}
 .pcell.sel{outline:3px solid var(--cyan)}
 .pcell .age{position:absolute;left:4px;right:4px;bottom:3px;height:3px;background:#000}
 .pcell .age i{display:block;height:100%;background:var(--green)}
 .seeds{display:flex;flex-wrap:wrap;gap:4px}
 .seed{display:flex;align-items:center;gap:4px;background:var(--panel2);border:2px solid var(--line);padding:2px 6px 2px 2px;font-size:16px;max-width:100%}
-.seed img{width:30px;height:30px}
+.seed > img{width:30px;height:30px}
 .seed.on{border-color:var(--cyan);background:#1d4b5c}
 .seed.unk{opacity:.5}
 
@@ -219,16 +220,19 @@ input.txt{background:#0b0914;color:#fff;border:2px solid var(--line);padding:5px
 input.code{background:#000;border:2px solid var(--yellow);color:var(--yellow);font-size:26px;padding:4px 8px;width:170px;text-transform:uppercase;letter-spacing:3px}
 .devgrid{display:flex;flex-wrap:wrap;gap:6px}
 .devgrid .btn{font-size:17px;padding:4px 8px}
-input[type=range]{width:140px;accent-color:var(--cyan)}
+input[type=range]{width:150px;height:32px;accent-color:var(--cyan)}
+.opt .btn{min-height:40px}
+#buyAll{min-height:34px}
+#upsGrid{min-height:48px;align-content:flex-start}
 
 /* ---------- Vue du labo ---------- */
 #labWrap{position:relative}
 #labview{width:100%}
-.lablbl{position:absolute;left:4px;font-family:"Pixelify Sans";font-size:14px;color:#fff;background:rgba(14,11,24,.72);padding:0 5px;border:1px solid rgba(255,255,255,.15);pointer-events:none;white-space:nowrap}
+.lablbl{position:absolute;left:4px;font-family:"VT323";font-size:17px;color:#fff;background:rgba(14,11,24,.72);padding:0 5px;border:1px solid rgba(255,255,255,.15);pointer-events:none;white-space:nowrap}
 .labempty{padding:20px;color:var(--dim);text-align:center}
 
 /* ---------- Effets ---------- */
-#fx{position:absolute;inset:0;pointer-events:none;z-index:20;overflow:hidden}
+#fx{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:20;overflow:hidden}
 .shimmer{position:absolute;pointer-events:auto;cursor:pointer;z-index:21;touch-action:none}
 .shimmer.caught img{opacity:0;transition:opacity .1s}
 .shimmer img{display:block;filter:drop-shadow(0 0 6px #fee761) drop-shadow(0 0 2px #fff);animation:bob 1.6s ease-in-out infinite}
@@ -239,7 +243,7 @@ input[type=range]{width:140px;accent-color:var(--cyan)}
 @keyframes glitch{0%{transform:translate(0,0)}92%{transform:translate(3px,-2px) skewX(10deg)}96%{transform:translate(-3px,2px)}}
 @keyframes fall{from{transform:translateY(0)}to{transform:translateY(var(--fall))}}
 @keyframes spin{to{transform:rotate(360deg)}}
-.pop{position:absolute;font-family:"Pixelify Sans",monospace;font-size:22px;color:#fff;text-shadow:2px 2px 0 #000,-1px -1px 0 #000;pointer-events:none;white-space:nowrap;animation:popup 1s ease-out forwards;z-index:22;transform:translate(-50%,-50%)}
+.pop{position:absolute;font-family:"VT323",monospace;font-size:27px;color:#fff;text-shadow:2px 2px 0 #000,-1px -1px 0 #000;pointer-events:none;white-space:nowrap;animation:popup 1s ease-out forwards;z-index:22;transform:translate(-50%,-50%)}
 .pop.gold{color:var(--yellow);font-size:24px}
 .pop.small{font-size:16px;opacity:.85}
 @keyframes popup{0%{opacity:1;margin-top:0}70%{opacity:1}100%{opacity:0;margin-top:-56px}}
@@ -250,7 +254,7 @@ input[type=range]{width:140px;accent-color:var(--cyan)}
 #bigText .t{font-family:"Pixelify Sans";font-size:clamp(24px,8.5vw,40px);line-height:1.05;overflow-wrap:anywhere;text-shadow:3px 3px 0 #000,-2px -2px 0 #000,0 0 18px currentColor;padding:0 10px}
 #bigText .s{font-size:clamp(17px,5vw,22px);color:#fff;text-shadow:2px 2px 0 #000;margin-top:6px;padding:0 10px}
 @keyframes bigin{0%{transform:scale(.4);opacity:0}7%{transform:scale(1.12);opacity:1}12%{transform:scale(1)}85%{opacity:1}100%{opacity:0;transform:translateY(-30px)}}
-#flash{position:absolute;inset:0;pointer-events:none;z-index:24;opacity:0}
+#flash{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:24;opacity:0}
 #flash.on{animation:flash .45s ease-out}
 @keyframes flash{0%{opacity:.45}100%{opacity:0}}
 
@@ -272,25 +276,25 @@ input[type=range]{width:140px;accent-color:var(--cyan)}
 #tip hr{border:0;border-top:1px dashed var(--line);margin:4px 0}
 
 /* ---------- Modale ---------- */
-#modal{position:absolute;inset:0;z-index:60;background:rgba(8,6,14,.78);display:flex;align-items:center;justify-content:center;padding:14px}
+#modal{position:absolute;top:0;right:0;bottom:0;left:0;z-index:60;background:rgba(8,6,14,.78);display:flex;align-items:center;justify-content:center;padding:14px}
 #modal.hidden{display:none}
 .mbox{background:var(--panel);border:3px solid var(--line2);box-shadow:5px 5px 0 #000;max-width:520px;width:100%;max-height:92%;display:flex;flex-direction:column}
 .mtitle{font-family:"Pixelify Sans";font-size:22px;color:var(--cyan);padding:8px 12px;border-bottom:2px solid var(--line);background:#0e0b18}
 .mbody{padding:10px 12px;overflow-y:auto;font-size:19px}
 .mbody p{margin:6px 0}
-.mbody .big{font-family:"Pixelify Sans";font-size:24px;color:var(--yellow);text-align:center}
+.mbody .big{font-family:"VT323";font-size:32px;color:var(--yellow);text-align:center}
 .mbody .center{text-align:center}
 .mbtns{display:flex;gap:8px;justify-content:flex-end;padding:8px 12px;border-top:2px solid var(--line);flex-wrap:wrap}
 .era-art{display:flex;justify-content:center;margin:6px 0}
 .era-art img{width:144px;height:144px}
 
 /* ---------- Écran de chargement ---------- */
-#boot{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;font-family:"Pixelify Sans",monospace;color:var(--cyan);font-size:26px}
+#boot{position:fixed;top:0;right:0;bottom:0;left:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;font-family:"Pixelify Sans",monospace;color:var(--cyan);font-size:26px}
 #boot small{font-family:"VT323";color:var(--dim);font-size:18px}
 #boot.out{opacity:0;transition:opacity .4s;pointer-events:none}
 @media (max-width:420px){
   body{font-size:19px}
-  #molCount{font-size:24px}
+  #molCount{font-size:31px}
   .tab{min-width:46px;font-size:14px}
   .tab img{width:24px;height:24px}
   .bItem .bIcon{width:42px;height:42px}
@@ -329,8 +333,15 @@ input[type=range]{width:140px;accent-color:var(--cyan)}
   #incident{bottom:22px;padding:2px 6px}
   #incident .il{font-size:11px}
   #incident .in{font-size:15px}
-  #incident .it{font-size:15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  #incident .it{font-size:15px}
   #incident .ie{font-size:15px}
+}
+
+@media (max-height:500px){
+  .era-art img{width:72px;height:72px}.era-art{margin:2px 0}#modal{padding:6px}.mbox{max-height:100%}
+  .mtitle{font-size:19px;padding:5px 10px}.mbody{padding:6px 10px}
+  #buffs{flex-direction:row;flex-wrap:wrap;max-width:60%}.buff .bn{display:none}
+  #ticker{height:22px;line-height:20px;font-size:17px}
 }
 
 </style>
@@ -363,7 +374,7 @@ input[type=range]{width:140px;accent-color:var(--cyan)}
       <div class="pages" id="pagesSide">
         <div class="page" id="page-shop">
           <div class="shopbar" id="shopbar"></div>
-          <div class="sect" id="upsHead"><span style="flex:1">Améliorations</span><button class="btn" id="buyAll" style="font-size:16px;padding:2px 8px">Tout acheter</button></div>
+          <div class="sect" id="upsHead"><span style="flex:1">Améliorations</span><button class="btn" id="buyAll" style="font-size:17px;padding:2px 10px">Tout acheter</button></div>
           <div id="upsGrid"></div>
           <div class="updet" id="upDet"></div>
           <div class="sect">Bâtiments</div>
@@ -412,6 +423,7 @@ const U = {
   },
   plural(n, sing, plur) { return (Math.abs(n) >= 2 ? plur : sing); },
   // met en minuscule le premier mot seulement (« Becs Bunsen » -> « becs Bunsen »), retire l'article « Le/La »
+  art(s) { return String(s).replace(/^L(?=['\u2019])/, 'l').replace(/^l'/, 'l\u2019').replace(/^(Le|La|Les) /, m => m.toLowerCase()); },
   lc(s) { s = String(s).replace(/^(?:(?:Les|Le|La)\s+|L[\u2019'])/, ''); return s.charAt(0).toLowerCase() + s.slice(1); },
 };
 
@@ -454,6 +466,7 @@ function fmt(n, d = 0, short = false) {
   let m = n / Math.pow(10, i * 3);
   const digits = mode === 'short' ? (m < 10 ? 2 : m < 100 ? 1 : 0) : 3;
   if (+m.toFixed(digits) >= 1000) { i++; m /= 1000; }
+  if (i >= NUM_LONG.length) return fmt(1e102, d, short);
   if (mode === 'short') return dec(m, m < 10 ? 2 : m < 100 ? 1 : 0) + ' ' + NUM_SHORT[i];
   const word = NUM_LONG[i];
   return dec(m, 3) + ' ' + (m >= 2 ? word + 's' : word);
@@ -463,6 +476,10 @@ function fmtPct(x) { // 0.15 -> "15 %"
   const v = x * 100;
   return (Math.abs(v) < 10 && v !== Math.floor(v) ? dec(v, 1) : v >= 1e6 ? fmt(v) : grp(Math.round(v))) + ' %';
 }
+// « 1 million de molécules », « 12 345 molécules », « 3 milliards d’atomes »
+function deMot(s, nom) { return /[A-Za-zéû]$/.test(s) ? (/^[aeiouyéèêh]/i.test(nom) ? ' d\u2019' : ' de ') : ' '; }
+function fmtNom(v, sing, plur, d = 0, short = false) { const s = fmt(v, d, short); return s + deMot(s, plur) + (v >= 2 ? plur : sing); }
+const fmtMol = (v, d = 0) => fmtNom(v, 'molécule', 'molécules', d);
 function fmtTime(sec) {
   sec = Math.max(0, Math.floor(sec));
   const j = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
@@ -3445,6 +3462,14 @@ const GFX = {
     return this._rgba[ch];
   },
   has(name) { return !!SPRITES[name]; },
+  optKey(o) { return o ? (o.tint || '') + ',' + (o.liquid || '') + ',' + (o.sil || '') + ',' + (o.flip ? 1 : 0) + ',' + (o.noAcc ? 1 : 0) + ',' + (o.dim || '') : ''; },
+  // table arc-en-ciel précalculée (aucune allocation par pixel)
+  RBW: null,
+  rbw(h, light) {
+    if (!this.RBW) { this.RBW = { rgb: [[], []], hex: [] }; for (let k = 0; k < 360; k++) { this.RBW.rgb[0][k] = U.hex2rgb(U.hsl(k, 0.85, 0.6)); this.RBW.rgb[1][k] = U.hex2rgb(U.hsl(k, 0.85, 0.8)); this.RBW.hex[k] = U.hsl(k, 0.9, 0.65); } }
+    const i = ((Math.floor(h) % 360) + 360) % 360;
+    return light == null ? this.RBW.hex[i] : this.RBW.rgb[light ? 1 : 0][i];
+  },
   get(name) {
     let s = SPRITES[name];
     if (!s) { // sprite manquant : remplaçant visible plutôt qu'un plantage
@@ -3458,8 +3483,8 @@ const GFX = {
   frames(name) { return this.get(name).frames.length; },
   // opt: { tint: '#hex' couleur des '+', liquid: '#hex' couleur des '~', sil: '#hex' silhouette, flip: bool }
   canvas(name, frame = 0, opt) {
-    const key = name + '|' + frame + '|' + (opt ? JSON.stringify(opt) : '');
-    if (this._cv[key]) return this._cv[key];
+    const key = name + '|' + frame + '|' + this.optKey(opt);
+    const hit = this._cv[key]; if (hit) return hit;
     const s = this.get(name), fr = s.frames[frame % s.frames.length];
     const cv = document.createElement('canvas'); cv.width = s.w; cv.height = s.h;
     const cx = cv.getContext('2d'), img = cx.createImageData(s.w, s.h), d = img.data;
@@ -3486,7 +3511,7 @@ const GFX = {
   },
   // URL d'image agrandie (pour le DOM) ; scale entier
   url(name, frame = 0, scale = 1, opt) {
-    const key = name + '|' + frame + '|' + scale + '|' + (opt ? JSON.stringify(opt) : '');
+    const key = name + '|' + frame + '|' + scale + '|' + this.optKey(opt);
     if (this._url[key]) return this._url[key];
     const src = this.canvas(name, frame, opt);
     let u;
@@ -3499,7 +3524,7 @@ const GFX = {
   },
   // Icône encadrée selon le palier (20×20 logique) – améliorations / succès
   framed(name, tier, opt) {
-    const key = 'F|' + name + '|' + tier + '|' + (opt ? JSON.stringify(opt) : '');
+    const key = 'F|' + name + '|' + tier + '|' + this.optKey(opt);
     if (this._url[key]) return this._url[key];
     const src = this.canvas(name, 0, opt);
     const S = 22, sc = 3;
@@ -3511,8 +3536,9 @@ const GFX = {
     cx.fillStyle = tc[1]; cx.fillRect(1, 1, S - 2, 1); cx.fillRect(1, 1, 1, S - 2);
     cx.fillStyle = '#1f1a33'; cx.fillRect(2, 2, S - 4, S - 4);
     cx.fillStyle = 'rgba(255,255,255,0.06)'; cx.fillRect(2, 2, S - 4, Math.floor((S - 4) / 2));
-    const ox = Math.floor((S - src.width) / 2), oy = Math.floor((S - src.height) / 2);
-    cx.drawImage(src, ox, oy);
+    const k = Math.min(16 / src.width, 16 / src.height), f = k >= 2 ? Math.floor(k) : Math.min(1, k);
+    const w = src.width * f, h = src.height * f;
+    cx.drawImage(src, (S - w) / 2, (S - h) / 2, w, h);
     let u = ''; try { u = cv.toDataURL(); } catch (e) { }
     return (this._url[key] = u);
   },
@@ -3678,7 +3704,7 @@ const TXT_BUILDINGS = {
       { n: "Bras planétaire", q: "Il saisit des astéroïdes comme des éprouvettes. Il a fallu agrandir un peu la pince." },
       { n: "Engrenages célestes", q: "Les planètes tournent parce qu'un bras les pousse doucement. On l'a juste réglé un cran plus vite." },
       { n: "Bras autoconstruit", q: "Il a construit le bras qui l'a construit. L'origine de tout ça reste floue." },
-      { n: "Main invisible", q: "Le bras est devenu si précis qu'il n'a plus besoin d'exister. Les fioles bougent toutes seules." },
+      { n: "Main fantôme", q: "Le bras est devenu si précis qu'il n'a plus besoin d'exister. Les fioles bougent toutes seules." },
       { n: "Le Geste absolu", q: "Un mouvement si pur qu'il accomplit toutes les manipulations possibles d'un seul coup." },
       { n: "Le Grand Assembleur", q: "On raconte qu'il a monté l'univers à partir d'une notice incomplète." },
     ],
@@ -3704,7 +3730,7 @@ const TXT_BUILDINGS = {
       { n: "Clonage du vide", q: "On a cloné le vide et obtenu deux vides. Le comptable est perplexe." },
       { n: "Instant en double", q: "Chaque seconde est clonée avant de s'écouler. Le temps bégaie un peu, mais personne ne s'en plaint." },
       { n: "Copie de l'idée de copie", q: "Le concept même de copie, recopié. Les philosophes ont demandé une pause, puis une copie de leur pause." },
-      { n: "L'Original perdu", q: "Plus personne ne sait ce qui a été cloné en premier. Peut-être l'univers. Peut-être vous." },
+      { n: "L'Original introuvable", q: "Plus personne ne sait ce qui a été cloné en premier. Peut-être l'univers. Peut-être vous." },
     ],
     spec: { n: "Stagiaires jumeaux", q: "On en a formé un seul. Les autres sont sortis de la cuve déjà diplômés." },
   },
@@ -3871,7 +3897,7 @@ const TXT_BUILDINGS = {
       { n: "Liquidation de l'univers", q: "On récupère les molécules de la fin des temps. Tout doit disparaître, de toute façon." },
       { n: "Paradoxe rentable", q: "On achète les réactifs avec l'argent qu'on gagnera demain. Le banquier ne suit plus." },
       { n: "Temps suspendu", q: "Le temps s'est arrêté pour tout le monde, sauf pour la production." },
-      { n: "Éternel présent", q: "Passé, présent et futur ont fusionné. On ne sait plus quand on est, mais on sait qu'on travaille." },
+      { n: "Présent perpétuel", q: "Passé, présent et futur ont fusionné. On ne sait plus quand on est, mais on sait qu'on travaille." },
       { n: "Le Temps en bocal", q: "On a mis le temps en bocal. Désormais, il s'écoule goutte à goutte, à notre rythme." },
     ],
     spec: { n: "Stagiaires en avance", q: "Ils ont terminé leur stage avant de le commencer. Le rapport est déjà noté." },
@@ -3981,7 +4007,7 @@ const TXT_BUILDINGS = {
       { n: "Bouchons d'oreilles", q: "Indispensables. Le Big Bang n'a jamais été silencieux, quoi qu'en disent les manuels." },
       { n: "Allumettes cosmiques", q: "Pour allumer un univers, il faut une sacrée allumette. Elles sont vendues par boîtes de douze." },
       { n: "Chaîne de montage", q: "Un univers toutes les trois minutes. Le contremaître siffle à chaque explosion." },
-      { n: "Contrôle qualité", q: "On vérifie chaque univers : constantes, étoiles, odeur. Les ratés finissent en trous noirs d'occasion." },
+      { n: "Banc d'essai cosmique", q: "On vérifie chaque univers : constantes, étoiles, odeur. Les ratés finissent en trous noirs d'occasion." },
       { n: "Emballage sous vide", q: "Chaque univers est livré sous vide. Ce qui, pour un univers, est assez naturel." },
       { n: "Big Bang aromatisé", q: "Vanille, fraise ou fond diffus cosmologique. Le dernier a ses inconditionnels." },
       { n: "Univers en kit", q: "Livré en pièces détachées avec une petite clé coudée. Il manque toujours une galaxie." },
@@ -3991,7 +4017,7 @@ const TXT_BUILDINGS = {
       { n: "Usine à multivers", q: "On ne fabrique plus les univers à l'unité, mais par palettes de mille." },
       { n: "Explosion inversée", q: "On fait exploser le néant à l'envers. Il en sort un univers déjà rangé." },
       { n: "Big Bang conceptuel", q: "Un univers né d'une simple pensée. Bruit : aucun. Rendement : vertigineux." },
-      { n: "Avant le commencement", q: "La production a démarré avant le début du temps. Aucune date de péremption ne s'applique." },
+      { n: "Fabrication antérieure", q: "La production a démarré avant le début du temps. Aucune date de péremption ne s'applique." },
       { n: "Le Premier Boum", q: "« Au commencement, il y avait une fabrique. Le reste en découle. » — Archives de la Fabrique" },
     ],
     spec: { n: "Stagiaires artificiers", q: "Ils allument des univers avec une très longue mèche, puis vont se cacher derrière la galaxie voisine." },
@@ -4009,7 +4035,7 @@ const TXT_BUILDINGS = {
       { n: "Annuaire infini", q: "Il recense tous les labos imbriqués. Il compte une page de plus que lui-même." },
       { n: "Réunion de préparation", q: "Une réunion pour préparer la réunion qui prépare la réunion. Enfin un usage productif." },
       { n: "Miroirs face à face", q: "Deux miroirs, et le labo se répète à perte de vue. Chaque reflet produit sa part." },
-      { n: "Poupées gigognes", q: "Un labo dans un labo dans un labo, peints à la main. Le plus petit tient dans une éprouvette." },
+      { n: "Matriochkas de paillasse", q: "Un labo dans un labo dans un labo, peints à la main. Le plus petit tient dans une éprouvette." },
       { n: "Fractale de paillasses", q: "Chaque paillasse est faite de paillasses plus petites. Le ménage est un cauchemar." },
       { n: "Labo de Hilbert", q: "Le labo affiche complet, mais il reste toujours de la place pour une molécule de plus." },
       { n: "Infini dénombrable", q: "On a compté toutes les molécules : une, deux, trois… On a fini mardi." },
@@ -4065,7 +4091,7 @@ const TXT_ACH = {
     { n: "Planète en kit", q: "Assez de matière pour monter une planète. Notice introuvable, il reste des vis." },
     { n: "Étoile de synthèse", q: "Vous avez allumé une petite étoile. Le garage n’a jamais été aussi bien éclairé." },
     { n: "Avogadro serait fier", q: "Quelque part, un chimiste italien verse une larme : vous avez enfin rempli une mole." },
-    { n: "Nébuleuse maison", q: "Vos surplus forment une nébuleuse. Des astronomes amateurs l’ont baptisée « Kevin »." },
+    { n: "Nébuleuse maison", q: "Vos surplus forment une nébuleuse. Des astronomes amateurs l’ont baptisée « Kévin »." },
     { n: "Galaxie artisanale", q: "« Fait main, de A à Z. Surtout de Z. » — Étiquette au dos d’une galaxie" },
     { n: "Superamas d’éprouvettes", q: "Des milliers de galaxies, rangées par ordre alphabétique. Vous êtes un peu maniaque." },
     { n: "Univers observable", q: "Où que pointent les télescopes, ils ne voient plus que votre production." },
@@ -4447,7 +4473,7 @@ const TXT_ACH = {
     alltree: { n: "Fondation achevée", d: "Acheter tous les nœuds de la Fondation Nobel.", q: "Toutes les branches sont cueillies. L’arbre vous regarde avec reproche." },
     anomaly: { n: "Bizarrerie quantique", d: "Cliquer une anomalie quantique.", q: "Vous l’avez cliquée avant même qu’elle ne décide si elle existait." },
     tooslow: { n: "Course perdue", d: "Échouer au protocole « Course contre la montre ».", q: "« Rien ne sert de courir. » — Une tortue, pas très encourageante" },
-    broke: { n: "Fauché comme les blés", d: "Se retrouver avec moins d’une molécule juste après un achat d’au moins un million.", q: "Tout votre budget dans un seul achat. Votre banquier vous tend un mouchoir." },
+    broke: { n: "Fauché comme les blés", d: "Se retrouver presque à sec (moins de 1 % du prix) juste après un achat d’au moins un million.", q: "Tout votre budget dans un seul achat. Votre banquier vous tend un mouchoir." },
   },
 };
 
@@ -4542,7 +4568,7 @@ const TXT_CLICKPCT = [
   { n: "Main à mille doigts", q: "Elle compte jusqu'à mille sans enlever ses chaussures." },
   { n: "Main gravitationnelle", q: "Chaque clic courbe légèrement l'espace-temps autour de la fiole." },
   { n: "Doigt de la Création", q: "Michel-Ange avait tout prévu, sauf la fiole au bout du doigt." },
-  { n: "Main cosmique", q: "Grande comme une galaxie, délicate comme un compte-gouttes." },
+  { n: "Paume galactique", q: "Grande comme une galaxie, délicate comme un compte-gouttes." },
 ];
 
 // Améliorations des fioles dorées : [0][1] plus fréquentes, [2] effets plus longs, [3] pluie plus généreuse,
@@ -4709,14 +4735,14 @@ const TXT_LABNAMES = [
   "Laboratoires Clic-Clac",
   "Institut Molécule & Fils",
   "Éprouvettes & Associés",
-  "Le Garage Quantique",
+  "Garage Quantique",
   "Centre de Recherche Approximative",
   "Labo des Hypothèses Douteuses",
   "Bunsen, Bulles & Cie",
   "Institut du Tube à Essai",
   "Atomes Crochus SARL",
   "Laboratoire Pas-de-Panique",
-  "Les Ateliers de l'Erlenmeyer",
+  "Ateliers de l'Erlenmeyer",
   "Institut Supérieur du Presque",
   "Labo du Grand Mélange",
   "Chimie & Chouquettes",
@@ -4743,7 +4769,7 @@ const TXT_PAPERS = [
   "Les molécules ont-elles une âme ? Résultats préliminaires",
   "Étude comparative de la chute des tartines en apesanteur",
   "Le trou noir domestique : guide d'éducation bienveillante",
-  "Rapport annuel de {labo} : tout va bien, sauf l'univers",
+  "{labo}, rapport annuel : tout va bien, sauf l'univers",
   "Le paradoxe du stagiaire : partout à la fois, introuvable quand on le cherche",
   "Peut-on cloner un chercheur sans cloner ses dettes ?",
   "Les nanobots et la question syndicale",
@@ -5107,7 +5133,7 @@ const TXT_NEWS = [
   { e: 9, t: "Le point final de cette brève a été recyclé en molécule, faute de place dans l’univers" },
   { e: 9, t: "Le concept de « fin » est placé en chômage technique. L’univers continue, le labo aussi, et cette brève également, et…" },
   { e: 9, t: "Une nouvelle réalité ouvre ses portes à côté du labo. Le labo l’a aussitôt annexée pour en faire un débarras." },
-  { e: 9, t: "L’Infini écrit à {labo} : pensez à boire un verre d’eau. Même les omnipotents se déshydratent." },
+  { e: 9, t: "Courrier de l’Infini pour {labo} : pensez à boire un verre d’eau. Même les omnipotents se déshydratent." },
   { e: 9, t: "Le Big Bang originel réclame des droits d’auteur à tous ses imitateurs. Le labo arrive en tête de la liste." },
 
   /* ---------- Brèves liées aux bâtiments ---------- */
@@ -5243,7 +5269,7 @@ const TXT_INCIDENTS = [
   { e: 1, k: "storm", n: "Gouttière fluo", t: "La gouttière du garage déborde d’un liquide fluo. Chaque goutte se solidifie en mini-fiole avant de toucher le sol. Tendez les mains !" },
 
   /* ---------- Ère 2 : l’Université ---------- */
-  { e: 2, k: "gain", n: "Trois zéros de trop", t: "La comptabilité de l’université a ajouté trois zéros à la subvention de {labo}. Personne ne s’en plaint. Surtout pas nous." },
+  { e: 2, k: "gain", n: "Trois zéros de trop", t: "La comptabilité de l’université a ajouté trois zéros à la subvention du labo. Personne ne s’en plaint. Surtout pas {labo}." },
   { e: 2, k: "gain", n: "Kévin vend ses notes", t: "Kévin a vendu ses notes de cours aux étudiants de première année. Elles sont toutes fausses, mais très demandées. Le labo encaisse." },
   { e: 2, k: "buff", n: "Semaine des partiels", t: "C’est la semaine des partiels : terrifiés, les étudiants travaillent enfin. Le labo n’a jamais été aussi productif." },
   { e: 2, k: "buff", n: "Le comité part en séminaire", t: "Le comité d’éthique part en séminaire « Éthique et farniente » aux Baléares. Le labo en profite pour tout pousser à fond." },
@@ -5263,7 +5289,7 @@ const TXT_INCIDENTS = [
   { e: 3, k: "buff", n: "Feng shui moléculaire", t: "Un consultant réoriente tout l’open space selon les principes du feng shui moléculaire. Les ondes circulent, la production aussi." },
   { e: 3, k: "click", n: "Bouton « Cliquer plus fort »", t: "Le service informatique installe sur la fiole un bouton « Cliquer plus fort ». Il fonctionne. Personne ne sait pourquoi." },
   { e: 3, k: "click", n: "Concours du stagiaire du mois", t: "Concours interne : le stagiaire du mois sera celui qui clique le plus. Kévin s’échauffe les phalanges. Vous aussi, apparemment." },
-  { e: 3, k: "free", n: "Les clones se clonent", t: "Les clones de Kévin se sont clonés eux-mêmes pendant la pause déjeuner. Les RH renoncent à les compter et les déclarent « offerts »." },
+  { b: "clonage", e: 3, k: "free", n: "Les clones se clonent", t: "Les clones de Kévin se sont clonés eux-mêmes pendant la pause déjeuner. Les RH renoncent à les compter et les déclarent « offerts »." },
   { e: 3, k: "free", n: "Grinchard en liquidation", t: "L’entreprise du Professeur Grinchard fait faillite. Ses machines sont bradées sur le trottoir. Le labo passe avant les éboueurs." },
   { e: 3, k: "gold", n: "Le porte-bonheur du PDG", t: "Le PDG laisse tomber sa fiole dorée porte-bonheur dans la cage d’ascenseur. Elle dévale les quatre-vingts étages. Attrapez-la !" },
   { e: 3, k: "storm", n: "Drone de livraison égaré", t: "Un drone de livraison confond le labo avec un entrepôt et largue des milliers de mini-fioles sur le parking. Servez-vous !" },
@@ -5310,7 +5336,7 @@ const TXT_INCIDENTS = [
   { e: 6, k: "chaos", n: "Vous-même emprunte du sel", t: "Un vous-même d’une autre dimension vient emprunter du sel. En partant, il appuie sur un bouton au hasard « pour rendre service »." },
   { e: 6, k: "chaos", n: "Douze Mme Duchemin", t: "Douze Mme Duchemin venues de douze dimensions se plaignent en même temps. La réalité vibre. Les machines font n’importe quoi." },
   { e: 6, k: "chaos", n: "Portail branché à l’envers", t: "Le portail est branché à l’envers : la gauche est à droite, le haut est dedans et Kévin est compétent. Tout peut arriver." },
-  { e: 6, k: "chaos", n: "Le temps bégaie", t: "Le Chronolabo a avalé une seconde de travers. Le temps bé… bé… bégaie. Personne ne sait ce qui va se passer. Ni quand. Ni combien de fois." },
+  { b: "chrono", e: 6, k: "chaos", n: "Le temps bégaie", t: "Le Chronolabo a avalé une seconde de travers. Le temps bé… bé… bégaie. Personne ne sait ce qui va se passer. Ni quand. Ni combien de fois." },
 
   /* ---------- Ère 7 : l’Ère stellaire ---------- */
   { e: 7, k: "gain", n: "Supernova d’occasion", t: "Une supernova d’occasion explose dans la cour. Le service après-vente s’excuse et laisse les débris : des tonnes de molécules lourdes." },
@@ -5331,7 +5357,7 @@ const TXT_INCIDENTS = [
   { e: 8, k: "gain", n: "Univers en vrac", t: "Le simulateur génère par erreur un univers entièrement fait de molécules. On le vide dans la réserve. Il y avait aussi un canapé." },
   { e: 8, k: "gain", n: "Héritage d’un vieil univers", t: "Un vieil univers s’éteint et lègue tout son patrimoine au labo. Le notaire, un trou noir, a déjà prélevé sa part." },
   { e: 8, k: "buff", n: "La molette de la gravité", t: "Kévin a tourné la molette de la constante gravitationnelle « juste d’un cran ». Tout le labo produit plus vite. Plus personne n’y touche." },
-  { e: 8, k: "buff", n: "Le Cerveau a une idée", t: "Le Cerveau galactique a enfin eu une idée. Il refuse de dire laquelle, mais tout le labo accélère par respect." },
+  { b: "cerveau", e: 8, k: "buff", n: "Le Cerveau a une idée", t: "Le Cerveau galactique a enfin eu une idée. Il refuse de dire laquelle, mais tout le labo accélère par respect." },
   { e: 8, k: "click", n: "Le Grand Attracteur craque", t: "Le Grand Attracteur s’est entiché de votre index. Chaque clic attire des molécules depuis tout l’univers observable." },
   { e: 8, k: "free", n: "La matière noire se dévoile", t: "La matière noire sort enfin du placard et révèle des bâtiments oubliés. Ils étaient là depuis le début, simplement invisibles." },
   { e: 8, k: "gold", n: "Pi en or", t: "Le simulateur découvre une version dorée de pi, légèrement plus ronde. Elle est mise en fiole par précaution. Ne la renversez pas." },
@@ -5339,11 +5365,11 @@ const TXT_INCIDENTS = [
   { e: 8, k: "storm", n: "Averse de quarks", t: "Météo cosmique : averse de quarks en mini-fioles sur tout le labo. Saveurs : haut, bas, charme et « fraise des bois »." },
   { e: 8, k: "storm", n: "Trou de ver débouché", t: "Un trou de ver bouché se débouche d’un coup, comme un évier, et recrache des milliers de mini-fioles sur le labo. Ventouse offerte." },
   { e: 8, k: "chaos", n: "Erreur 404 : univers", t: "ERREUR 404 : univers introuvable. Il redémarre en mode sans échec. Certaines lois de la physique risquent de manquer à l’appel." },
-  { e: 8, k: "chaos", n: "Copier-coller cosmique", t: "Kévin a copié l’univers et oublié de le coller. L’univers est quelque part dans un presse-papiers. Tout est possible." },
+  { e: 8, k: "chaos", n: "Ctrl+C cosmique", t: "Kévin a copié l’univers et oublié de le coller. L’univers est quelque part dans un presse-papiers. Tout est possible." },
   { e: 8, k: "chaos", n: "Chaises musicales cosmiques", t: "Les constantes fondamentales jouent aux chaises musicales. La vitesse de la lumière s’assoit à la place de la gravité. Ça va secouer." },
 
   /* ---------- Ère 9 : l’Infini ---------- */
-  { e: 9, k: "gain", n: "L’infini plus un", t: "Le comptable découvre l’infini plus un dans la caisse. On ignore d’où vient le « plus un », mais il est franchement énorme." },
+  { e: 9, k: "gain", n: "L’infini plus deux", t: "Le comptable découvre l’infini plus un dans la caisse. On ignore d’où vient le « plus un », mais il est franchement énorme." },
   { e: 9, k: "gain", n: "Mme Duchemin s’excuse", t: "Mme Duchemin retire toutes ses plaintes. L’univers, en état de choc, verse au labo une indemnité colossale en molécules." },
   { e: 9, k: "buff", n: "Récursion en équipe", t: "Le labo qui contient le labo qui contient le labo décide enfin de travailler en équipe. La récursion produit à toute vitesse." },
   { e: 9, k: "buff", n: "Le comité dit oui", t: "Pour la première fois de l’histoire, le comité d’éthique dit « oui ». Le labo, euphorique, produit comme jamais. On ignore à quoi." },
@@ -5366,12 +5392,21 @@ const TXT_INCIDENTS = [
 function TX(get, fb) { try { const v = get(); return v == null ? fb : v; } catch (e) { return fb; } }
 function NQ(get, fbName) { const o = TX(get, null); return { n: (o && o.n) || fbName, q: (o && o.q) || '' }; }
 
+// Typographie française homogène : espaces fines insécables avant ; ! ? » % et après «, insécable avant :, apostrophes courbes
+const NNB = '\u202f', NB = '\u00a0';
+function TYPO(s, apos = true) {
+  if (typeof s !== 'string') return s;
+  if (apos) s = s.replace(/([A-Za-z\u00c0-\u00ff\u0152\u0153])'(?=[A-Za-z\u00c0-\u00ff\u0152\u0153])/g, '$1\u2019');
+  return s.replace(/«[ \u00a0\u202f]*/g, '«' + NNB).replace(/[ \u00a0\u202f]*([;!?»%])/g, (m, c) => (c === '!' || c === '?' ? (/\S/.test(m[0]) && m.length === 1 ? m : NNB + c) : NNB + c)).replace(/ :/g, NB + ':');
+}
+function typoAll(o) { for (const k in o) { const v = o[k]; if (typeof v === 'string') o[k] = TYPO(v); else if (v && typeof v === 'object') typoAll(v); } }
+['TXT_BUILDINGS', 'TXT_SYNERGIES', 'TXT_ACH', 'TXT_PROVISIONS', 'TXT_CLICKPCT', 'TXT_GOLDUP', 'TXT_REPUP', 'TXT_PRESTIGE', 'TXT_CHALLENGES', 'TXT_PETRI', 'TXT_GOLDEN', 'TXT_ERAS', 'TXT_VESSELS', 'TXT_RANKS', 'TXT_LABNAMES', 'TXT_PAPERS', 'TXT_OFFLINE', 'TXT_EUREKA', 'TXT_TIPS', 'TXT_NEWS', 'TXT_INCIDENTS'].forEach(k => TX(() => typoAll(eval(k)), null));
 const B_IDS = ['pipette', 'stagiaire', 'bunsen', 'microscope', 'centrifugeuse', 'robot', 'clonage', 'fusion', 'accelerateur', 'quantique',
   'orbitale', 'nanobots', 'portail', 'chrono', 'forge', 'trounoir', 'simulateur', 'cerveau', 'bigbang', 'infini'];
 const B_FALLBACK = ['Pipette automatique', 'Stagiaire', 'Bec Bunsen', 'Microscope', 'Centrifugeuse', 'Bras robotique', 'Cuve de clonage',
   'Réacteur à fusion', 'Accélérateur de particules', 'Ordinateur quantique', 'Station orbitale', 'Essaim de nanobots', 'Portail dimensionnel',
   'Chronolabo', 'Forge stellaire', 'Trou noir domestiqué', "Simulateur d'univers", 'Cerveau galactique', 'Fabrique de Big Bang', 'Le Labo Infini'];
-const B_COST = [15, 100, 1100, 12000, 130000, 1.4e6, 2e7, 3.3e8, 5.1e9, 6e10, 9e11, 1.5e13, 2.5e14, 4e15, 7e16, 1.2e18, 2.2e19, 4e20, 8e21, 1.6e23];
+const B_COST = [15, 100, 1100, 12000, 130000, 1.4e6, 2e7, 3.3e8, 5.1e9, 6e10, 9e11, 1.5e13, 2.5e14, 4e15, 7e16, 1.2e18, 7e19, 1.2e22, 2e24, 5e26];
 const B_CPS = [0.1, 1, 8, 47, 260, 1400, 7800, 44000, 260000, 1.5e6, 8.5e6, 5e7, 3e8, 1.8e9, 1.1e10, 6.5e10, 4e11, 2.5e12, 1.6e13, 1e14];
 // [couleur du mur, couleur du sol, accent] pour les rangées de la vue du labo
 const B_THEME = [
@@ -5382,16 +5417,20 @@ const B_THEME = [
   ['#0f2430', '#183848', '#2ce8f5'], ['#381c2c', '#562a42', '#f6757a'], ['#2e0f16', '#4a1822', '#e43b44'], ['#22163a', '#352458', '#d4b8ff'],
 ];
 
+const B_FEM = { pipette: 1, centrifugeuse: 1, clonage: 1, orbitale: 1, forge: 1, bigbang: 1 };
 const BUILDINGS = B_IDS.map((id, i) => {
   const t = TX(() => TXT_BUILDINGS[id], {});
+  const name = t.name || B_FALLBACK[i], plural = t.plural || (B_FALLBACK[i] + 's');
   return {
-    id, i, name: t.name || B_FALLBACK[i], plural: t.plural || (B_FALLBACK[i] + 's'), desc: t.desc || '', q: t.q || '',
+    id, i, name, plural, desc: t.desc || '', q: t.q || '', fem: !!B_FEM[id],
+    lcName: id === 'infini' ? 'Labo Infini' : U.lc(name), lcPlural: id === 'infini' ? 'Labos Infinis' : U.lc(plural),
     cost: B_COST[i], cps: B_CPS[i], theme: B_THEME[i], sprite: 'b_' + id,
   };
 });
 const BMAP = {}; BUILDINGS.forEach(b => BMAP[b.id] = b);
 
 /* ---------- Ères et récipients ---------- */
+const NOBEL_BASE = 5e11; // molécules cumulées pour le 1er prix Nobel
 const ERA_REQ = [0, 3, 5, 7, 10, 12, 14, 16, 19]; // index du bâtiment à posséder
 const ERA_FALLBACK = ['Le Garage', "L'Université", 'La MégaCorp', "L'Ère atomique", "L'Ère orbitale", "L'Ère dimensionnelle", "L'Ère stellaire", "L'Ère cosmique", "L'Infini"];
 const VESSEL_OF_ERA = [0, 1, 1, 2, 2, 3, 4, 4, 5];
@@ -5443,7 +5482,7 @@ function addUp(u) { u.order = UPGRADES.length; UPGRADES.push(u); UPMAP[u.id] = u
         else { u.cafe = CAFE_MULT[k]; u.desc = 'Bonus du café multiplié par <b>' + CAFE_MULT[k] + '</b>.'; u.icon = 'i_cafe'; }
       } else {
         u.cost = b.cost * TIER_MULT[k]; u.reqN = TIER_REQ[k];
-        u.desc = 'Production des ' + U.lc(b.plural) + ' <b>×2</b>.';
+        u.desc = 'Production des ' + b.lcPlural + ' <b>×2</b>.';
       }
       addUp(u);
     }
@@ -5454,13 +5493,13 @@ function addUp(u) { u.order = UPGRADES.length; UPGRADES.push(u); UPMAP[u.id] = u
     const t = NQ(() => TXT_BUILDINGS[b.id].spec, 'Stagiaires spécialisés (' + b.name + ')');
     const per = bi - 1;
     addUp({ id: 's_' + b.id, type: 'spec', b: b.id, per, name: t.n, q: t.q, icon: 'b_stagiaire', icon2: b.sprite, tier: null, cost: b.cost * 50,
-      desc: 'Stagiaires <b>×2</b>. Les ' + U.lc(b.plural) + ' gagnent <b>+1 %</b> de production par ' + (per > 1 ? per + ' stagiaires' : 'stagiaire') + '.' });
+      desc: 'Stagiaires <b>×2</b>. Les ' + b.lcPlural + ' gagnent <b>+1 %</b> de production par ' + (per > 1 ? per + ' stagiaires' : 'stagiaire') + '.' });
   });
   // Synergies
   SYN_PAIRS.forEach(([a, c]) => {
     const t = NQ(() => TXT_SYNERGIES[a + '+' + c], 'Synergie ' + BMAP[a].name + ' / ' + BMAP[c].name);
     addUp({ id: 'y_' + a + '_' + c, type: 'syn', a, c, name: t.n, q: t.q, icon: BMAP[a].sprite, icon2: BMAP[c].sprite, tier: 6, cost: BMAP[c].cost * 30,
-      desc: BMAP[a].plural + ' : <b>+5 %</b> par ' + U.lc(BMAP[c].name) + '. ' + BMAP[c].plural + ' : <b>+0,1 %</b> par ' + U.lc(BMAP[a].name) + '.' });
+      desc: BMAP[a].plural + ' : <b>+5 %</b> par ' + BMAP[c].lcName + '. ' + BMAP[c].plural + ' : <b>+0,1 %</b> par ' + BMAP[a].lcName + '.' });
   });
   // Provisions (multiplicateurs globaux)
   const prov = TX(() => TXT_PROVISIONS, []) || [];
@@ -5488,7 +5527,7 @@ function addUp(u) { u.order = UPGRADES.length; UPGRADES.push(u); UPMAP[u.id] = u
   REP_REQ.forEach((r, k) => {
     const t = rp[k] || {};
     addUp({ id: 'r_' + k, type: 'rep', k, req: r, f: REP_F[k], name: t.n || REP_FALLBACK[k], q: t.q || '', icon: 'i_rep', tier: k, cost: 9e5 * Math.pow(500, k),
-      desc: 'Production multipliée par <b>(1 + ' + Math.round(REP_F[k] * 1000) / 10 + ' % de la Réputation)</b>.' });
+      desc: 'Production multipliée par <b>(1 + ' + dec(REP_F[k] * 100, 1) + ' % de la Réputation)</b>.' });
   });
 })();
 
@@ -5511,23 +5550,23 @@ const SECRET_ICON = { sell1: 'i_sell', sell100: 'i_sell', burger: 'i_dev', logo:
 (function buildAch() {
   const T = TX(() => TXT_ACH, {}) || {};
   const nq = (cat, k, fb) => { const a = (T[cat] || [])[k] || {}; return { n: a.n || fb, q: a.q || '' }; };
-  A_EARNED.forEach((v, k) => { const t = nq('earned', k, 'Production ' + (k + 1)); addAch({ id: 'ae' + k, cat: 'Production', name: t.n, q: t.q, icon: 'p_mol', tier: k % 15, desc: () => 'Produire ' + fmt(v) + ' molécule' + (v >= 2 ? 's' : '') + ' dans une même partie.', check: () => S.runEarned >= v }); });
-  A_CPS.forEach((v, k) => { const t = nq('cps', k, 'Cadence ' + (k + 1)); addAch({ id: 'ac' + k, cat: 'Production', name: t.n, q: t.q, icon: 'i_atom', tier: k % 15, desc: () => 'Atteindre ' + fmt(v) + ' molécule' + (v >= 2 ? 's' : '') + ' par seconde.', check: () => G.cps >= v }); });
+  A_EARNED.forEach((v, k) => { const t = nq('earned', k, 'Production ' + (k + 1)); addAch({ id: 'ae' + k, cat: 'Production', name: t.n, q: t.q, icon: 'p_mol', tier: k % 15, desc: () => 'Produire ' + fmtMol(v) + ' dans une même partie.', check: () => S.runEarned >= v }); });
+  A_CPS.forEach((v, k) => { const t = nq('cps', k, 'Cadence ' + (k + 1)); addAch({ id: 'ac' + k, cat: 'Production', name: t.n, q: t.q, icon: 'i_atom', tier: k % 15, desc: () => 'Atteindre ' + fmtMol(v) + ' par seconde.', check: () => G.cps >= v }); });
   A_CLICKS.forEach((v, k) => { const t = nq('clicks', k, 'Clics ' + (k + 1)); addAch({ id: 'ak' + k, cat: 'Clics', name: t.n, q: t.q, icon: 'i_click', tier: k, desc: () => 'Cliquer ' + fmt(v) + ' fois sur le récipient.', check: () => S.clicksAll >= v }); });
-  A_HAND.forEach((v, k) => { const t = nq('handmade', k, 'Fait main ' + (k + 1)); addAch({ id: 'ah' + k, cat: 'Clics', name: t.n, q: t.q, icon: 'i_glove', tier: k % 15, desc: () => 'Produire ' + fmt(v) + ' molécules en cliquant.', check: () => S.handmadeAll >= v }); });
+  A_HAND.forEach((v, k) => { const t = nq('handmade', k, 'Fait main ' + (k + 1)); addAch({ id: 'ah' + k, cat: 'Clics', name: t.n, q: t.q, icon: 'i_glove', tier: k % 15, desc: () => 'Produire ' + fmtMol(v) + ' en cliquant.', check: () => S.handmadeAll >= v }); });
   A_TOTB.forEach((v, k) => { const t = nq('totalBuildings', k, 'Bâtisseur ' + (k + 1)); addAch({ id: 'ab' + k, cat: 'Bâtiments', name: t.n, q: t.q, icon: 'i_lab', tier: k, desc: () => 'Posséder ' + fmt(v) + ' bâtiments au total.', check: () => G.totalB >= v }); });
   A_UPS.forEach((v, k) => { const t = nq('upgrades', k, 'Amélioré ' + (k + 1)); addAch({ id: 'au' + k, cat: 'Améliorations', name: t.n, q: t.q, icon: 'i_up', tier: k, desc: () => 'Acheter ' + v + ' améliorations dans une même partie.', check: () => G.upCount >= v }); });
-  A_GOLD.forEach((v, k) => { const t = nq('golden', k, 'Fioles dorées ' + (k + 1)); addAch({ id: 'ag' + k, cat: 'Fioles dorées', name: t.n, q: t.q, icon: 'g_golden', tier: 2, desc: () => 'Cliquer ' + fmt(v) + ' fiole' + (v >= 2 ? 's' : '') + ' dorée' + (v >= 2 ? 's' : '') + '.', check: () => S.goldClicks >= v }); });
+  A_GOLD.forEach((v, k) => { const t = nq('golden', k, 'Fioles dorées ' + (k + 1)); addAch({ id: 'ag' + k, cat: 'Fioles dorées', name: t.n, q: t.q, icon: 'g_golden', tier: 2, desc: () => 'Cliquer sur ' + fmt(v) + ' fiole' + (v >= 2 ? 's dorées' : ' dorée') + '.', check: () => S.goldClicks >= v }); });
   { const t = nq('prestige', 0, 'Première publication'); addAch({ id: 'ap0', cat: 'Prestige', name: t.n, q: t.q, icon: 'i_book', tier: 2, desc: () => 'Publier vos travaux pour la première fois.', check: () => S.publishes >= 1 }); }
-  A_NOBEL.forEach((v, k) => { const t = nq('prestige', k + 1, 'Nobel ' + (k + 1)); addAch({ id: 'ap' + (k + 1), cat: 'Prestige', name: t.n, q: t.q, icon: 'i_nobel', tier: k + 2, desc: () => 'Cumuler ' + fmt(v) + ' prix Nobel.', check: () => S.nobels >= v }); });
+  A_NOBEL.forEach((v, k) => { const t = nq('prestige', k + 1, 'Nobel ' + (k + 1)); addAch({ id: 'ap' + (k + 1), cat: 'Prestige', name: t.n, q: t.q, icon: 'i_nobel', tier: k + 2, desc: () => 'Cumuler ' + fmtNom(v, 'prix Nobel', 'prix Nobel') + '.', check: () => S.nobels >= v }); });
   A_EUREKA.forEach((v, k) => { const t = nq('eureka', k, 'Eurêka ' + (k + 1)); addAch({ id: 'ar' + k, cat: 'Clics', name: t.n, q: t.q, icon: 'i_eureka', tier: k * 3, desc: () => 'Déclencher ' + fmt(v) + ' Eurêka.', check: () => S.eurekas >= v }); });
   const PT = ['Planter votre première culture.', 'Récolter 10 cultures.', 'Récolter 100 cultures.', 'Découvrir 6 souches.', 'Découvrir les 12 souches.', 'Récolter la Souche Oméga.'];
   PT.forEach((d, k) => { const t = nq('petri', k, 'Petri ' + (k + 1)); addAch({ id: 'at' + k, cat: 'Boîte de Petri', name: t.n, q: t.q, icon: 'i_petri', tier: k * 2, desc: () => d, check: () => petriAch(k) }); });
   for (let k = 0; k < 11; k++) { const t = nq('challenges', k, 'Protocole ' + (k + 1)); addAch({ id: 'ax' + k, cat: 'Protocoles', name: t.n, q: t.q, icon: 'i_challenge', tier: k, desc: () => k < 10 ? 'Réussir le protocole « ' + CHALLENGES[k].name + ' ».' : 'Réussir tous les protocoles expérimentaux.', check: () => k < 10 ? !!S.chalDone[CHALLENGES[k].id] : CHALLENGES.every(c => S.chalDone[c.id]) }); }
-  for (let k = 0; k < 9; k++) { const t = nq('eras', k, 'Ère ' + (k + 1)); addAch({ id: 'aa' + k, cat: 'Ères', name: t.n, q: t.q, icon: 'v' + (VESSEL_OF_ERA[k] + 1), tier: k, desc: () => k === 0 ? 'Ouvrir votre laboratoire.' : 'Atteindre ' + ERAS[k].name + '.', check: () => S.eraMax >= k }); }
+  for (let k = 0; k < 9; k++) { const t = nq('eras', k, 'Ère ' + (k + 1)); addAch({ id: 'aa' + k, cat: 'Ères', name: t.n, q: t.q, icon: 'v' + (VESSEL_OF_ERA[k] + 1), tier: k, desc: () => k === 0 ? 'Ouvrir votre laboratoire.' : 'Atteindre ' + U.art(ERAS[k].name) + '.', check: () => S.eraMax >= k }); }
   BUILDINGS.forEach(b => {
     const arr = (T.building || {})[b.id] || [];
-    A_BUILD.forEach((v, k) => { const a = arr[k] || {}; addAch({ id: 'ab_' + b.id + '_' + k, cat: 'Bâtiments', name: a.n || (b.name + ' ×' + v), q: a.q || '', icon: b.sprite, tier: k * 2, desc: () => v === 1 ? 'Acquérir votre premier bâtiment « ' + b.name + ' ».' : 'Posséder ' + v + ' ' + U.lc(b.plural) + '.', check: () => (S.b[b.id] || 0) >= v }); });
+    A_BUILD.forEach((v, k) => { const a = arr[k] || {}; addAch({ id: 'ab_' + b.id + '_' + k, cat: 'Bâtiments', name: a.n || (b.name + ' ×' + v), q: a.q || '', icon: b.sprite, tier: k * 2, desc: () => v === 1 ? 'Acquérir votre premier bâtiment « ' + b.name + ' ».' : 'Posséder ' + v + ' ' + b.lcPlural + '.', check: () => (S.b[b.id] || 0) >= v }); });
   });
   SECRET_KEYS.forEach(key => {
     const a = (T.secret || {})[key] || {};
@@ -5541,7 +5580,7 @@ const PRESTIGE = [
   ['fond', 1, null, 0, 'i_nobel', 'Production <b>+10 %</b>.'],
   ['boost2', 25, 'fond', 1, 'i_star', 'Production <b>+15 %</b>.'],
   ['click1', 3, 'fond', 1, 'i_click', 'Clics <b>×2</b>.'],
-  ['gold1', 3, 'fond', 1, 'g_golden', 'Fioles dorées <b>+5 %</b> plus fréquentes.'],
+  ['gold1', 3, 'fond', 1, 'g_golden', 'Fioles dorées <b>5 %</b> plus fréquentes.'],
   ['auto1', 1, 'fond', 1, 'i_clock', 'Production hors-ligne : <b>30 %</b> pendant <b>8 h</b> max.'],
   ['kit1', 5, 'fond', 1, 'i_shop', 'Chaque partie commence avec <b>10 pipettes</b> et <b>5 stagiaires</b>.'],
   ['chal', 5, 'fond', 1, 'i_challenge', 'Débloque les <b>protocoles expérimentaux</b> (défis).'],
@@ -5553,7 +5592,7 @@ const PRESTIGE = [
   ['rep1', 100, 'boost2', 2, 'i_rep', 'Réputation <b>+10 %</b>.'],
   ['eureka1', 10, 'click1', 2, 'i_eureka', 'La jauge Eurêka se remplit <b>50 %</b> plus vite et l’Eurêka dure <b>50 %</b> plus longtemps.'],
   ['ghost1', 25, 'click1', 2, 'i_cursor_gold', 'Une pipette fantôme clique <b>1 fois par seconde</b> pour vous.'],
-  ['gold2', 10, 'gold1', 2, 'g_golden', 'Effets des fioles dorées <b>+10 %</b> plus longs.'],
+  ['gold2', 10, 'gold1', 2, 'g_golden', 'Effets des fioles dorées <b>10 %</b> plus longs.'],
   ['auto2', 25, 'auto1', 2, 'i_clock', 'Production hors-ligne : <b>60 %</b> pendant <b>16 h</b> max.'],
   ['kit2', 100, 'kit1', 2, 'i_shop', 'Chaque partie commence avec <b>50 pipettes</b>, <b>25 stagiaires</b> et <b>10 becs Bunsen</b>.'],
   ['cheap2', 100, 'cheap1', 2, 'i_sell', 'Bâtiments encore <b>3 %</b> moins chers.'],
@@ -5574,14 +5613,14 @@ const PRESTIGE = [
   ['cheap3', 1000, 'cheap2', 3, 'i_sell', 'Bâtiments encore <b>5 %</b> moins chers.'],
   ['petri3', 7777, 'petri2', 3, 'i_petri', 'Boîte de Petri <b>agrandie</b> d’une rangée et d’une colonne.'],
   ['boost5', 77777, 'boost4', 4, 'i_star', 'Production <b>+50 %</b>.'],
-  ['nobel3', 777777, 'nobel2', 4, 'i_nobel', 'Effet des prix Nobel <b>×2</b>.'],
+  ['nobel3', 7.77e6, 'nobel2', 4, 'i_nobel', 'Effet des prix Nobel <b>×2</b>.'],
   ['twin', 777, 'gold3', 4, 'g_golden', '<b>3 %</b> de chance qu’une fiole dorée arrive avec une jumelle.'],
   ['auto4', 77777, 'auto3', 4, 'i_clock', 'Production hors-ligne : <b>100 %</b> pendant <b>7 jours</b> max.'],
-  ['boost6', 777777, 'boost5', 5, 'i_star', 'Production <b>×2</b>.'],
+  ['boost6', 7.77e6, 'boost5', 5, 'i_star', 'Production <b>×2</b>.'],
   ['anomaly', 1777, 'twin', 5, 'g_anomaly', 'Débloque les <b>anomalies quantiques</b>, plus rares et bien plus puissantes.'],
-  ['boost7', 7.77e6, 'boost6', 6, 'i_star', 'Production <b>×3</b>.'],
-  ['boost8', 7.77e7, 'boost7', 7, 'i_star', 'Production <b>×5</b>.'],
-  ['fin', 7.77e8, 'boost8', 8, 'b_infini', 'Production <b>×10</b>. Et après ?'],
+  ['boost7', 7.77e8, 'boost6', 6, 'i_star', 'Production <b>×3</b>.'],
+  ['boost8', 7.77e10, 'boost7', 7, 'i_star', 'Production <b>×5</b>.'],
+  ['fin', 7.77e12, 'boost8', 8, 'b_infini', 'Production <b>×10</b>. Et après ?'],
 ].map(([id, cost, req, row, icon, eff]) => { const t = NQ(() => TXT_PRESTIGE[id], id); return { id, cost, req, row, icon, eff, name: t.n, q: t.q }; });
 const PMAP = {}; PRESTIGE.forEach(p => PMAP[p.id] = p);
 
@@ -5592,10 +5631,10 @@ const CHALLENGES = [
   ['noupgrade', 1e11, 'Impossible d’acheter des améliorations.', 'Améliorations <b>10 %</b> moins chères pour toujours.', 'i_up', 'Sans améliorations'],
   ['minimal', 1e11, 'Vous ne pouvez posséder que <b>3 types</b> de bâtiments.', 'Production <b>+1 %</b> par type de bâtiment possédé, pour toujours.', 'i_lab', 'Labo minimaliste'],
   ['inflation', 1e12, 'Le prix des bâtiments augmente de <b>25 %</b> à chaque achat au lieu de 15 %.', 'Le prix des bâtiments augmente de <b>14,5 %</b> au lieu de 15 %, pour toujours.', 'i_stats', 'Inflation galopante'],
-  ['nogold', 1e15, 'Aucune fiole dorée n’apparaît.', 'Fioles dorées <b>+15 %</b> plus fréquentes pour toujours.', 'g_golden', 'Ciel couvert'],
+  ['nogold', 1e15, 'Aucune fiole dorée n’apparaît.', 'Fioles dorées <b>15 %</b> plus fréquentes pour toujours.', 'g_golden', 'Ciel couvert'],
   ['speedrun', 1e9, 'Atteindre l’objectif en moins de <b>20 minutes</b>.', 'Production <b>×3</b> pendant les 10 premières minutes de chaque partie.', 'i_clock', 'Course contre la montre'],
   ['cap10', 1e10, 'Au maximum <b>10 exemplaires</b> de chaque bâtiment.', 'Production <b>+25 %</b> pour toujours.', 'i_shop', 'Dix de chaque'],
-  ['entropy', 1e12, 'Toute la production est divisée par <b>10</b>.', 'Effets des fioles dorées <b>+20 %</b> plus longs pour toujours.', 'i_atom', 'Entropie'],
+  ['entropy', 1e12, 'Toute la production est divisée par <b>10</b>.', 'Effets des fioles dorées <b>20 %</b> plus longs pour toujours.', 'i_atom', 'Entropie'],
   ['grand', 1e10, 'Mains liées + Budget serré + Sans améliorations, en même temps.', 'Production <b>×2</b> pour toujours.', 'i_trophy', 'Le Grand Protocole'],
 ].map(([id, goal, rule, reward, icon, fb]) => { const t = NQ(() => TXT_CHALLENGES[id], fb); return { id, goal, rule, reward, icon, name: t.n, q: t.q }; });
 const CMAP = {}; CHALLENGES.forEach(c => CMAP[c.id] = c);
@@ -5604,15 +5643,15 @@ const CMAP = {}; CHALLENGES.forEach(c => CMAP[c.id] = c);
 // grow = cycles pour mûrir, life = durée de vie (0 = immortelle), cost = secondes de production, eff = effet quand mûre
 const STRAINS = [
   ['levure', null, 0, 3, 20, 60, { cps: 0.01 }, 60, 'Production <b>+1 %</b>.', 'Levure de boulanger'],
-  ['moisi', null, 0, 4, 25, 60, { gold: 0.01 }, 30, 'Fioles dorées <b>+1 %</b> plus fréquentes.', 'Moisissure verte'],
+  ['moisi', null, 0, 4, 25, 60, { gold: 0.01 }, 30, 'Fioles dorées <b>1 %</b> plus fréquentes.', 'Moisissure verte'],
   ['lumi', ['levure', 'levure'], 0.08, 5, 25, 120, { click: 0.03 }, 120, 'Clics <b>+3 %</b>.', 'Bactérie luminescente'],
   ['penic', ['levure', 'moisi'], 0.06, 6, 30, 180, { bcost: 0.005 }, 180, 'Bâtiments <b>0,5 %</b> moins chers.', 'Pénicilline'],
-  ['blob', ['moisi', 'moisi'], 0.06, 4, 18, 120, { cps: 0.005 }, 600, 'Production <b>+0,5 %</b>. Récolte très généreuse.', 'Blob gélatineux'],
-  ['champi', ['penic', 'blob'], 0.04, 7, 30, 300, { gdur: 0.02 }, 300, 'Effets des fioles dorées <b>+2 %</b> plus longs.', 'Champignon psychédélique'],
+  ['blob', ['moisi', 'moisi'], 0.06, 10, 18, 120, { cps: 0.005 }, 132, 'Production <b>+0,5 %</b>. Récolte généreuse.', 'Blob gélatineux'],
+  ['champi', ['penic', 'blob'], 0.04, 7, 30, 300, { gdur: 0.02 }, 300, 'Effets des fioles dorées <b>2 %</b> plus longs.', 'Champignon psychédélique'],
   ['cristal', ['lumi', 'lumi'], 0.04, 8, 40, 300, { ucost: 0.01 }, 300, 'Améliorations <b>1 %</b> moins chères.', 'Cristaux vivants'],
   ['mito', ['levure', 'penic'], 0.04, 6, 30, 400, { cps: 0.03 }, 400, 'Production <b>+3 %</b>.', 'Mitochondrie géante'],
   ['tardi', ['blob', 'blob'], 0.03, 10, 0, 600, { cps: 0.01 }, 600, 'Production <b>+1 %</b>. Immortel.', 'Tardigrade'],
-  ['nano', ['cristal', 'mito'], 0.025, 10, 50, 900, { eureka: 0.05 }, 900, 'Jauge Eurêka <b>+5 %</b> plus rapide.', 'Nanoflore'],
+  ['nano', ['cristal', 'mito'], 0.025, 10, 50, 900, { eureka: 0.05 }, 900, 'Jauge Eurêka <b>5 %</b> plus rapide.', 'Nanoflore'],
   ['schro', ['champi', 'nano'], 0.02, 9, 40, 1200, { schro: 0.06 }, 1200, 'À chaque cycle : production <b>+6 %</b>… ou rien. Les deux à la fois.', 'Souche de Schrödinger'],
   ['omega', ['schro', 'tardi'], 0.01, 15, 60, 3600, { cps: 0.1 }, 3600, 'Production <b>+10 %</b>. Récolte : <b>1 heure</b> de production.', 'Souche Oméga'],
 ].map(([id, rec, ch, grow, life, cost, eff, harvest, effTxt, fb]) => { const t = NQ(() => TXT_PETRI[id], fb); return { id, rec, ch, grow, life, cost, eff, harvest, effTxt, name: t.n, q: t.q, sprite: 'ps_' + id }; });
@@ -5627,11 +5666,17 @@ const VESSELS = ['Éprouvette', 'Erlenmeyer', 'Ballon à réaction', 'Cuve à pl
 const RANK_REQ = [0, 1, 3, 10, 25, 50, 100, 250, 500, 1000, 5000, 25000, 1e5, 1e6, 1e7];
 const RANKS = TX(() => TXT_RANKS, null) || ['Stagiaire non rémunéré', 'Doctorant', 'Chercheur', 'Chercheur confirmé', 'Directeur de recherche', 'Professeur', 'Sommité', 'Lauréat', 'Légende', 'Mythe vivant', 'Demi-dieu', 'Divinité', 'Entité', 'Concept', "L'Infini"];
 
+UPGRADES.forEach(u => u.desc = TYPO(u.desc, false));
+PRESTIGE.forEach(p => p.eff = TYPO(p.eff, false));
+CHALLENGES.forEach(c => { c.rule = TYPO(c.rule, false); c.reward = TYPO(c.reward, false); });
+STRAINS.forEach(st => st.effTxt = TYPO(st.effTxt, false));
+
 /* ==== 21_state.js ==== */
 /* ===================== ÉTAT & SAUVEGARDE ===================== */
 const SAVE_KEY = 'laboInfini.save.v1', BACKUP_KEY = 'laboInfini.backup.v1', SAVE_VERSION = 1;
 const MEMSTORE = {};
 const store = {
+  probe() { try { localStorage.setItem('__lab', '1'); const ok = localStorage.getItem('__lab') === '1'; localStorage.removeItem('__lab'); return ok; } catch (e) { return false; } },
   get(k) { try { const v = localStorage.getItem(k); if (v != null) return v; } catch (e) { } return MEMSTORE[k] == null ? null : MEMSTORE[k]; },
   set(k, v) { MEMSTORE[k] = v; try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
   del(k) { delete MEMSTORE[k]; try { localStorage.removeItem(k); } catch (e) { } },
@@ -5670,6 +5715,22 @@ function mergeDefaults(def, obj) {
   return out;
 }
 function sanitize(st) {
+  const D = defaultState();
+  ['b', 'up', 'prestige', 'chalDone', 'ach', 'flags'].forEach(k => { if (!st[k] || typeof st[k] !== 'object' || Array.isArray(st[k])) st[k] = {}; });
+  if (!st.petri || typeof st.petri !== 'object') st.petri = D.petri;
+  if (!st.set || typeof st.set !== 'object') st.set = D.set;
+  if (!st.petri.disc || typeof st.petri.disc !== 'object') st.petri.disc = { levure: true, moisi: true };
+  const int = (v, a, b, d) => Number.isFinite(v) ? Math.min(b, Math.max(a, Math.floor(v))) : d;
+  st.era = int(st.era, 0, 8, 0); st.eraMax = Math.max(st.era, int(st.eraMax, 0, 8, 0));
+  ['anoClicks', 'offlineTotal', 'bestRun', 'chalTime', 'incidents', 'lastTick', 'lastSave', 'created'].forEach(k => { if (!Number.isFinite(st[k]) || st[k] < 0) st[k] = k === 'lastTick' || k === 'lastSave' || k === 'created' ? U.now() : 0; });
+  ['harvests', 'plants', 'omega'].forEach(k => { st.petri[k] = int(st.petri[k], 0, 1e15, 0); });
+  if (!Number.isFinite(st.petri.timer) || st.petri.timer <= 0 || st.petri.timer > 120) st.petri.timer = 60;
+  if (!SMAP[st.petri.sel]) st.petri.sel = 'levure';
+  st.set.speed = [1, 10, 100].includes(st.set.speed) ? st.set.speed : 1;
+  st.set.vol = Number.isFinite(st.set.vol) ? U.clamp(st.set.vol, 0, 1) : 0.6;
+  if (!['long', 'short', 'sci'].includes(st.set.format)) st.set.format = 'long';
+  if (typeof st.labName !== 'string') st.labName = '';
+  st.labName = st.labName.slice(0, 40);
   const num = ['bank', 'runEarned', 'handmade', 'clicks', 'eureka', 'runTime', 'allEarned', 'handmadeAll', 'clicksAll', 'goldClicks', 'eurekas', 'playTime', 'sold', 'publishes', 'nobels', 'nobelPts', 'bestCps', 'goldT', 'anoT', 'storm'];
   num.forEach(k => { if (typeof st[k] !== 'number' || !isFinite(st[k]) || st[k] < 0) st[k] = 0; });
   for (const id in st.b) if (!BMAP[id] || !isFinite(st.b[id]) || st.b[id] < 0) delete st.b[id]; else st.b[id] = Math.floor(st.b[id]);
@@ -5681,7 +5742,7 @@ function sanitize(st) {
   st.journal = st.journal.filter(j => j && typeof j.h === 'string').slice(0, 40);
   st.buffs = st.buffs.filter(b => b && isFinite(b.t) && b.t > 0);
   if (!Array.isArray(st.petri.grid) || st.petri.grid.length !== 49) st.petri.grid = Array(49).fill(null);
-  st.petri.grid = st.petri.grid.map(c => c && (SMAP[c.s] || c.s === 'dead') ? c : null);
+  st.petri.grid = st.petri.grid.map(c => c && (SMAP[c.s] || c.s === 'dead') ? { s: c.s, a: int(c.a, 0, 1e6, 0) } : null);
   if (st.goldT <= 0) st.goldT = 60;
   if (st.anoT <= 0) st.anoT = 600;
   if (![1, 10, 100, -1].includes(st.set.buyAmt)) st.set.buyAmt = 1;
@@ -5689,12 +5750,16 @@ function sanitize(st) {
   return st;
 }
 
-function serialize() { S.lastSave = U.now(); return JSON.stringify(S); }
+function serialize() { S.lastSave = U.now(); return JSON.stringify(S, (k, v) => typeof v === 'number' && !isFinite(v) ? (v > 0 ? Number.MAX_VALUE : 0) : v); }
+let LAST_BACKUP = 0;
 function saveGame(manual) {
   try {
     const data = serialize();
-    if (manual) { const prev = store.get(SAVE_KEY); if (prev) store.set(BACKUP_KEY, prev); }
+    const prev = store.get(SAVE_KEY);
+    // copie de secours tournante (toutes les 10 min, et à chaque sauvegarde manuelle)
+    if (prev && (manual || Date.now() - LAST_BACKUP > 600000)) { store.set(BACKUP_KEY, prev); LAST_BACKUP = Date.now(); }
     const ok = store.set(SAVE_KEY, data);
+    if (!ok && !manual && !G.storeWarned) { G.storeWarned = true; toast('Sauvegarde impossible sur cet appareil : exportez votre partie (Options › Exporter) avant de quitter.', 'warn'); }
     if (manual) toast(ok ? 'Partie sauvegardée !' : 'Sauvegarde en mémoire seulement (stockage indisponible) — pensez à exporter.', ok ? 'save' : 'warn');
     return ok;
   } catch (e) { if (manual) toast('Échec de la sauvegarde : ' + e.message, 'warn'); return false; }
@@ -5709,6 +5774,8 @@ function loadGame() {
   if (!raw) return false;
   try { S = loadFrom(raw); return true; }
   catch (e) {
+    store.set('laboInfini.corrupt.v1', raw); // ne jamais perdre l'original
+    G.loadError = e.message || 'erreur inconnue';
     const bk = store.get(BACKUP_KEY);
     if (bk) { try { S = loadFrom(bk); return true; } catch (e2) { } }
     return false;
@@ -5718,14 +5785,26 @@ function loadGame() {
 function b64enc(str) { const bytes = new TextEncoder().encode(str); let bin = ''; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)); return btoa(bin); }
 function b64dec(b64) { const bin = atob(b64); const bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); return new TextDecoder().decode(bytes); }
 function exportSave() { return 'LABO1:' + b64enc(serialize()); }
+// Import tolérant : ignore espaces, retours à la ligne, caractères invisibles ajoutés par iOS, texte autour…
 function importSave(str) {
-  str = String(str || '').trim();
-  if (!str) throw new Error('Rien à importer');
+  str = String(str || '');
+  if (!str.trim()) throw new Error('rien à importer.');
+  const INCOMPLET = 'le texte semble incomplet ou abîmé. Copiez bien TOUT le texte, du début « LABO1: » jusqu\u2019à la toute fin (ou utilisez « Télécharger » / « Charger un fichier »).';
+  const m = str.match(/LABO1\s*[:：]/i);
   let json;
-  if (str.startsWith('LABO1:')) json = b64dec(str.slice(6).replace(/\s+/g, ''));
-  else if (str[0] === '{') json = str;
-  else json = b64dec(str.replace(/\s+/g, ''));
-  const st = loadFrom(json);
+  const raw = (m ? str.slice(m.index + m[0].length) : str).trim();
+  if (!m && raw[0] === '{') json = raw;
+  else {
+    const run = raw.match(/^[A-Za-z0-9+/=_\-\s\u200b-\u200d\u2060\ufeff]+/);
+    let body = (run ? run[0] : raw).replace(/-/g, '+').replace(/_/g, '/').replace(/[^A-Za-z0-9+/=]/g, '');
+    body = body.replace(/=+$/, '').replace(/=/g, '');
+    if (!body.length || body.length % 4 === 1) throw new Error(INCOMPLET);
+    while (body.length % 4) body += '=';
+    try { json = b64dec(body); } catch (e) { throw new Error(INCOMPLET); }
+  }
+  let st;
+  try { st = loadFrom(json); } catch (e) { throw new Error(INCOMPLET); }
+  const prev = store.get(SAVE_KEY); if (prev) store.set(BACKUP_KEY, prev);
   S = st;
   return true;
 }
@@ -5812,7 +5891,7 @@ function recalc() {
   const rep = achN * 0.04 * (1 + (pn('rep1') ? 0.1 : 0) + (pn('rep2') ? 0.2 : 0));
   let rm = 1; repFs.forEach(f => rm *= 1 + rep * f); gm *= rm; if (rm > 1) M.push(['Hiérarchie académique', rm]);
   const nobelEff = 0.01 * (pn('nobel1') ? 1.25 : 1) * (pn('nobel2') ? 1.5 : 1) * (pn('nobel3') ? 2 : 1);
-  const nm = 1 + S.nobels * nobelEff; gm *= nm; if (nm > 1) M.push(['Prix Nobel', nm]);
+  const nm = 1 + nobelBonusN() * nobelEff; gm *= nm; if (nm > 1) M.push(['Prix Nobel', nm]);
   let fm = 1;
   [['fond', 1.1], ['boost2', 1.15], ['boost3', 1.2], ['boost4', 1.25], ['boost5', 1.5], ['boost6', 2], ['boost7', 3], ['boost8', 5], ['fin', 10]].forEach(([id, m]) => { if (pn(id)) fm *= m; });
   gm *= fm; if (fm > 1) M.push(['Fondation Nobel', fm]);
@@ -5824,7 +5903,7 @@ function recalc() {
   if (chalDone('speedrun') && S.runTime < 600) cm *= 3;
   gm *= cm; if (cm !== 1) M.push(['Protocoles réussis', cm]);
   if (pe.cps) { gm *= 1 + pe.cps; M.push(['Boîte de Petri', 1 + pe.cps]); }
-  if (S.era > 0) { const em = Math.pow(1.5, S.era); gm *= em; M.push(['Changements de paradigme (ères)', em]); }
+  if (S.era > 0) { const em = Math.pow(1.25, S.era); gm *= em; M.push(['Changements de paradigme (ères)', em]); }
   if (inChal('entropy')) { gm *= 0.1; M.push(['Entropie', 0.1]); }
   G.cpsNoBuff = base * gm;
   let bm = 1, km = 1;
@@ -5858,10 +5937,12 @@ function recalc() {
 }
 
 /* ---------- Gains ---------- */
+const NMAX = Number.MAX_VALUE;
 function earn(amount, handmade) {
-  if (!(amount > 0) || !isFinite(amount)) return;
-  S.bank += amount; S.runEarned += amount; S.allEarned += amount;
-  if (handmade) { S.handmade += amount; S.handmadeAll += amount; }
+  if (!(amount > 0)) return;
+  if (amount > NMAX) amount = NMAX;
+  S.bank = Math.min(NMAX, S.bank + amount); S.runEarned = Math.min(NMAX, S.runEarned + amount); S.allEarned = Math.min(NMAX, S.allEarned + amount);
+  if (handmade) { S.handmade = Math.min(NMAX, S.handmade + amount); S.handmadeAll = Math.min(NMAX, S.handmadeAll + amount); }
 }
 function canAfford(cost) { return godMode() || S.bank >= cost; }
 function spend(cost) { if (!godMode()) S.bank = Math.max(0, S.bank - cost); }
@@ -5901,7 +5982,7 @@ function buyBuilding(id) {
   spend(cost);
   S.b[id] = n(id) + amt;
   if (amt >= 100) secret('bulk');
-  if (cost >= 1e6 && S.bank < 1 && before >= cost && !godMode()) secret('broke');
+  if (cost >= 1e6 && S.bank < cost * 0.01 && before >= cost && !godMode()) secret('broke');
   recalc(); updateEra(); checkUnlocks(); checkAch();
   SFX.play('buy');
   return true;
@@ -5911,7 +5992,7 @@ function sellBuilding(id) {
   if (a <= 0) return false;
   let refund = 0;
   for (let i = 0; i < a; i++) refund += bCost(id, n(id) - 1 - i) * 0.25;
-  S.b[id] = n(id) - a; S.bank += refund; S.sold += a;
+  S.b[id] = n(id) - a; S.bank = Math.min(NMAX, S.bank + (isFinite(refund) ? refund : NMAX)); S.sold += a;
   secret('sell1'); if (S.sold >= 100) secret('sell100');
   recalc(); checkUnlocks(); checkAch();
   SFX.play('sell');
@@ -5968,7 +6049,7 @@ function clickVessel(manual = true) {
     const t = performance.now();
     CLICKLOG.push(t); while (CLICKLOG.length && t - CLICKLOG[0] > 1000) CLICKLOG.shift();
     if (CLICKLOG.length >= 12) secret('speed');
-    S.flags.lastClick = U.now();
+    S.flags.lastClick = U.now(); G.idleT = 0;
     if (!S.buffs.some(b => b.key === 'eureka') && !inChal('noclick')) {
       S.eureka += 1.25 * G.eurekaSpeed;
       G.eurekaIdle = 0;
@@ -6022,9 +6103,11 @@ function checkAch() {
 }
 
 /* ---------- Prestige : publication & Nobel ---------- */
-function nobelsFor(all) { return Math.floor(Math.cbrt(all / 1e11) + 1e-9); }
+function nobelsFor(all) { return Math.floor(Math.cbrt(all / NOBEL_BASE) + 1e-9); }
+// au-delà de 1000 Nobels, le bonus de production croît en racine carrée (évite l'emballement)
+function nobelBonusN() { return S.nobels <= 1000 ? S.nobels : 1000 * Math.sqrt(S.nobels / 1000); }
 function pendingNobels() { return Math.max(0, nobelsFor(S.allEarned) - S.nobels); }
-function nextNobelAt() { const t = nobelsFor(S.allEarned) + 1; return Math.pow(t, 3) * 1e11; }
+function nextNobelAt() { const t = nobelsFor(S.allEarned) + 1; return Math.pow(t, 3) * NOBEL_BASE; }
 function resetRun() {
   const keep = { goldT: U.rand(150, 300), anoT: U.rand(1200, 2400) };
   Object.assign(S, defaultRun(), keep);
@@ -6076,7 +6159,7 @@ function checkChallenge(dt) {
   S.chalTime += dt;
   if (c === 'speedrun' && S.chalTime > 20 * 60 && !godMode()) {
     S.challenge = null; secret('tooslow'); recalc(); UI.dirtyAll = true;
-    modal('Protocole échoué', '<p>Le chronomètre a sonné : 20 minutes écoulées. Le comité d’éthique vous regarde avec pitié.</p><p>Les restrictions sont levées, la partie continue normalement.</p>');
+    modal('Protocole échoué', '<p>Le chronomètre a sonné : 20 minutes écoulées. Le comité d’éthique vous regarde avec pitié.</p><p>Les restrictions sont levées, la partie continue normalement.</p>', null, true);
     return;
   }
   if (S.runEarned >= CMAP[c].goal) {
@@ -6084,7 +6167,7 @@ function checkChallenge(dt) {
     recalc(); checkUnlocks(); checkAch(); UI.dirtyAll = true;
     SFX.play('ach');
     journal('chal', 'Protocole réussi : <b>' + U.esc(CMAP[c].name) + '</b>');
-    modal('Protocole réussi !', '<p class="big">' + U.esc(CMAP[c].name) + '</p><p>Récompense permanente : ' + CMAP[c].reward + '</p><p>Les restrictions sont levées, la partie continue normalement.</p>');
+    modal('Protocole réussi !', '<p class="big">' + U.esc(CMAP[c].name) + '</p><p>Récompense permanente : ' + CMAP[c].reward + '</p><p>Les restrictions sont levées, la partie continue normalement.</p>', null, true);
   }
 }
 
@@ -6092,7 +6175,7 @@ function checkChallenge(dt) {
 let achTimer = 0, unlockTimer = 0;
 function tick(dt) {
   // dt en secondes (déjà multiplié par la vitesse DEV)
-  S.runTime += dt; S.playTime += dt;
+  S.runTime += dt; S.playTime += dt; G.idleT = (G.idleT || 0) + dt;
   // Production
   if (G.dirty) recalc();
   earn(G.cps * dt, false);
@@ -6123,7 +6206,7 @@ function tick(dt) {
   if (achTimer > 1) {
     achTimer = 0; checkAch();
     if (G.cps > S.bestCps) S.bestCps = G.cps;
-    if (S.flags.lastClick && U.now() - S.flags.lastClick > 30 * 60 * 1000) secret('idle');
+    if (G.idleT > 1800) secret('idle');
     if (S.playTime > 86400) secret('insomnia');
     if (B_IDS.every(id => n(id) > 0)) secret('collector');
   }
@@ -6140,17 +6223,20 @@ function offlineParams() {
 function applyOffline(sec) {
   if (sec < 5) return null;
   if (sec > 7 * 86400) secret('holiday');
-  const [pct, cap] = offlineParams();
+  const [pct0, cap] = offlineParams();
+  const pct = sec < 60 ? 1 : pct0; // courte suspension (changement d'app) : comptée en entier
   const eff = Math.min(sec, cap);
-  // les buffs expirent pendant l'absence
-  S.buffs = []; recalc(); UI.dirtyBuffs = true;
-  const gain = G.cpsNoBuff * eff * pct;
-  earn(gain, false);
   S.runTime += sec; S.offlineTotal += sec;
   if (S.challenge) S.chalTime += sec;
+  // les effets temporaires s'écoulent pendant l'absence (au lieu d'être effacés)
+  S.buffs.forEach(b => b.t -= sec); S.buffs = S.buffs.filter(b => b.t > 0);
+  recalc(); UI.dirtyBuffs = true;
+  const gain = G.cpsNoBuff * eff * pct;
+  earn(gain, false);
   // Petri : cycles écoulés (limités)
   petriOffline(sec);
   GOLD.offline(sec);
+  recalc();
   return { sec, eff, pct, gain };
 }
 
@@ -6190,7 +6276,7 @@ const GOLD = {
       while (this.stormAcc >= 1) { this.stormAcc -= 1; this.spawn('mini'); }
     }
   },
-  offline() { this.list.slice().forEach(g => this.remove(g)); S.storm = 0; },
+  offline(sec) { this.list.slice().forEach(g => { g.life -= sec; if (g.life <= 0) this.remove(g); }); S.storm = Math.max(0, S.storm - sec); },
   remove(g) { const i = this.list.indexOf(g); if (i >= 0) this.list.splice(i, 1); if (g.el && g.el.parentNode) g.el.parentNode.removeChild(g.el); },
   spawn(type) {
     const fx = U.$('#fx'); if (!fx) return;
@@ -6257,7 +6343,7 @@ const GOLD = {
     switch (eff) {
       case 'chain': {
         const gain = (Math.min(S.bank * 0.15, G.cps * 900) + 13) * G.chainMult;
-        earn(gain, false); sub = '+' + fmt(gain) + ' molécules';
+        earn(gain, false); sub = '+' + fmtMol(gain);
         break;
       }
       case 'frenzy': addBuff({ key: 'frenzy', name: T.n, cps: 7, t: 77 * dm, icon: 'g_golden' }); sub = 'Production ×7 pendant ' + fmtTime(77 * dm); break;
@@ -6265,7 +6351,7 @@ const GOLD = {
       case 'surge': {
         const id = U.pick(big), b = BMAP[id], m = 1 + 0.1 * n(id);
         addBuff({ key: 'surge', name: T.n + ' (' + b.plural + ')', cps: m, t: 30 * dm, icon: b.sprite });
-        sub = b.plural + ' : production ×' + dec(m, 1) + ' pendant ' + fmtTime(30 * dm);
+        sub = 'Production ×' + dec(m, 1) + ' grâce à vos ' + fmt(n(id)) + ' ' + b.lcPlural + ' pendant ' + fmtTime(30 * dm);
         break;
       }
       case 'storm': S.storm = 7 * dm * G.stormMult * (pn('storm') ? 1.5 : 1); sub = 'Attrapez les fioles qui tombent !'; break;
@@ -6282,7 +6368,7 @@ const GOLD = {
     const T = GOLDEN_TXT[eff];
     let sub = '';
     if (eff === 'singul') { addBuff({ key: 'singul', name: T.n, click: 7777, t: 7 * dm, icon: 'g_anomaly' }); sub = 'Clics ×7 777 pendant ' + fmtTime(7 * dm); }
-    else if (eff === 'faille') { const gain = G.cpsNoBuff * 3600; earn(gain, false); sub = '+' + fmt(gain) + ' molécules (1 heure de production)'; }
+    else if (eff === 'faille') { const gain = G.cpsNoBuff * 3600; earn(gain, false); sub = '+' + fmtMol(gain) + ' (1 heure de production)'; }
     else { addBuff({ key: 'reson', name: T.n, cps: 77, t: 17 * dm, icon: 'g_anomaly' }); sub = 'Production ×77 pendant ' + fmtTime(17 * dm); }
     bigText(T.n, '#d4b8ff', sub);
     journal('gold', '<b>' + U.esc(T.n) + '</b> — ' + U.esc(sub));
@@ -6417,7 +6503,12 @@ const SFX = {
       this.ctx = new AC(); this.master = this.ctx.createGain(); this.master.gain.value = 0.5; this.master.connect(this.ctx.destination);
     } catch (e) { this.ctx = null; }
   },
-  unlock() { this.init(); if (this.ctx && this.ctx.state === 'suspended') { try { this.ctx.resume(); } catch (e) { } } },
+  unlock() {
+    this.init();
+    const c = this.ctx; if (!c) return;
+    if (c.state === 'closed') { this.ctx = null; this.init(); return; }
+    if (c.state !== 'running') { try { const p = c.resume(); if (p && p.catch) p.catch(() => { }); } catch (e) { } }
+  },
   tone(f, dur, type = 'square', vol = 0.15, when = 0, slide = 0) {
     const c = this.ctx, t = c.currentTime + when;
     const o = c.createOscillator(), g = c.createGain();
@@ -6480,7 +6571,7 @@ const INC = {
   pick() {
     const all = (TX(() => TXT_INCIDENTS, null) || this.FALLBACK).filter(x => x && x.t);
     const era = S.era + 1;
-    const pool = all.filter(x => (x.e || 1) <= era);
+    const pool = all.filter(x => (x.e || 1) <= era && (!x.b || n(x.b) > 0));
     if (!pool.length) return this.FALLBACK[0];
     // les incidents de l'ère actuelle (et des précédentes proches) sont plus probables
     const w = pool.map(x => Math.pow(2.2, -(era - (x.e || 1))));
@@ -6491,21 +6582,23 @@ const INC = {
   apply(k, mag) {
     const e = S.era;
     switch (k) {
-      case 'gain': { const g = (G.cpsNoBuff * U.rand(120, 480) + 150 * (e + 1)) * mag; earn(g, false); return '+' + fmt(g) + ' molécules'; }
-      case 'buff': { const m = Math.round((2 + e) * mag); addBuff({ key: 'incident', name: this.curName || 'Incident', cps: m, t: 30, icon: 'i_eureka' }); return 'Production ×' + m + ' pendant 30 s'; }
-      case 'click': { const m = Math.round(10 * (e + 1) * mag); addBuff({ key: 'incclick', name: this.curName || 'Doigts survoltés', click: m, t: 20, icon: 'i_click' }); return 'Clics ×' + m + ' pendant 20 s'; }
+      case 'gain': { const g = (G.cpsNoBuff * U.rand(60, 180) + 150 * (e + 1)) * mag; earn(g, false); return '+' + fmtMol(g); }
+      case 'buff': { const m = Math.round(3 * mag); addBuff({ key: 'incident', name: this.curName || 'Incident', cps: m, t: 30, icon: 'i_eureka' }); return 'Production ×' + m + ' pendant 30 s'; }
+      case 'click': { const m = Math.round(15 * mag); addBuff({ key: 'incclick', name: this.curName || 'Doigts survoltés', click: m, t: 20, icon: 'i_click' }); return 'Clics ×' + m + ' pendant 20 s'; }
       case 'free': {
-        const owned = B_IDS.filter(id => n(id) > 0 && bLimit(id) > 0);
+        const budget = G.cpsNoBuff * 900 * mag; // au plus ~15 min de production offerts
+        const owned = B_IDS.filter(id => n(id) > 0 && bLimit(id) > 0 && bCost(id) <= budget);
         if (!owned.length) return this.apply('gain', mag);
         const id = owned[Math.max(0, owned.length - 1 - Math.floor(Math.random() * Math.min(3, owned.length)))];
-        const k2 = Math.min(bLimit(id), Math.max(1, Math.min(50, Math.floor(n(id) * 0.08 * mag))));
+        let k2 = Math.min(bLimit(id), Math.max(1, Math.min(50, Math.floor(n(id) * 0.08 * mag))));
+        while (k2 > 1 && bCostBulk(id, k2) > budget) k2--;
         S.b[id] = n(id) + k2; recalc(); updateEra(); checkUnlocks(); checkAch();
-        return '+' + k2 + ' ' + (k2 > 1 ? U.lc(BMAP[id].plural) : U.lc(BMAP[id].name)) + ' gratuit' + (k2 > 1 ? 's' : '');
+        return '+' + k2 + ' ' + (k2 > 1 ? BMAP[id].lcPlural : BMAP[id].lcName) + ' gratuit' + (BMAP[id].fem ? 'e' : '') + (k2 > 1 ? 's' : '');
       }
       case 'gold': if (inChal('nogold')) return this.apply('gain', mag); GOLD.spawn('gold'); return 'Une fiole dorée est apparue !';
       case 'storm': if (inChal('nogold')) return this.apply('gain', mag); S.storm = 6 * mag; return 'Pluie de fioles : attrapez-les !';
       case 'chaos': {
-        const a = U.pick(['gain', 'buff', 'click', 'free']), b = U.pick(['gain', 'buff', 'click', 'storm'].filter(x => x !== a));
+        const a = U.pick(['gain', 'buff', 'click', 'free']), b = U.pick(['gain', 'storm', 'free'].filter(x => x !== a));
         if (S.set.flash) { const app = U.$('#app'); app.classList.remove('bigshake'); void app.offsetWidth; app.classList.add('bigshake'); }
         return this.apply(a, 1.5) + ' · ' + this.apply(b, 1.5);
       }
@@ -6521,7 +6614,7 @@ const INC = {
     const box = U.$('#incident');
     box.innerHTML = '<div class="il">⚠ INCIDENT DE LABO</div><div class="in">' + U.esc(x.n || 'Incident') + '</div><div class="it">' + U.esc(x.t).replace(/\{labo\}/g, U.esc(S.labName)) + '</div><div class="ie">' + eff + '</div>';
     box.classList.remove('on'); void box.offsetWidth; box.classList.add('on');
-    this.hideT = 14;
+    this.hideT = 12 + Math.max(0, (x.t || '').length - 80) * 0.08;
     SFX.play('anomaly');
     UI.dirtyBuffs = true;
   },
@@ -6571,7 +6664,9 @@ function achToast(a) {
   SFX.play('ach');
   markTab('ach');
 }
-function modal(title, html, buttons) {
+const MODALQ = [];
+function modal(title, html, buttons, queue) {
+  if (queue && modalOpen()) { MODALQ.push([title, html, buttons]); return null; }
   const m = U.$('#modal');
   m.querySelector('.mtitle').innerHTML = title;
   m.querySelector('.mbody').innerHTML = html;
@@ -6585,7 +6680,10 @@ function modal(title, html, buttons) {
   hideTip();
   return m.querySelector('.mbody');
 }
-function closeModal() { U.$('#modal').classList.add('hidden'); }
+function closeModal() {
+  U.$('#modal').classList.add('hidden');
+  const nx = MODALQ.shift(); if (nx) setTimeout(() => modal(nx[0], nx[1], nx[2]), 80);
+}
 function modalOpen() { return !U.$('#modal').classList.contains('hidden'); }
 let POPS = 0;
 function popText(x, y, txt, cls = '') {
@@ -6628,8 +6726,8 @@ function eraAnnounce(e, first) {
     const v = VESSELS[VESSEL_OF_ERA[e]];
     modal('Nouvelle ère !', '<div class="era-art"><img src="' + GFX.url(v.sprite, 0, 3, { liquid: ERA_STYLE[e].liq, tint: ERA_STYLE[e].acc }) + '" alt=""></div>' +
       '<p class="big">' + U.esc(ERAS[e].name) + '</p><p class="center">' + U.esc(ERAS[e].q) + '</p>' +
-      (VESSEL_OF_ERA[e] !== VESSEL_OF_ERA[e - 1] ? '<p class="center sub">Votre récipient évolue : <b>' + U.esc(v.name) + '</b></p>' : ''), [{ t: 'Incroyable !', cls: 'gold' }]);
-  } else toast('Vous entrez dans <b>' + U.esc(ERAS[e].name) + '</b>', 'era', 'i_star', 'Nouvelle ère');
+      (VESSEL_OF_ERA[e] !== VESSEL_OF_ERA[e - 1] ? '<p class="center sub">Votre récipient évolue : <b>' + U.esc(v.name) + '</b></p>' : ''), [{ t: 'Incroyable !', cls: 'gold' }], true);
+  } else toast('Vous entrez dans <b>' + U.esc(U.art(ERAS[e].name)) + '</b>', 'era', 'i_star', 'Nouvelle ère');
 }
 
 /* ---------- Anti-clic fantôme ---------- */
@@ -6702,6 +6800,8 @@ function buildTabs() {
     (UI.layout === 'wide' && t.id !== 'shop' ? mid : side).appendChild(b);
   });
   if (UI.layout === 'wide') { if (UI.tab !== 'shop') UI.midTab = UI.tab; UI.tab = 'shop'; }
+  else if (UI.wasWide && UI.midTab) UI.tab = UI.midTab;
+  UI.wasWide = UI.layout === 'wide';
   showTab(UI.layout === 'wide' ? UI.midTab : UI.tab, true);
   if (UI.layout === 'wide') showTab('shop', true);
 }
@@ -6738,10 +6838,10 @@ function buildingTip(b) {
   return () => {
     const own = n(b.id), unit = (G.unit[b.id] || 0) * G.gmAll, tot = (G.bcps[b.id] || 0) * G.gmAll, sb = sumBase();
     const tiers = UPGRADES.filter(u => u.type === 'tier' && u.b === b.id && !S.up[u.id] && !upUnlocked(u));
-    const next = tiers.length ? '<div class="sub">Prochaine amélioration à ' + tiers[0].reqN + ' exemplaires.</div>' : '';
-    return '<div class="nm">' + U.esc(b.name) + ' <span class="sub">(possédé : ' + own + ')</span></div>' +
+    const next = tiers.length ? '<div class="sub">Prochaine amélioration à ' + tiers[0].reqN + ' exemplaire' + (tiers[0].reqN > 1 ? 's' : '') + '.</div>' : '';
+    return '<div class="nm">' + U.esc(b.name) + ' <span class="sub">(en stock : ' + own + ')</span></div>' +
       '<div>' + U.esc(b.desc) + '</div><hr>' +
-      '<div>Chaque ' + U.esc(U.lc(b.name)) + ' produit <b>' + fmt(unit, 1) + '</b> molécule' + (unit >= 2 ? 's' : '') + '/s.</div>' +
+      '<div>' + U.esc(b.lcName) + ' produit <b>' + fmtMol(unit, 1) + '</b> par seconde.</div>' +
       (own ? '<div>Total : <b>' + fmt(tot, 1) + '</b>/s (' + fmtPct(sb > 0 ? G.bcps[b.id] / sb : 0) + ' de la production)</div>' : '') +
       next + (b.q ? '<div class="qq">' + U.esc(b.q) + '</div>' : '');
   };
@@ -6754,6 +6854,11 @@ function renderBuildings() {
     it.innerHTML = '<img class="bIcon" alt=""><div class="bInfo"><div class="bName"></div><div class="bCost"></div></div><div class="bOwned"></div>';
     pressable(it, () => {
       if (it.classList.contains('myst')) return;
+      if (S.set.sell && (S.set.buyAmt === -1 || S.set.buyAmt >= 100) && n(b.id) >= 10) {
+        const k = S.set.buyAmt === -1 ? n(b.id) : Math.min(S.set.buyAmt, n(b.id));
+        modal('Vendre ' + k + ' ' + U.esc(U.lc(k > 1 ? b.plural : b.name)) + ' ?', '<p>Vous récupérez seulement 25 % de leur prix.</p>', [{ t: 'Annuler' }, { t: 'Vendre', cls: 'warn', fn: () => { sellBuilding(b.id); updateShop(true); } }]);
+        return;
+      }
       const ok = S.set.sell ? sellBuilding(b.id) : buyBuilding(b.id);
       if (ok) { const r = it.getBoundingClientRect(); sparkleAt(r.left + 28, r.top + r.height / 2, 5); updateShop(true); }
     }, () => it.classList.contains('myst') ? '<div class="nm">???</div><div class="sub">Un bâtiment encore inconnu…</div>' : buildingTip(b)());
@@ -6785,6 +6890,7 @@ function updateShop(force) {
       can = amt > 0;
       const t = (amt > 0 ? '+' + fmtS(cost) : '—') + (amt > 1 ? ' <span class="bAmt">×' + amt + '</span>' : '');
       if (e.cost.innerHTML !== t) e.cost.innerHTML = t;
+      e.lastCost = null;
     } else {
       amt = buyAmount(b.id);
       const lim = bLimit(b.id);
@@ -6809,20 +6915,30 @@ function upTip(u) {
 }
 function upIcon(u) { return GFX.framed(u.icon, u.tier); }
 function renderUps() {
-  const grid = U.$('#upsGrid'); grid.innerHTML = '';
+  // les boutons existants sont réutilisés : un bouton sous le doigt n'est jamais recréé pendant un appui
+  const grid = U.$('#upsGrid');
   const list = G.unlockedUps;
-  if (!list.length) grid.innerHTML = '<span class="sub">Aucune amélioration disponible pour l’instant.</span>';
+  UI.upBtn = UI.upBtn || {};
+  const keep = {};
   UI.upEls = [];
-  list.forEach(u => {
-    const b = U.el('button', 'upt', '<img src="' + upIcon(u) + '" alt="">');
-    pressable(b, e => {
-      if (e.pointerType === 'mouse' || UI.selUp === u) { if (buyUp(u)) { const r = b.getBoundingClientRect(); sparkleAt(r.left + 24, r.top + 24, 8); UI.selUp = null; renderUpDet(); } else selectUp(u); }
-      else selectUp(u);
-    }, upTip(u));
-    grid.appendChild(b); UI.upEls.push([u, b]);
+  const nodes = list.map(u => {
+    let b = UI.upBtn[u.id];
+    if (!b) {
+      b = U.el('button', 'upt', '<img src="' + upIcon(u) + '" alt="">');
+      pressable(b, e => {
+        if (e.pointerType === 'mouse' || UI.selUp === u) { if (buyUp(u)) { const r = b.getBoundingClientRect(); sparkleAt(r.left + 24, r.top + 24, 8); UI.selUp = null; renderUpDet(); } else selectUp(u); }
+        else selectUp(u);
+      }, upTip(u));
+      UI.upBtn[u.id] = b;
+    }
+    keep[u.id] = 1; UI.upEls.push([u, b]);
+    return b;
   });
+  for (const id in UI.upBtn) if (!keep[id]) delete UI.upBtn[id];
+  if (!list.length) { const s = U.el('span', 'sub', 'Aucune amélioration disponible pour l\u2019instant.'); s.style.lineHeight = '48px'; nodes.push(s); }
+  grid.replaceChildren(...nodes);
   if (UI.selUp && !list.includes(UI.selUp)) UI.selUp = null;
-  U.$('#buyAll').style.display = list.length > 1 ? '' : 'none';
+  U.$('#buyAll').style.visibility = list.length > 1 ? '' : 'hidden';
   UI.dirtyUps = false;
   renderUpDet(); updateUps();
 }
@@ -6868,6 +6984,7 @@ function showAchDet() {
   const a = ACHMAP[UI.selAch], d = U.$('#achDet'); if (!a || !d) return;
   const ok = !!S.ach[a.id];
   const hidden = a.secret && !ok;
+  d.classList.add('pin');
   d.innerHTML = '<div class="h"><img src="' + achIcon(a, ok) + '" alt=""><div><div class="nm">' + (hidden ? 'Succès secret' : U.esc(a.name)) + '</div><div>' + (hidden ? '???' : a.desc()) + '</div>' +
     (ok ? '<div class="sub" style="color:var(--green)">Débloqué</div>' : '<div class="sub">Verrouillé</div>') + '</div></div>' + (!hidden && a.q ? '<div class="sub" style="font-style:italic;margin-top:3px">' + U.esc(a.q) + '</div>' : '');
 }
@@ -6877,21 +6994,21 @@ function rankName() { let r = 0; RANK_REQ.forEach((v, i) => { if (S.nobels >= v)
 function renderNobel() {
   const p = U.$('#page-nobel');
   const pend = pendingNobels(), nobelEff = 0.01 * (pn('nobel1') ? 1.25 : 1) * (pn('nobel2') ? 1.5 : 1) * (pn('nobel3') ? 2 : 1);
-  const cur = nobelsFor(S.allEarned), prevT = Math.pow(cur, 3) * 1e12, nextT = nextNobelAt();
+  const cur = nobelsFor(S.allEarned), prevT = Math.pow(cur, 3) * NOBEL_BASE, nextT = nextNobelAt();
   const prog = U.clamp((S.allEarned - prevT) / Math.max(1, nextT - prevT), 0, 1);
   let html = '<div class="ptitle"><img src="' + GFX.url('i_nobel', 0, 2) + '" alt="">Prix Nobel</div>' +
     '<div class="card gold"><div class="row" style="justify-content:space-between"><div><div class="sub">Prix Nobel cumulés</div><div class="big">' + fmt(S.nobels) + '</div></div>' +
     '<div style="text-align:right"><div class="sub">Points à dépenser</div><div class="big" style="color:var(--cyan)">' + fmt(S.nobelPts) + '</div></div></div>' +
-    '<div>Bonus de production : <b>+' + fmtPct(S.nobels * nobelEff) + '</b> · Titre : <b>' + U.esc(rankName()) + '</b></div></div>' +
+    '<div>Bonus de production : <b>+' + fmtPct(nobelBonusN() * nobelEff) + '</b> · Titre : <b>' + U.esc(rankName()) + '</b></div></div>' +
     '<div class="card"><div class="sect" style="margin-top:0"><img src="' + GFX.url('i_book', 0, 2) + '" style="width:24px;height:24px" alt="">Publier vos travaux</div>' +
     '<div>Publier <b>remet votre partie à zéro</b> (molécules, bâtiments, améliorations, cultures) en échange de prix Nobel, calculés sur toutes les molécules produites depuis le début.</div>' +
     '<div style="margin:6px 0">Si vous publiez maintenant : <b style="font-size:24px" id="nobPend">+' + fmt(pend) + '</b> prix Nobel</div>' +
-    '<div class="sub" id="nobNext">Prochain Nobel : ' + fmt(Math.max(0, nextT - S.allEarned)) + ' molécules de plus</div><div class="pbar"><i id="nobBar" style="width:' + (prog * 100).toFixed(1) + '%;background:var(--amber)"></i></div>' +
+    '<div class="sub" id="nobNext">Prochain Nobel : encore ' + fmtMol(Math.max(0, nextT - S.allEarned)) + '</div><div class="pbar"><i id="nobBar" style="width:' + (prog * 100).toFixed(1) + '%;background:var(--amber)"></i></div>' +
     '<div class="row" style="margin-top:8px"><button class="btn gold big" id="pubBtn">Publier</button>' + (S.challenge ? '<span class="sub">(un protocole est en cours)</span>' : '') + '</div></div>';
   if (S.challenge) {
     const c = CMAP[S.challenge];
-    html += '<div class="card violet"><div class="cn" style="font-family:Pixelify Sans;font-size:19px;color:var(--lav)">Protocole en cours : ' + U.esc(c.name) + '</div><div>' + c.rule + '</div><div>Objectif : produire <b>' + fmt(c.goal) + '</b> molécules dans cette partie.</div>' +
-      '<div class="pbar"><i style="width:' + Math.min(100, S.runEarned / c.goal * 100).toFixed(1) + '%"></i></div><div class="row" style="margin-top:6px"><button class="btn warn" id="abandonBtn">Abandonner</button></div></div>';
+    html += '<div class="card violet"><div class="cn" style="font-family:Pixelify Sans;font-size:19px;color:var(--lav)">Protocole en cours : ' + U.esc(c.name) + '</div><div>' + c.rule + '</div><div>Objectif : produire <b>' + fmtMol(c.goal) + '</b> dans cette partie.</div>' +
+      '<div class="pbar"><i id="chalBar" style="width:' + Math.min(100, S.runEarned / c.goal * 100).toFixed(1) + '%"></i></div><div class="row" style="margin-top:6px"><button class="btn warn" id="abandonBtn">Abandonner</button></div></div>';
   }
   html += '<div class="sect"><img src="' + GFX.url('i_nobel', 0, 2) + '" style="width:24px;height:24px" alt="">Fondation Nobel <span class="sub">(bonus permanents)</span></div>' +
     '<div class="det" id="nodeDet"><span class="sub">Touchez un nœud pour voir ses effets.</span></div><div id="tree">';
@@ -6900,7 +7017,7 @@ function renderNobel() {
     html += '<div class="trow">';
     PRESTIGE.filter(q => q.row === r).forEach(q => {
       const own = !!S.prestige[q.id], av = !own && (!q.req || S.prestige[q.req]);
-      html += '<button class="node ' + (own ? 'own' : av ? 'avail' + (S.nobelPts >= q.cost ? ' can' : '') : 'lock') + (UI.selNode === q.id ? ' sel' : '') + '" data-n="' + q.id + '"><img src="' + GFX.framed(q.icon, own ? 2 : av ? 1 : null) + '" alt=""></button>';
+      html += '<button class="node ' + (own ? 'own' : av ? 'avail' + (S.nobelPts >= q.cost || godMode() ? ' can' : '') : 'lock') + (UI.selNode === q.id ? ' sel' : '') + '" data-n="' + q.id + '"><img src="' + GFX.framed(q.icon, own ? 2 : av ? 1 : null) + '" alt=""></button>';
     });
     html += '</div>';
   }
@@ -6911,7 +7028,7 @@ function renderNobel() {
     CHALLENGES.forEach(c => {
       const done = chalDone(c.id), cur = S.challenge === c.id;
       html += '<div class="chal' + (done ? ' done' : '') + '"><div class="cn">' + (done ? '✔ ' : '') + U.esc(c.name) + '</div>' + (c.q ? '<div class="sub" style="font-style:italic">' + U.esc(c.q) + '</div>' : '') +
-        '<div>Règle : ' + c.rule + '</div><div>Objectif : <b>' + fmt(c.goal) + '</b> molécules' + (c.id === 'speedrun' ? ' en 20 minutes' : '') + '</div><div>Récompense : ' + c.reward + '</div>' +
+        '<div>Règle : ' + c.rule + '</div><div>Objectif : <b>' + fmtMol(c.goal) + '</b>' + (c.id === 'speedrun' ? ' en 20 minutes' : '') + '</div><div>Récompense : ' + c.reward + '</div>' +
         (done ? '<div style="color:var(--green)">Réussi !</div>' : cur ? '<div style="color:var(--lav)">En cours…</div>' : '<div class="row" style="margin-top:4px"><button class="btn violet" data-c="' + c.id + '">Lancer le protocole</button></div>') + '</div>';
     });
   }
@@ -6925,18 +7042,20 @@ function renderNobel() {
 }
 function updateNobelLive() {
   const p = U.$('#nobPend'); if (!p) return;
-  const cur = nobelsFor(S.allEarned), prevT = Math.pow(cur, 3) * 1e11, nextT = nextNobelAt();
+  const cur = nobelsFor(S.allEarned), prevT = Math.pow(cur, 3) * NOBEL_BASE, nextT = nextNobelAt();
   p.textContent = '+' + fmt(pendingNobels());
-  U.$('#nobNext').textContent = 'Prochain Nobel : ' + fmt(Math.max(0, nextT - S.allEarned)) + ' molécules de plus';
+  U.$('#nobNext').textContent = 'Prochain Nobel : encore ' + fmtMol(Math.max(0, nextT - S.allEarned));
+  const cb = U.$('#chalBar'); if (cb && S.challenge) cb.style.width = Math.min(100, S.runEarned / CMAP[S.challenge].goal * 100).toFixed(1) + '%';
   U.$('#nobBar').style.width = (U.clamp((S.allEarned - prevT) / Math.max(1, nextT - prevT), 0, 1) * 100).toFixed(1) + '%';
 }
-function nobelKey() { return [S.nobels, S.nobelPts, Object.keys(S.prestige).length, S.challenge, Object.keys(S.chalDone).length, S.nobelPts >= 1].join('|'); }
+function nobelKey() { return [godMode(), S.nobels, S.nobelPts, Object.keys(S.prestige).length, S.challenge, Object.keys(S.chalDone).length, S.nobelPts >= 1].join('|'); }
 function showNodeDet() {
   const q = PMAP[UI.selNode], d = U.$('#nodeDet'); if (!q || !d) return;
   const own = !!S.prestige[q.id], av = !own && (!q.req || S.prestige[q.req]);
   const can = av && (S.nobelPts >= q.cost || godMode());
+  d.classList.add('pin');
   d.innerHTML = '<div class="h"><img src="' + GFX.framed(q.icon, own ? 2 : 1) + '" alt=""><div style="flex:1"><div class="nm">' + U.esc(q.name) + '</div><div>' + q.eff + '</div>' +
-    '<div class="sub">' + (own ? '<span style="color:var(--green)">Acquis</span>' : 'Coût : <b>' + fmt(q.cost) + '</b> point' + (q.cost > 1 ? 's' : '') + ' Nobel' + (!av ? ' · Requiert « ' + U.esc(PMAP[q.req].name) + ' »' : '')) + '</div></div>' +
+    '<div class="sub">' + (own ? '<span style="color:var(--green)">Acquis</span>' : 'Coût : <b>' + fmtNom(q.cost, 'point Nobel', 'points Nobel') + '</b>' + (!av ? ' · Requiert « ' + U.esc(PMAP[q.req].name) + ' »' : '')) + '</div></div>' +
     (!own ? '<button class="btn ' + (can ? 'gold' : 'dis') + '" id="nodeBuy">Acquérir</button>' : '') + '</div>' + (q.q ? '<div class="sub" style="font-style:italic;margin-top:3px">' + U.esc(q.q) + '</div>' : '');
   const nb = U.$('#nodeBuy'); if (nb) nb.onclick = () => { if (buyNode(q.id)) { toast('Fondation Nobel : <b>' + U.esc(q.name) + '</b>', 'save', q.icon); renderNobel(); } };
 }
@@ -6949,19 +7068,20 @@ function askPublish() {
   modal('Publier vos travaux ?', '<p class="center sub">Titre de la publication :</p><p class="center" style="color:var(--cyan);font-size:21px">« ' + U.esc(paperTitle()) + ' »</p>' +
     '<p class="big">+' + fmt(g) + ' prix Nobel</p>' +
     '<p><b>Remis à zéro :</b> molécules, bâtiments, améliorations, cultures de Petri, ère.</p><p><b>Conservé :</b> prix Nobel, Fondation Nobel, succès, souches découvertes, protocoles réussis, statistiques.</p>' +
-    (g <= 0 ? '<p style="color:var(--red)">Attention : vous ne gagnerez aucun prix Nobel ! Il faut au moins 100 milliards de molécules produites au total pour le premier.</p>' : ''),
+    (g <= 0 ? '<p style="color:var(--red)">Attention : vous ne gagnerez aucun prix Nobel ! Il faut au moins ' + fmtMol(NOBEL_BASE) + ' produites au total pour le premier.</p>' : ''),
     [{ t: 'Annuler' }, { t: 'Publier !', cls: 'gold', fn: () => doPublish() }]);
 }
 function doPublish() {
   const g = publish();
-  bigText('PUBLICATION ACCEPTÉE', '#fee761', '+' + fmt(g) + ' prix Nobel');
+  bigText('PUBLICATION ACCEPTÉE', '#fee761', '+' + fmtNom(g, 'prix Nobel', 'prix Nobel'));
   if (S.set.flash) flashScreen('#fee761');
   GOLD.clearAll();
   UI.dirtyAll = true; showTab('nobel');
 }
 function askChallenge(id) {
   const c = CMAP[id];
-  modal('Lancer « ' + U.esc(c.name) + ' » ?', '<p>' + c.rule + '</p><p>Objectif : <b>' + fmt(c.goal) + '</b> molécules dans la partie' + (id === 'speedrun' ? ', en moins de 20 minutes' : '') + '.</p><p>Récompense permanente : ' + c.reward + '</p>' +
+  modal('Lancer « ' + U.esc(c.name) + ' » ?', '<p>' + c.rule + '</p><p>Objectif : <b>' + fmtMol(c.goal) + '</b> dans la partie' + (id === 'speedrun' ? ', en moins de 20 minutes' : '') + '.</p><p>Récompense permanente : ' + c.reward + '</p>' +
+    (S.challenge ? '<p style="color:var(--red)">Le protocole en cours (« ' + U.esc(CMAP[S.challenge].name) + ' ») sera abandonné sans récompense.</p>' : '') +
     '<p style="color:var(--amber)">Lancer un protocole <b>publie votre partie actuelle</b> (vous recevez ' + fmt(pendingNobels()) + ' prix Nobel) et en commence une nouvelle sous contrainte.</p>',
     [{ t: 'Annuler' }, { t: 'Lancer', cls: 'violet', fn: () => { startChallenge(id); GOLD.clearAll(); UI.dirtyAll = true; bigText('PROTOCOLE LANCÉ', '#d4b8ff', c.name); } }]);
 }
@@ -7036,7 +7156,7 @@ function updatePetriCosts() {
 function petriCellTap(i) {
   const P = S.petri, c = P.grid[i];
   if (!c) { if (P.sel && P.disc[P.sel]) { if (petriPlant(i, P.sel)) { UI.selCell = -1; renderPetri(); } } return; }
-  if (UI.selCell === i && petriStage(c) === 2) { const g = petriHarvest(i); if (g) toast('Récolte : <b>+' + fmt(g) + '</b> molécules', 'petri', SMAP[c.s].sprite); UI.selCell = -1; renderPetri(); return; }
+  if (UI.selCell === i && petriStage(c) === 2) { const g = petriHarvest(i); if (g) toast('Récolte : <b>+' + fmtMol(g) + '</b>', 'petri', SMAP[c.s].sprite); UI.selCell = -1; renderPetri(); return; }
   UI.selCell = i; renderPetri();
 }
 function renderPetriDet() {
@@ -7046,10 +7166,10 @@ function renderPetriDet() {
     const st = SMAP[c.s], stg = petriStage(c);
     const life = st.life ? (st.grow + st.life - c.a) : null;
     d.innerHTML = '<div class="h"><img src="' + GFX.url(st.sprite, stg, 3) + '" alt=""><div style="flex:1"><div class="nm">' + U.esc(st.name) + '</div><div class="sub">' +
-      (stg === 2 ? '<span style="color:var(--green)">Mûre</span>' : 'Croissance : ' + c.a + ' / ' + st.grow + ' cycles') + (life != null ? ' · Reste ' + life + ' cycles de vie' : ' · Immortelle') + '</div></div></div>' +
+      (stg === 2 ? '<span style="color:var(--green)">Mûre</span>' : 'Croissance : ' + c.a + ' / ' + st.grow + ' cycles') + (life != null ? ' · Reste ' + life + ' cycle' + (life > 1 ? 's' : '') + ' de vie' : ' · Immortelle') + '</div></div></div>' +
       '<div>Effet (mûre) : ' + st.effTxt + '</div><div>Récolte : ' + fmtTime(st.harvest) + ' de production</div>' + (st.q ? '<div class="sub" style="font-style:italic">' + U.esc(st.q) + '</div>' : '') +
       '<div class="row" style="margin-top:6px">' + (stg === 2 ? '<button class="btn gold" id="pHarv">Récolter</button>' : '') + '<button class="btn warn" id="pRem">Arracher</button></div>';
-    const h = U.$('#pHarv'); if (h) h.onclick = () => { const g = petriHarvest(i); if (g) toast('Récolte : <b>+' + fmt(g) + '</b> molécules', 'petri', st.sprite); UI.selCell = -1; renderPetri(); };
+    const h = U.$('#pHarv'); if (h) h.onclick = () => { const g = petriHarvest(i); if (g) toast('Récolte : <b>+' + fmtMol(g) + '</b>', 'petri', st.sprite); UI.selCell = -1; renderPetri(); };
     U.$('#pRem').onclick = () => { P.grid[i] = null; UI.selCell = -1; recalc(); SFX.play('sell'); renderPetri(); };
   } else if (c && c.s === 'dead') {
     d.innerHTML = '<div class="h"><img src="' + GFX.url('pt_dead', 0, 3) + '" alt=""><div><div class="nm">Culture morte</div><div class="sub">Elle sera nettoyée au prochain cycle.</div></div></div>';
@@ -7121,19 +7241,46 @@ function applySettings() {
   setEraClass();
   setTimeout(() => SCENE.resize(), 0);
 }
+function copyText(ta, s) {
+  let ok = false;
+  try { ta.readOnly = false; ta.focus(); ta.select(); ta.setSelectionRange(0, s.length + 10); ok = document.execCommand('copy'); } catch (e) { }
+  try { ta.readOnly = true; ta.blur(); } catch (e) { }
+  const done = good => toast(good ? 'Copié ! Collez-le dans vos notes pour le garder.' : 'Copie automatique impossible : appuyez longuement dans le texte, « Tout sélectionner » puis « Copier ».', good ? 'save' : 'warn');
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(s).then(() => done(true)).catch(() => done(ok));
+  else done(ok);
+}
+function downloadSave() {
+  try {
+    const s = exportSave(), d = new Date();
+    const name = 'labo-infini-sauvegarde-' + d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + '.txt';
+    const url = URL.createObjectURL(new Blob([s], { type: 'text/plain' }));
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+    secret('export');
+    toast('Fichier de sauvegarde créé (dossier Téléchargements / Fichiers).', 'save');
+  } catch (e) { toast('Téléchargement impossible ici : utilisez « Copier ».', 'warn'); }
+}
 function showExport() {
   const s = exportSave();
   secret('export');
-  const body = modal('Exporter la sauvegarde', '<p>Copiez ce texte et gardez-le précieusement (notes, message…). Vous pourrez le recoller avec « Importer ».</p><textarea class="save" readonly id="expTxt"></textarea>',
-    [{ t: 'Copier', cls: 'green', keep: true, fn: () => { const ta = U.$('#expTxt'); ta.focus(); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { } if (navigator.clipboard) navigator.clipboard.writeText(s).then(() => toast('Copié !', 'save')).catch(() => { if (!ok) toast('Sélectionnez le texte et copiez-le manuellement.', 'warn'); }); else toast(ok ? 'Copié !' : 'Sélectionnez le texte et copiez-le manuellement.', ok ? 'save' : 'warn'); } }, { t: 'Fermer' }]);
+  modal('Exporter la sauvegarde', '<p>Gardez ce texte précieusement (notes, message…) ou téléchargez-le en fichier. Vous pourrez le recharger avec « Importer ».</p><textarea class="save" readonly id="expTxt" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>',
+    [{ t: 'Copier', cls: 'green', keep: true, fn: () => copyText(U.$('#expTxt'), s) }, { t: 'Télécharger', keep: true, fn: downloadSave }, { t: 'Fermer' }]);
   U.$('#expTxt').value = s;
 }
 function showImport() {
-  modal('Importer une sauvegarde', '<p>Collez ici un texte de sauvegarde (commence par <b>LABO1:</b>). Votre partie actuelle sera remplacée.</p><textarea class="save" id="impTxt" placeholder="LABO1:..."></textarea>',
+  modal('Importer une sauvegarde', '<p>Collez ici un texte de sauvegarde (commence par <b>LABO1:</b>) ou chargez un fichier de sauvegarde. Votre partie actuelle sera remplacée.</p>' +
+    '<textarea class="save" id="impTxt" placeholder="LABO1:..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>' +
+    '<div class="row" style="margin-top:6px"><label class="btn" style="cursor:pointer">Charger un fichier<input type="file" id="impFile" accept=".txt,text/plain" style="display:none"></label><span class="sub" id="impInfo"></span></div>',
     [{ t: 'Annuler' }, { t: 'Importer', cls: 'gold', fn: () => {
       try { importSave(U.$('#impTxt').value); afterLoad(); saveGame(); toast('Sauvegarde importée !', 'save'); }
       catch (e) { toast('Import impossible : ' + U.esc(e.message), 'warn'); return false; }
     } }]);
+  U.$('#impFile').onchange = ev => {
+    const f = ev.target.files && ev.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { U.$('#impTxt').value = String(r.result || ''); U.$('#impInfo').textContent = f.name + ' chargé — touchez « Importer ».'; };
+    r.readAsText(f);
+  };
 }
 function askReset() {
   modal('Tout réinitialiser ?', '<p style="color:var(--red)">Cela efface <b>définitivement</b> toute votre progression : molécules, prix Nobel, succès, souches… Exportez d’abord votre sauvegarde si vous voulez la garder.</p>',
@@ -7152,7 +7299,7 @@ function askRename() {
 function renderDev() {
   const z = U.$('#devZone'); if (!z) return;
   if (!S.set.dev) {
-    z.innerHTML = '<div class="row"><button class="btn gold" id="devBtn">DEV</button><span class="sub">Accès réservé au personnel autorisé.</span></div><div id="devCode" style="display:none;margin-top:6px" class="row"><input class="code" id="devIn" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE"><button class="btn gold" id="devOk">OK</button></div>';
+    z.innerHTML = '<div class="row"><button class="btn gold" id="devBtn">DEV</button><span class="sub">Accès réservé au personnel autorisé.</span></div><div id="devCode" style="display:none;margin-top:6px" class="row"><input class="code" id="devIn" maxlength="12" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="CODE"><button class="btn gold" id="devOk">OK</button></div>';
     U.$('#devBtn').onclick = () => { U.$('#devCode').style.display = 'flex'; U.$('#devIn').focus(); };
     const sub = () => {
       const v = U.$('#devIn').value.trim().toUpperCase();
@@ -7195,7 +7342,8 @@ function updateHeader() {
 }
 let lastHud = '';
 function updateHud() {
-  const mc = godMode() ? '∞' : fmt(S.bank);
+  let mc = godMode() ? '∞' : fmt(S.bank);
+  if (mc.length > 17 && U.$('#paneFlask').clientWidth < 420) mc = fmtS(S.bank);
   if (mc !== lastHud) { U.$('#molCount').textContent = mc; lastHud = mc; U.$('#molLabel').textContent = S.bank >= 2 || godMode() ? 'molécules' : 'molécule'; }
   const cl = U.$('#cpsLine');
   const t = 'par seconde : ' + fmt(G.cps, 1);
@@ -7298,8 +7446,8 @@ function uiUpdate(dt) {
 function offlineModal(r) {
   const lines = TX(() => TXT_OFFLINE, null) || ['Pendant vos {duree} d’absence, le labo a continué de tourner.'];
   const t = U.pick(lines).replace(/\{duree\}/g, fmtDuree(r.sec));
-  modal('Bon retour au labo !', '<p>' + U.esc(t) + '</p><p class="big">+' + fmt(r.gain) + '</p><p class="center sub">molécules produites (' + fmtPct(r.pct) + ' de la production' + (r.eff < r.sec ? ', limitée à ' + fmtTime(r.eff) : '') + ')</p>' +
-    (r.pct < 1 ? '<p class="sub">Améliorez la production hors-ligne dans la Fondation Nobel.</p>' : ''), [{ t: 'Au travail !', cls: 'gold' }]);
+  modal('Bon retour au labo !', '<p>' + U.esc(t) + '</p><p class="big">+' + fmtMol(r.gain) + '</p><p class="center sub">produites pendant votre absence (' + fmtPct(r.pct) + ' de la production' + (r.eff < r.sec ? ', limitée à ' + fmtTime(r.eff) : '') + ')</p>' +
+    (r.pct < 1 ? '<p class="sub">Améliorez la production hors-ligne dans la Fondation Nobel.</p>' : ''), [{ t: 'Au travail !', cls: 'gold' }], true);
 }
 
 /* ==== 31_scene.js ==== */
@@ -7533,7 +7681,7 @@ const SCENE = {
     const cxv = this.vx + (bx[0] + bx[2] + 1) / 2, cyv = this.vy + (bx[1] + bx[3]) / 2 + bob;
     // halo + rayons
     const frenzy = G.cps > G.cpsNoBuff * 1.01;
-    const glowCol = frenzy ? '#fee761' : (st.rainbow ? U.hsl(t * 60, 0.8, 0.6) : st.glow);
+    const glowCol = frenzy ? '#fee761' : (st.rainbow ? GFX.rbw(t * 60) : st.glow);
     const rad = 34 + Math.sin(t * 2) * 2 + (frenzy ? 6 : 0);
     const gr = c.createRadialGradient(cxv, cyv, 2, cxv, cyv, rad);
     gr.addColorStop(0, this.rgba(glowCol, 0.45)); gr.addColorStop(1, this.rgba(glowCol, 0));
@@ -7586,14 +7734,15 @@ const SCENE = {
     this.level += (target - this.level) * Math.min(1, dt * 4);
     const d = this.limg.data; d.fill(0);
     const hgt = info.bot - info.top + 1, surf = info.bot + 1 - this.level * hgt;
-    const L1 = U.hex2rgb(st.liq), L2 = U.hex2rgb(st.liq2), dark = [24, 20, 37];
+    if (this.lstE !== e) { this.lstE = e; this.L1 = U.hex2rgb(st.liq); this.L2 = U.hex2rgb(st.liq2); }
+    const L1 = this.L1, L2 = this.L2, dark = [24, 20, 37];
     const boil = eb ? 2.2 : 1;
     for (const [x, y] of info.liq) {
       const wave = Math.sin(t * 3 * boil + x * 0.7) * 0.7 * boil + Math.sin(t * 1.7 - x * 0.35) * 0.5 + this.squash * Math.sin(x) * 1.5;
       const s = surf + wave, i = (y * 48 + x) * 4;
       if (y < s - 0.5) { d[i] = 255; d[i + 1] = 255; d[i + 2] = 255; d[i + 3] = 14; continue; }
       let col;
-      if (st.rainbow) { const h = U.hex2rgb(U.hsl(x * 7 + y * 4 + t * 90, 0.85, y < s + 1 ? 0.8 : 0.6)); col = h; }
+      if (st.rainbow) col = GFX.rbw(x * 7 + y * 4 + t * 90, y < s + 1);
       else col = y < s + 1 ? L2 : L1;
       const depth = U.clamp((y - s) / hgt, 0, 1) * 0.5;
       let r = col[0] + (dark[0] - col[0]) * depth, g = col[1] + (dark[1] - col[1]) * depth, b = col[2] + (dark[2] - col[2]) * depth;
@@ -7629,7 +7778,7 @@ const SCENE = {
       for (let k = 0; k < info.acc.length; k++) {
         const [x, y] = info.acc[k];
         const on = Math.sin(t * 3 + k * 0.9) > -0.2;
-        vc.fillStyle = st.rainbow ? U.hsl(t * 120 + k * 30, 0.9, 0.65) : on ? st.acc : U.mix(st.acc, '#181425', 0.55);
+        vc.fillStyle = st.rainbow ? GFX.rbw(t * 120 + k * 30) : on ? st.acc : (this.accDim || (this.accDim = {}))[st.acc] || (this.accDim[st.acc] = U.mix(st.acc, '#181425', 0.55));
         vc.fillRect(x, y, 1, 1);
       }
     }
@@ -7744,7 +7893,7 @@ const CHAOS = {
     if (n('infini') > 0 && W > 60) {
       const fw = Math.round(W * 0.28), fh = Math.round(H * 0.28), fx = 3, fy = Math.max(Math.ceil(70 / sc.P), 4);
       c.fillStyle = '#181425'; c.fillRect(fx - 2, fy - 2, fw + 4, fh + 4);
-      c.fillStyle = U.hsl(t * 80, 0.8, 0.6); c.fillRect(fx - 1, fy - 1, fw + 2, fh + 2);
+      c.fillStyle = GFX.rbw(t * 80); c.fillRect(fx - 1, fy - 1, fw + 2, fh + 2);
       if (sc.prev) c.drawImage(sc.prev, fx, fy, fw, fh);
     }
     // Cerveau galactique : un cerveau géant plane au-dessus du labo
@@ -7757,10 +7906,13 @@ const CHAOS = {
     // Trou noir domestiqué : disque d'accrétion derrière la fiole
     if (n('trounoir') > 0) {
       const R = 14 + Math.min(18, Math.log2(n('trounoir') + 1) * 3);
-      for (let i = 0; i < 70; i++) {
-        const a = i / 70 * Math.PI * 2 + t * (0.9 + (i % 3) * 0.3), rr = R * (0.55 + ((i * 37) % 10) / 22);
-        c.fillStyle = i % 4 === 0 ? '#fee761' : i % 4 === 1 ? '#f77622' : i % 4 === 2 ? '#b55088' : '#ffffff';
-        c.fillRect(Math.round(cx + Math.cos(a) * rr), Math.round(cy + 4 + Math.sin(a) * rr * 0.35), 1, 1);
+      const HC = ['#fee761', '#f77622', '#b55088', '#ffffff'];
+      for (let col = 0; col < 4; col++) {
+        c.fillStyle = HC[col];
+        for (let i = col; i < 70; i += 4) {
+          const a = i / 70 * Math.PI * 2 + t * (0.9 + (i % 3) * 0.3), rr = R * (0.55 + ((i * 37) % 10) / 22);
+          c.fillRect(Math.round(cx + Math.cos(a) * rr), Math.round(cy + 4 + Math.sin(a) * rr * 0.35), 1, 1);
+        }
       }
       c.fillStyle = '#000'; c.beginPath(); c.ellipse(cx, cy + 4, R * 0.42, R * 0.2, 0, 0, Math.PI * 2); c.fill();
     }
@@ -7768,21 +7920,25 @@ const CHAOS = {
     const np = this.qty('portail', 3);
     for (let k = 0; k < np; k++) {
       const px = k % 2 ? W - 14 - (k >> 1) * 18 : 14 + (k >> 1) * 18, py = top - 26 - (k % 2) * 8, rw = 7, rh = 11;
-      for (let i = 0; i < 40; i++) {
-        const a = i / 40 * Math.PI * 2 + t * 3 * (k % 2 ? -1 : 1), r2 = 0.4 + (i % 5) / 8;
-        c.fillStyle = i % 3 ? '#9b5de5' : '#2ce8f5';
-        c.fillRect(Math.round(px + Math.cos(a) * rw * r2), Math.round(py + Math.sin(a) * rh * r2), 1, 1);
+      for (let pass = 0; pass < 2; pass++) {
+        c.fillStyle = pass ? '#9b5de5' : '#2ce8f5';
+        for (let i = 0; i < 40; i++) {
+          if ((i % 3 !== 0) !== !!pass) continue;
+          const a = i / 40 * Math.PI * 2 + t * 3 * (k % 2 ? -1 : 1), r2 = 0.4 + (i % 5) / 8;
+          c.fillRect(Math.round(px + Math.cos(a) * rw * r2), Math.round(py + Math.sin(a) * rh * r2), 1, 1);
+        }
       }
       c.fillStyle = 'rgba(212,184,255,0.25)'; c.beginPath(); c.ellipse(px, py, rw, rh, 0, 0, Math.PI * 2); c.fill();
     }
     // Fabrique de Big Bang : explosions cosmiques au loin
     if (n('bigbang') > 0) {
       this.bangT -= this.dt;
-      if (this.bangT <= 0) { this.bangT = U.rand(1.5, 4) / Math.min(3, 1 + Math.log10(n('bigbang') + 1)); this.bangs.push({ x: U.rand(6, W - 6), y: U.rand(6, top - 20), r: 0, hue: U.rand(0, 360) }); }
+      if (this.bangT <= 0) { this.bangT = U.rand(1.5, 4) / Math.min(3, 1 + Math.log10(n('bigbang') + 1)); const hue = U.rand(0, 360); this.bangs.push({ x: U.rand(6, W - 6), y: U.rand(6, top - 20), r: 0, cols: Array.from({ length: 18 }, (_, i) => GFX.rbw(hue + i * 12)) }); }
       this.bangs = this.bangs.filter(b => {
         b.r += this.dt * 36;
         const k = 18;
-        for (let i = 0; i < k; i++) { const a = i / k * Math.PI * 2; c.fillStyle = U.hsl(b.hue + i * 12, 0.9, 0.65); c.globalAlpha = Math.max(0, 1 - b.r / 22); c.fillRect(Math.round(b.x + Math.cos(a) * b.r), Math.round(b.y + Math.sin(a) * b.r), 1, 1); }
+        c.globalAlpha = Math.max(0, 1 - b.r / 22);
+        for (let i = 0; i < k; i++) { const a = i / k * Math.PI * 2; c.fillStyle = b.cols[i]; c.fillRect(Math.round(b.x + Math.cos(a) * b.r), Math.round(b.y + Math.sin(a) * b.r), 1, 1); }
         if (b.r < 4) { c.fillStyle = '#fff'; c.fillRect(Math.round(b.x) - 1, Math.round(b.y) - 1, 3, 3); }
         c.globalAlpha = 1;
         return b.r < 22;
@@ -7856,10 +8012,13 @@ const CHAOS = {
     const nn = n('nanobots');
     if (nn > 0) {
       const k = Math.min(60, 6 + Math.floor(Math.log2(nn + 1) * 6));
-      for (let i = 0; i < k; i++) {
-        const a = t * (1.2 + (i % 5) * 0.15) + i * 0.7, r = 14 + (i % 7) * 3 + Math.sin(t * 2 + i) * 3;
-        c.fillStyle = i % 6 ? '#c0cbdc' : '#2ce8f5';
-        c.fillRect(Math.round(cx + Math.cos(a) * r * 1.3), Math.round(cy + Math.sin(a * 1.7) * r * 0.6), 1, 1);
+      for (let pass = 0; pass < 2; pass++) {
+        c.fillStyle = pass ? '#2ce8f5' : '#c0cbdc';
+        for (let i = 0; i < k; i++) {
+          if ((i % 6 === 0) !== !!pass) continue;
+          const a = t * (1.2 + (i % 5) * 0.15) + i * 0.7, r = 14 + (i % 7) * 3 + Math.sin(t * 2 + i) * 3;
+          c.fillRect(Math.round(cx + Math.cos(a) * r * 1.3), Math.round(cy + Math.sin(a * 1.7) * r * 0.6), 1, 1);
+        }
       }
     }
     // Glitch de réalité (ère infinie)
@@ -7880,10 +8039,10 @@ const CHAOS = {
     for (let r = 0; r < k; r++) {
       const rx = Math.min(sc.W / 2 - 3, 30 + r * 7), ry = 7 + r * 2, yy = cy + 8 - r * 6;
       const N = 90;
+      c.fillStyle = backHalf ? '#3a4466' : '#8b9bb4';
       for (let i = 0; i < N; i++) {
         const a = i / N * Math.PI * 2, s = Math.sin(a);
         if ((s < 0) !== backHalf) continue;
-        c.fillStyle = backHalf ? '#3a4466' : '#8b9bb4';
         c.fillRect(Math.round(cx + Math.cos(a) * rx), Math.round(yy + s * ry), 1, 1);
       }
       for (let p = 0; p < 3; p++) {
@@ -7928,10 +8087,17 @@ function showError(msg) {
   d.onclick = () => d.remove();
   document.body.appendChild(d);
 }
-window.addEventListener('error', e => showError((e.message || 'inconnue') + (e.lineno ? ' (ligne ' + e.lineno + ')' : '')));
+window.addEventListener('error', e => {
+  // Erreurs venant d'extensions / scripts externes (Safari les masque en « Script error. ») : pas les nôtres, on les ignore
+  const msg = e.message || '';
+  if (!e.lineno || /^script error\.?$/i.test(msg.trim())) return;
+  if (e.filename && e.filename !== location.href && !/labo-infini|index\.html/i.test(e.filename)) return;
+  showError(msg + ' (ligne ' + e.lineno + ')');
+});
 
 function afterLoad() {
   NUM_FORMAT = S.set.format;
+  S.set.sell = false;
   G.upsKey = ''; UI.selUp = null; UI.selCell = -1;
   recalc();
   S.era = Math.max(S.era, eraFromBuildings());
@@ -7943,7 +8109,7 @@ function afterLoad() {
   UI.dirtyAll = true;
 }
 function welcome() {
-  modal('Bienvenue au ' + U.esc(S.labName) + ' !', '<div class="era-art"><img src="' + GFX.url('v1', 0, 3, { liquid: ERA_STYLE[0].liq, tint: ERA_STYLE[0].acc }) + '" alt=""></div>' +
+  modal('Bienvenue au labo « ' + U.esc(S.labName) + ' » !', '<div class="era-art"><img src="' + GFX.url('v1', 0, 3, { liquid: ERA_STYLE[0].liq, tint: ERA_STYLE[0].acc }) + '" alt=""></div>' +
     '<p>Votre carrière scientifique commence dans un garage, avec une simple éprouvette.</p>' +
     '<p>• <b>Touchez le récipient</b> pour fabriquer des molécules (et remplir la jauge <b>Eurêka</b>).</p>' +
     '<p>• Achetez des <b>bâtiments</b> dans la boutique : ils produisent tout seuls, même quand vous êtes absent.</p>' +
@@ -7962,7 +8128,7 @@ function loop(now) {
       if (r && wdt > 60) offlineModal(r);
       dt = 0.016;
     }
-    dt = U.clamp(dt, 0, 1);
+    dt = U.clamp(dt, 0, 5);
     let rem = dt * (S.set.dev ? S.set.speed : 1);
     while (rem > 0) { const step = Math.min(rem, 0.5); tick(step); rem -= step; }
     S.lastTick = wall;
@@ -7993,7 +8159,15 @@ function boot() {
   G.ready = true;
   const away = loaded ? (Date.now() - S.lastTick) / 1000 : 0;
   if (loaded && away > 5) { const r = applyOffline(away); if (r && away > 60) offlineModal(r); }
-  if (!loaded) { S.ach.aa0 = U.now(); welcome(); saveGame(); }
+  if (!loaded) {
+    S.ach.aa0 = U.now();
+    if (G.loadError) {
+      modal('Sauvegarde illisible', '<p>Votre sauvegarde n\u2019a pas pu être lue. Une copie de secours a été conservée : copiez ce texte (Options › Importer pourra le relire plus tard).</p><textarea class="save" readonly id="corruptTxt"></textarea>', [{ t: 'Nouvelle partie', cls: 'gold' }]);
+      const ta = U.$('#corruptTxt'); if (ta) ta.value = store.get('laboInfini.corrupt.v1') || '';
+    } else welcome();
+    saveGame();
+  }
+  if (!store.probe()) setTimeout(() => modal('Stockage indisponible', '<p>Ce navigateur ne permet pas d\u2019enregistrer la partie automatiquement. Pensez à <b>exporter</b> régulièrement votre partie (Options › Exporter › Télécharger).</p>', null, true), 800);
   lastWall = Date.now();
   window.addEventListener('resize', () => { clearTimeout(boot.rt); boot.rt = setTimeout(computeLayout, 120); });
   window.addEventListener('orientationchange', () => setTimeout(computeLayout, 300));
@@ -8002,6 +8176,8 @@ function boot() {
   window.addEventListener('beforeunload', () => saveGame());
   document.addEventListener('pointerdown', e => { SFX.unlock(); if (UI.tipEl && !UI.tipEl.contains(e.target) && e.target.id !== 'scene') hideTip(); }, true);
   document.addEventListener('gesturestart', e => e.preventDefault());
+  ['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => SFX.unlock(), { capture: true, passive: true }));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) SFX.unlock(); });
   setInterval(() => saveGame(false), 30000);
   requestAnimationFrame(loop);
   const b = U.$('#boot'); b.classList.add('out'); setTimeout(() => b.remove(), 500);
