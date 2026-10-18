@@ -324,6 +324,7 @@ wObaD3cVfB36diyoLbYw4R/KntV6XVBb32Fg7YPHAhYXKoE9JxOMLDagmO6tD+w7YZ8T/3KFVnltpQjc
 oUlBrnEsvg7zYl+qeoLuSYql01n974dSgTsHrv7QAvqW1iHenaD0cI12fF0n7QO7a9FQWyqHvpUxUIcyw/sBdfBfH/QFs8YV
 qgktpKpjlv+82ycmdBxMWS4RmMcIlAk9j2et9HlmBP4/AAAA//8jLmTtAAAABklEQVQDANc6PgUVsmX6AAAAAElFTkSuQmCC">
 <meta name="theme-color" content="#141020">
+<meta name="version" content="18 octobre 2026 à 19 h 32">
 <title>Labo Infini</title>
 <style>
 /* Polices : Pixelify Sans & VT323 — SIL Open Font License 1.1 */
@@ -1186,6 +1187,7 @@ input[type=range]{width:150px;height:32px;accent-color:var(--cyan)}
 
 <script>
 "use strict";
+const BUILD_ID = "18 octobre 2026 à 19 h 32";
 /* ==== 00_util.js ==== */
 /* ===================== UTILITAIRES ===================== */
 const U = {
@@ -1258,7 +1260,7 @@ function fmt(n, d = 0, short = false) {
   if (i >= NUM_LONG.length) return fmt(1e102, d, short);
   if (mode === 'short') return dec(m, m < 10 ? 2 : m < 100 ? 1 : 0) + ' ' + NUM_SHORT[i];
   const word = NUM_LONG[i];
-  return dec(m, 3) + ' ' + (m >= 2 ? word + 's' : word);
+  return dec(m, 3) + ' ' + (+m.toFixed(3) >= 2 ? word + 's' : word); // 1,9999 s'affiche « 2 » : donc « 2 millions »
 }
 const fmtS = (n, d = 0) => fmt(n, d, true);
 function fmtPct(x) { // 0.15 -> "15 %"
@@ -1266,7 +1268,7 @@ function fmtPct(x) { // 0.15 -> "15 %"
   return (Math.abs(v) < 10 && v !== Math.floor(v) ? dec(v, 1) : v >= 1e6 ? fmt(v) : grp(Math.round(v))) + ' %';
 }
 // « 1 million de molécules », « 12 345 molécules », « 3 milliards d’atomes »
-function deMot(s, nom) { return /[A-Za-zéû]$/.test(s) ? (/^[aeiouyéèêh]/i.test(nom) ? ' d\u2019' : ' de ') : ' '; }
+function deMot(s, nom) { return /[A-Za-zéû]$/.test(s) ? (/^[aeiouyàâäéèêëîïôöùûüœæh]/i.test(nom) ? ' d\u2019' : ' de ') : ' '; }
 function fmtNom(v, sing, plur, d = 0, short = false) { const s = fmt(v, d, short); return s + deMot(s, plur) + (v >= 2 ? plur : sing); }
 const fmtMol = (v, d = 0) => fmtNom(v, 'molécule', 'molécules', d);
 function fmtTime(sec) {
@@ -6466,7 +6468,8 @@ const SAVE_KEY = 'laboInfini.save.v1', BACKUP_KEY = 'laboInfini.backup.v1', SAVE
 const MEMSTORE = {};
 const store = {
   probe() { try { localStorage.setItem('__lab', '1'); const ok = localStorage.getItem('__lab') === '1'; localStorage.removeItem('__lab'); return ok; } catch (e) { return false; } },
-  get(k) { try { const v = localStorage.getItem(k); if (v != null) return v; } catch (e) { } return MEMSTORE[k] == null ? null : MEMSTORE[k]; },
+  // la mémoire d'abord : si une écriture a échoué (stockage plein), c'est elle qui a la valeur la plus récente
+  get(k) { if (k in MEMSTORE) return MEMSTORE[k]; try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { MEMSTORE[k] = v; try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
   del(k) { delete MEMSTORE[k]; try { localStorage.removeItem(k); } catch (e) { } },
 };
@@ -6541,12 +6544,14 @@ function sanitize(st) {
 
 function serialize() { S.lastSave = U.now(); return JSON.stringify(S, (k, v) => typeof v === 'number' && !isFinite(v) ? (v > 0 ? Number.MAX_VALUE : 0) : v); }
 let LAST_BACKUP = 0;
+function readable(json) { try { JSON.parse(json); return true; } catch (e) { return false; } }
 function saveGame(manual) {
   try {
     const data = serialize();
     const prev = store.get(SAVE_KEY);
     // copie de secours tournante (toutes les 10 min, et à chaque sauvegarde manuelle)
-    if (prev && (manual || Date.now() - LAST_BACKUP > 600000)) { store.set(BACKUP_KEY, prev); LAST_BACKUP = Date.now(); }
+    // (jamais une sauvegarde illisible : après une récupération, elle écraserait la seule bonne copie)
+    if (prev && readable(prev) && (manual || Date.now() - LAST_BACKUP > 600000)) { store.set(BACKUP_KEY, prev); LAST_BACKUP = Date.now(); }
     const ok = store.set(SAVE_KEY, data);
     if (!ok && !manual && !G.storeWarned) { G.storeWarned = true; toast('Sauvegarde impossible sur cet appareil : exportez votre partie (Options › Exporter) avant de quitter.', 'warn'); }
     if (manual) toast(ok ? 'Partie sauvegardée !' : 'Sauvegarde en mémoire seulement (stockage indisponible) — pensez à exporter.', ok ? 'save' : 'warn');
@@ -6585,15 +6590,20 @@ function importSave(str) {
   if (!m && raw[0] === '{') json = raw;
   else {
     const run = raw.match(/^[A-Za-z0-9+/=_\-\s\u200b-\u200d\u2060\ufeff]+/);
-    let body = (run ? run[0] : raw).replace(/-/g, '+').replace(/_/g, '/').replace(/[^A-Za-z0-9+/=]/g, '');
-    body = body.replace(/=+$/, '').replace(/=/g, '');
-    if (!body.length || body.length % 4 === 1) throw new Error(INCOMPLET);
-    while (body.length % 4) body += '=';
-    try { json = b64dec(body); } catch (e) { throw new Error(INCOMPLET); }
+    // le texte collé peut être suivi d'autres mots : on essaie en retirant les mots de fin un par un
+    const tokens = (run ? run[0] : raw).split(/[\s\u200b-\u200d\u2060\ufeff]+/).filter(Boolean);
+    for (let k = tokens.length; k >= 1 && json == null; k--) {
+      let body = tokens.slice(0, k).join('').replace(/-/g, '+').replace(/_/g, '/').replace(/[^A-Za-z0-9+/=]/g, '');
+      body = body.replace(/=+$/, '').replace(/=/g, '');
+      if (!body.length || body.length % 4 === 1) continue;
+      while (body.length % 4) body += '=';
+      try { const j = b64dec(body); JSON.parse(j); json = j; } catch (e) { }
+    }
+    if (json == null) throw new Error(INCOMPLET);
   }
   let st;
   try { st = loadFrom(json); } catch (e) { throw new Error(INCOMPLET); }
-  const prev = store.get(SAVE_KEY); if (prev) store.set(BACKUP_KEY, prev);
+  const prev = store.get(SAVE_KEY); if (prev && readable(prev)) store.set(BACKUP_KEY, prev);
   S = st;
   return true;
 }
@@ -8035,7 +8045,7 @@ function renderOpts() {
     tog('sound', 'Sons') + '<div class="opt"><span>Volume</span><input type="range" min="0" max="1" step="0.05" value="' + st.vol + '" id="oVol"></div>' +
     tog('particles', 'Particules') + tog('flash', 'Flashs lumineux') + tog('news', 'Fil d’actualités') +
     '<div class="sect"><img src="' + GFX.url('i_dev', 0, 2) + '" style="width:24px;height:24px" alt="">Développeur</div><div id="devZone"></div>' +
-    '<div class="sect">À propos</div><div class="sub">Labo Infini — un jeu incrémental de laboratoire complètement dépassé. Polices Pixelify Sans et VT323 (SIL Open Font License). Astuce : ' + U.esc(U.pick(TX(() => TXT_TIPS, null) || ['Cliquez !'])) + '</div>';
+    '<div class="sect">À propos</div><div class="sub">Labo Infini — un jeu incrémental de laboratoire complètement dépassé. Polices Pixelify Sans et VT323 (SIL Open Font License).' + (typeof BUILD_ID !== 'undefined' ? ' <b>Version du ' + U.esc(BUILD_ID) + '</b>.' : '') + ' Astuce : ' + U.esc(U.pick(TX(() => TXT_TIPS, null) || ['Cliquez !'])) + '</div>';
   p.innerHTML = h;
   U.$('#logo').onclick = () => { UI.logoClicks++; if (UI.logoClicks >= 10) secret('logo'); SFX.play('click'); };
   U.$('#oSave').onclick = () => { saveGame(true); SFX.play('save'); renderOpts(); };
@@ -8900,7 +8910,7 @@ function showError(msg) {
   if (ERR_SHOWN) return; ERR_SHOWN = true;
   const d = document.createElement('div');
   d.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:999;background:#3a1418;border:2px solid #e43b44;color:#ffd0d0;padding:8px;font:16px monospace;white-space:pre-wrap;max-height:40%;overflow:auto';
-  d.textContent = 'Erreur : ' + msg + '\n(touchez pour fermer — votre partie est sauvegardée automatiquement)';
+  d.textContent = 'Erreur : ' + msg + '\n(touchez pour fermer — votre partie est sauvegardée automatiquement)' + (typeof BUILD_ID !== 'undefined' ? '\nVersion du ' + BUILD_ID : '');
   d.onclick = () => d.remove();
   document.body.appendChild(d);
 }
@@ -8908,7 +8918,7 @@ window.addEventListener('error', e => {
   // Erreurs venant d'extensions / scripts externes (Safari les masque en « Script error. ») : pas les nôtres, on les ignore
   const msg = e.message || '';
   if (!e.lineno || /^script error\.?$/i.test(msg.trim())) return;
-  if (e.filename && e.filename !== location.href && !/labo-infini|index\.html/i.test(e.filename)) return;
+  if (e.filename && e.filename.split('#')[0] !== location.href.split('#')[0] && !/labo-infini|index\.html/i.test(e.filename)) return;
   showError(msg + ' (ligne ' + e.lineno + ')');
 });
 
@@ -8994,7 +9004,8 @@ function boot() {
   document.addEventListener('pointerdown', e => { SFX.unlock(); if (UI.tipEl && !UI.tipEl.contains(e.target) && e.target.id !== 'scene') hideTip(); }, true);
   document.addEventListener('gesturestart', e => e.preventDefault());
   // iOS : après la fermeture du clavier, la page peut rester décalée -> on la remet en place UNE fois
-  // (le document lui-même ne peut plus défiler : body en position fixe, voir style.css)
+  // (ne JAMAIS mettre body en position fixe, boucler sur scrollTo ni bloquer touchmove : bande vide en bas ou
+  // boutons morts sur iPhone — voir le skill jeux-web-github, references/ios-webapp.md)
   document.addEventListener('focusout', () => setTimeout(() => { if (window.scrollY || window.scrollX) window.scrollTo(0, 0); }, 120));
   ['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => SFX.unlock(), { capture: true, passive: true }));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) SFX.unlock(); });
