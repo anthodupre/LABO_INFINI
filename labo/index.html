@@ -7568,14 +7568,20 @@ function pressable(el, onTap, tipFn) {
 /* ---------- Disposition & onglets ---------- */
 // iOS, app lancée depuis l'écran d'accueil : la hauteur de la page oublie la barre d'état
 // (bande vide en bas). On mesure la vraie hauteur de l'écran et on étire le jeu.
+function isStandalone() { return navigator.standalone === true || !!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches); }
+function screenInfo() {
+  const app = U.$('#app'), r = app.getBoundingClientRect();
+  return { standalone: isStandalone(), inner: window.innerHeight, client: document.documentElement.clientHeight, app: Math.round(r.height), screenH: screen.height, screenW: screen.width };
+}
 function fixStandaloneHeight() {
   const app = U.$('#app');
-  const standalone = navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
   app.style.bottom = ''; app.style.height = '';
-  if (!standalone || !window.screen) return;
+  if (!isStandalone() || !window.screen) return;
   const portrait = window.innerHeight >= window.innerWidth;
   const full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
-  if (full && window.innerHeight < full - 4 && full - window.innerHeight < 120) { app.style.bottom = 'auto'; app.style.height = full + 'px'; }
+  // hauteur réellement occupée par le jeu (iOS peut annoncer innerHeight correct alors que la page est plus courte)
+  const real = Math.min(app.getBoundingClientRect().height, document.documentElement.clientHeight, window.innerHeight);
+  if (full && real < full - 4 && full - real < 140) { app.style.bottom = 'auto'; app.style.height = full + 'px'; }
 }
 function computeLayout() {
   fixStandaloneHeight();
@@ -8129,6 +8135,7 @@ function renderDev() {
     'Petri : cycle': () => petriTick(), 'Petri : tout mûrir': () => { S.petri.grid.forEach(c => { if (c && SMAP[c.s]) c.a = Math.max(c.a, SMAP[c.s].grow); }); recalc(); UI.dirtyPetri = true; },
     'Réussir le protocole': () => { if (S.challenge) earn(CMAP[S.challenge].goal); },
     'Hors-ligne 8 h (test)': () => { const r = applyOffline(8 * 3600); if (r) offlineModal(r); },
+    'Infos écran': () => { const i = screenInfo(); toast('standalone ' + i.standalone + ' · inner ' + i.inner + ' · client ' + i.client + ' · jeu ' + i.app + ' · écran ' + i.screenW + '×' + i.screenH, 'save'); },
     'Verrouiller DEV': () => { S.set.dev = false; S.set.god = false; S.set.speed = 1; applySettings(); recalc(); },
   };
   z.innerHTML = '<div class="sub" style="color:var(--yellow)">Mode développeur actif. Mode Dieu = molécules infinies (achats gratuits).</div><div class="devgrid" style="margin-top:6px">' + Object.keys(acts).map(k => B(k, null, k.startsWith('Mode') ? 'gold' : k.startsWith('Verr') ? 'warn' : '')).join('') + '</div>';
@@ -8980,6 +8987,7 @@ function boot() {
   ['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => SFX.unlock(), { capture: true, passive: true }));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) SFX.unlock(); });
   setInterval(() => saveGame(false), 30000);
+  [300, 1200, 3000].forEach(ms => setTimeout(() => { fixStandaloneHeight(); SCENE.resize(); LABV.resize(); }, ms));
   requestAnimationFrame(loop);
   const b = U.$('#boot'); b.classList.add('out'); setTimeout(() => b.remove(), 500);
 }
