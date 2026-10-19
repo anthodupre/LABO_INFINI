@@ -1,0 +1,31 @@
+Tu contribues au jeu incrémental « LABO INFINI » (style Cookie Clicker, thème laboratoire qui devient complètement over-the-top, tout en français, pixel art soigné).
+Répertoire du projet : /home/user/games/_dev/labo. LIS D'ABORD /home/user/games/_dev/labo/SPEC.md (règles globales, liste des 20 bâtiments et ères) et /home/user/games/_dev/labo/src/js/01_palette.js (palette).
+Tu écris UN SEUL fichier (indiqué ci-dessous). Ne touche à aucun autre fichier. Ne déclare au niveau global QUE les constantes demandées.
+Pas de dépendances, pas de réseau. Travaille avec soin : la qualité finale compte plus que la vitesse.
+Ta réponse finale (texte) : un court résumé (fichier, nombre d'éléments, points d'attention). Pas de dump du fichier.
+FICHIER : /home/user/games/_dev/labo/src/js/03_sprites_vessels.js
+TÂCHE : les GRANDS récipients cliquables au centre de l'écran (le « cookie » du jeu) + les fioles dorées. C'est l'élément le plus visible du jeu : soigne-les au maximum.
+1) v1..v6 : 48×48, 1 frame chacun. Le caractère '~' marque l'INTÉRIEUR où le moteur dessine un liquide animé (niveau qui monte/descend,
+   vagues, bulles) : la zone '~' doit être une zone pleine et contiguë à l'intérieur du verre, assez grande (au moins ~35 % de la surface du récipient).
+   Le verre : contour '0'/'1', bords en '4'/'5', reflets verticaux 'a' et '6' côté gauche, teinte 'A'. Le caractère '+' = lumières d'accent (teintées par le moteur).
+   v1 Éprouvette dans un petit portoir en bois (ère garage, simple et charmante, tube un peu incliné ou droit, bouchon de liège possible).
+   v2 Erlenmeyer avec graduations (traits '5' sur le verre), col étroit.
+   v3 Ballon à réaction à fond rond sur un support métallique avec pince et un tube en verre qui sort, petits voyants '+'.
+   v4 Cuve à plasma : cylindre de verre entre deux embouts métalliques massifs (haut/bas), électrodes, rivets, voyants '+'.
+   v5 Étoile en bouteille : flacon élégant (genre bouteille de parfum/potion) avec bouchon doré ouvragé, runes '+' autour.
+   v6 Univers en bouteille : flacon cosmique sublime, anneaux orbitaux qui l'entourent (devant/derrière le verre), couronne/bouchon cristallin, accents '+'.
+   L'escalade visuelle doit être évidente : de plus en plus grand, riche et spectaculaire (v1 occupe ~60 % de la case, v6 la remplit).
+2) g_golden : 16×16, 2 frames — fiole dorée (or 'y','Y','6', contour 'n' ou 'N') avec étincelle qui change entre les frames. Doit attirer l'œil.
+3) g_anomaly : 16×16, 2 frames — anomalie quantique : orbe/cristal violet-cyan instable, glitch (frames différentes).
+4) g_mini : 8×8, 1 frame — mini fiole dorée (pour la « pluie de fioles »).
+
+RÈGLES PIXEL ART :
+- Format exact : Object.assign(SPRITES, { nom: { w: W, h: H, frames: [ [ "ligne1", ... ], [ ...frame2... ] ] }, ... });
+  Chaque frame = exactement H chaînes de exactement W caractères. Caractères = clés de PAL, '.' transparent.
+- Style : contour sombre 1 px ('0' ou '1'/'n' pour plus doux), lumière en haut à gauche, 2-4 nuances par matériau, silhouettes lisibles,
+  pas de pixels orphelins, symétrie quand c'est symétrique, objets centrés qui remplissent bien la case. Couleurs saturées et harmonieuses.
+- Pour écrire de grosses grilles sans erreur, tu PEUX générer le fichier avec un petit script Node (dans le scratchpad / /tmp) qui dessine
+  par primitives (rectangles, cercles, lignes) puis retouche à la main — mais le fichier final doit contenir les chaînes littérales.
+- VALIDATION OBLIGATOIRE : node /home/user/games/_dev/labo/tools/preview.js /home/user/games/_dev/labo/preview/<nom>.png <ton fichier> --scale=6
+  puis OUVRE le PNG avec l'outil Read et regarde-le vraiment. Itère (au moins 2-3 passes de retouche) jusqu'à ce que chaque sprite soit
+  joli, lisible, reconnaissable et cohérent avec les autres. Corrige toute ERREUR signalée. Le script doit finir par "OK : aucune erreur".

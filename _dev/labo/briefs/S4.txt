@@ -1,0 +1,28 @@
+Tu contribues au jeu incrémental « LABO INFINI » (style Cookie Clicker, thème laboratoire qui devient complètement over-the-top, tout en français, pixel art soigné).
+Répertoire du projet : /home/user/games/_dev/labo. LIS D'ABORD /home/user/games/_dev/labo/SPEC.md (règles globales, liste des 20 bâtiments et ères) et /home/user/games/_dev/labo/src/js/01_palette.js (palette).
+Tu écris UN SEUL fichier (indiqué ci-dessous). Ne touche à aucun autre fichier. Ne déclare au niveau global QUE les constantes demandées.
+Pas de dépendances, pas de réseau. Travaille avec soin : la qualité finale compte plus que la vitesse.
+Ta réponse finale (texte) : un court résumé (fichier, nombre d'éléments, points d'attention). Pas de dump du fichier.
+FICHIER : /home/user/games/_dev/labo/src/js/05_sprites_items.js
+TÂCHE A — 20 icônes de nourriture/en-cas du labo (les « provisions », améliorations de production globale), 16×16, 1 frame, nommées f_01..f_20,
+escalade du banal au cosmique : f_01 croissant, f_02 pain au chocolat, f_03 madeleine, f_04 donut glacé rose, f_05 part de pizza, f_06 bol de nouilles
+fumant, f_07 sandwich triangle, f_08 cookie aux pépites, f_09 part de fromage à trous, f_10 baguette, f_11 macaron, f_12 boîte bento, f_13 canette de boisson
+énergisante, f_14 éclair au chocolat, f_15 burger, f_16 gâteau d'anniversaire avec bougie, f_17 tartine radioactive fluo (vert lumineux), f_18 bol de soupe
+primordiale (cosmique, étoiles), f_19 gâteau fractal (étages qui se répètent), f_20 pomme dorée cosmique avec halo.
+TÂCHE B — décors pour l'arrière-plan du labo (1 frame) : pr_shelf 32×16 (étagère en bois avec flacons colorés), pr_board 32×20 (tableau noir avec formules
+à la craie), pr_poster 12×16 (affiche tableau périodique), pr_plant 12×16 (plante en pot), pr_clock 10×10 (horloge murale), pr_lamp 12×12 (lampe suspendue
+allumée), pr_crate 14×12 (caisse en bois), pr_terminal 16×16 (vieil ordinateur à écran vert), pr_barrel 12×14 (baril de déchets toxiques avec symbole),
+pr_window 24×20 (cadre de fenêtre : montants et croisillon opaques, carreaux TRANSPARENTS '.' car le moteur dessine le ciel derrière),
+pr_flask_a 6×10, pr_flask_b 8×10, pr_flask_c 6×8 (petites fioles colorées décoratives pour les étagères/paillasses), pr_bench 40×12 (paillasse de labo vue de face, plateau noir, tiroirs).
+Les décors doivent être un peu plus sombres/désaturés que les icônes (ils sont au fond), mais rester lisibles et charmants.
+
+RÈGLES PIXEL ART :
+- Format exact : Object.assign(SPRITES, { nom: { w: W, h: H, frames: [ [ "ligne1", ... ], [ ...frame2... ] ] }, ... });
+  Chaque frame = exactement H chaînes de exactement W caractères. Caractères = clés de PAL, '.' transparent.
+- Style : contour sombre 1 px ('0' ou '1'/'n' pour plus doux), lumière en haut à gauche, 2-4 nuances par matériau, silhouettes lisibles,
+  pas de pixels orphelins, symétrie quand c'est symétrique, objets centrés qui remplissent bien la case. Couleurs saturées et harmonieuses.
+- Pour écrire de grosses grilles sans erreur, tu PEUX générer le fichier avec un petit script Node (dans le scratchpad / /tmp) qui dessine
+  par primitives (rectangles, cercles, lignes) puis retouche à la main — mais le fichier final doit contenir les chaînes littérales.
+- VALIDATION OBLIGATOIRE : node /home/user/games/_dev/labo/tools/preview.js /home/user/games/_dev/labo/preview/<nom>.png <ton fichier> --scale=6
+  puis OUVRE le PNG avec l'outil Read et regarde-le vraiment. Itère (au moins 2-3 passes de retouche) jusqu'à ce que chaque sprite soit
+  joli, lisible, reconnaissable et cohérent avec les autres. Corrige toute ERREUR signalée. Le script doit finir par "OK : aucune erreur".

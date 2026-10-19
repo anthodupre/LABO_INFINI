@@ -1,0 +1,29 @@
+Tu contribues au jeu incrémental « LABO INFINI » (style Cookie Clicker, thème laboratoire qui devient complètement over-the-top, tout en français, pixel art soigné).
+Répertoire du projet : /home/user/games/_dev/labo. LIS D'ABORD /home/user/games/_dev/labo/SPEC.md (règles globales, liste des 20 bâtiments et ères) et /home/user/games/_dev/labo/src/js/01_palette.js (palette).
+Tu écris UN SEUL fichier (indiqué ci-dessous). Ne touche à aucun autre fichier. Ne déclare au niveau global QUE les constantes demandées.
+Pas de dépendances, pas de réseau. Travaille avec soin : la qualité finale compte plus que la vitesse.
+Ta réponse finale (texte) : un court résumé (fichier, nombre d'éléments, points d'attention). Pas de dump du fichier.
+FICHIER : /home/user/games/_dev/labo/src/js/02_sprites_buildings.js
+TÂCHE : les icônes des 20 bâtiments, nommées b_<id> (ids : pipette, stagiaire, bunsen, microscope, centrifugeuse, robot, clonage, fusion, accelerateur, quantique, orbitale, nanobots, portail, chrono, forge, trounoir, simulateur, cerveau, bigbang, infini). Chacune 16×16, EXACTEMENT 2 frames (frame 2 = animation subtile :
+goutte qui tombe, flamme qui ondule, voyant qui clignote, particule qui bouge…). Elles servent dans la boutique (agrandies ×3) ET dans la
+vue du labo (répétées en rangées), donc elles doivent être très lisibles et chacune avoir une couleur dominante différente.
+Idées : b_pipette pipette motorisée verticale (piston en haut, petit moteur, goutte au bout) ; b_stagiaire petit personnage en blouse blanche
+avec lunettes de protection tenant une fiole (face, tête ronde, joli) ; b_bunsen bec Bunsen avec flamme bleue/orange ; b_microscope microscope
+classique ; b_centrifugeuse centrifugeuse ronde à couvercle avec voyant ; b_robot bras robotique articulé (orange industriel) tenant un tube ;
+b_clonage cuve verticale de liquide vert avec silhouette flottante ; b_fusion tokamak (tore lumineux) ; b_accelerateur segment d'anneau
+avec faisceau ; b_quantique ordinateur quantique « lustre » doré cryogénique ; b_orbitale station spatiale avec panneaux solaires ;
+b_nanobots essaim de petits robots argentés/hexagones ; b_portail anneau-portail tourbillonnant violet ; b_chrono machine temporelle
+(sablier + engrenages) ; b_forge étoile captive dans une forge/enclume ; b_trounoir trou noir avec disque d'accrétion ET un petit collier/laisse
+(c'est un animal de compagnie !) ; b_simulateur écran montrant une petite galaxie ; b_cerveau cerveau rose parsemé d'étoiles/galaxie ;
+b_bigbang usine avec cheminée qui crache une explosion cosmique ; b_infini un mini-labo/fiole qui contient lui-même (effet Droste) ou symbole ∞ lumineux.
+
+RÈGLES PIXEL ART :
+- Format exact : Object.assign(SPRITES, { nom: { w: W, h: H, frames: [ [ "ligne1", ... ], [ ...frame2... ] ] }, ... });
+  Chaque frame = exactement H chaînes de exactement W caractères. Caractères = clés de PAL, '.' transparent.
+- Style : contour sombre 1 px ('0' ou '1'/'n' pour plus doux), lumière en haut à gauche, 2-4 nuances par matériau, silhouettes lisibles,
+  pas de pixels orphelins, symétrie quand c'est symétrique, objets centrés qui remplissent bien la case. Couleurs saturées et harmonieuses.
+- Pour écrire de grosses grilles sans erreur, tu PEUX générer le fichier avec un petit script Node (dans le scratchpad / /tmp) qui dessine
+  par primitives (rectangles, cercles, lignes) puis retouche à la main — mais le fichier final doit contenir les chaînes littérales.
+- VALIDATION OBLIGATOIRE : node /home/user/games/_dev/labo/tools/preview.js /home/user/games/_dev/labo/preview/<nom>.png <ton fichier> --scale=6
+  puis OUVRE le PNG avec l'outil Read et regarde-le vraiment. Itère (au moins 2-3 passes de retouche) jusqu'à ce que chaque sprite soit
+  joli, lisible, reconnaissable et cohérent avec les autres. Corrige toute ERREUR signalée. Le script doit finir par "OK : aucune erreur".

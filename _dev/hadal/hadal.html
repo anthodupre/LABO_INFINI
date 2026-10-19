@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#020406">
+<title>HADAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020406; --ink:#b9cfd2; --dim:#5f7a80; --red:#e0405a; --pink:#ec8aa0; --cyan:#62d0d4;
+  --amber:#e0b040; --line:#12262e; --panel:#050d12;
+  --fs:21px;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;overscroll-behavior:none}
+body{font-family:"VT323",ui-monospace,Menlo,monospace;font-size:var(--fs);line-height:1.18;
+  -webkit-text-size-adjust:100%;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button{font-family:inherit}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:var(--st);padding-bottom:var(--sb)}
+#app.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-3px,-2px)}80%{transform:translate(3px,2px)}}
+
+/* ---------- HUD ---------- */
+#hud{flex:0 0 auto;padding:6px 10px 6px;background:var(--panel);border-bottom:2px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:6px}
+#depth{color:var(--cyan);font-size:22px;min-width:78px}
+#chap{flex:1;font-size:16px;color:var(--dim);letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbtn{background:#08151c;border:2px solid #1d3a44;color:var(--ink);font-size:17px;padding:2px 7px;line-height:1.1;border-radius:0;box-shadow:2px 2px 0 #000}
+.hbtn:active{transform:translate(2px,2px);box-shadow:none;border-color:var(--cyan)}
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;margin-top:5px}
+.bar{display:flex;align-items:center;gap:5px;font-size:16px;color:var(--dim)}
+.bar b{width:30px;font-weight:normal}
+.track{flex:1;height:8px;background:#0a1418;border:1px solid #1a2c33;position:relative;overflow:hidden}
+.fill{height:100%;width:100%;transition:width .5s steps(8)}
+.bar i{font-style:normal;width:24px;text-align:right;color:var(--ink)}
+#f-hp{background:var(--red)} #f-o2{background:var(--cyan)} #f-san{background:var(--amber)} #f-mut{background:var(--pink)}
+.bar.low i{color:var(--red);animation:blink 1s steps(2) infinite}
+#badges{display:flex;gap:6px;font-size:15px}
+.badge{padding:0 5px;border:1px solid}
+#b-god{color:#ffe08a;border-color:#ffe08a;display:none}
+#b-core{color:var(--red);border-color:var(--red);display:none;animation:blink .8s steps(2) infinite}
+#b-inf{color:var(--pink);border-color:var(--pink);display:none}
+@keyframes blink{50%{opacity:.25}}
+
+/* ---------- SCENE ---------- */
+#scenewrap{flex:0 0 auto;background:#000;display:flex;justify-content:center;border-bottom:2px solid var(--line);position:relative}
+#scene{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#scenewrap.off{display:none}
+
+/* ---------- STORY ---------- */
+#story{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 16px 18px;position:relative;min-height:80px}
+#story p{margin:0 0 .75em;white-space:pre-line}
+.echo{color:var(--dim);font-size:.82em;margin-bottom:.8em;border-left:3px solid #1d3a44;padding-left:8px}
+.endtitle{font-size:1.5em;color:var(--red);letter-spacing:2px;margin:.2em 0 .6em;text-shadow:2px 2px 0 #300}
+.t-r{color:var(--red)}
+.t-d{color:var(--dim)}
+.t-b{color:#f2fbfb}
+.t-v{color:var(--pink)}
+.t-g{color:var(--pink);display:inline-block;animation:jit .12s steps(2) infinite}
+p.bodyline{border-left:3px solid #6e1222;padding-left:8px}
+@keyframes jit{0%{transform:translate(0,0)}50%{transform:translate(1px,-1px);text-shadow:-2px 0 #0ff,2px 0 #f06}}
+#story.warp p{animation:warp 6s ease-in-out infinite}
+@keyframes warp{0%,100%{transform:skewX(0)}50%{transform:skewX(-1.5deg) scaleY(1.02)}}
+#story.insane{text-shadow:-1px 0 rgba(0,255,255,.35),1px 0 rgba(255,0,90,.35)}
+.tap{color:var(--dim);font-size:.75em;text-align:center;animation:blink 1.4s steps(2) infinite}
+
+/* ---------- CHOICES ---------- */
+#choices{flex:0 0 auto;max-height:40vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 10px 10px;
+  border-top:2px solid var(--line);display:flex;flex-direction:column;gap:7px;background:var(--panel)}
+#choices:empty{display:none}
+.ch{appearance:none;text-align:left;background:#08161d;border:2px solid #1f3d47;color:var(--ink);font-size:20px;
+  padding:9px 12px;min-height:46px;line-height:1.12;border-radius:0;box-shadow:3px 3px 0 #000;
+  opacity:0;transform:translateY(6px);animation:cin .3s steps(4) forwards}
+.ch:active{transform:translate(3px,3px)!important;box-shadow:none;border-color:var(--cyan);background:#0c222b}
+.ch::before{content:"> ";color:var(--cyan)}
+.ch.lock{opacity:.45!important;border-style:dashed}
+.ch.lock::before{content:"# ";color:var(--dim)}
+.ch.danger{border-color:#5a1624;color:#f3b5c0}
+.ch.danger::before{color:var(--red)}
+.ch.mut{border-color:#6a2c4a;color:var(--pink)}
+.ch.mut::before{content:"~ ";color:var(--pink)}
+.ch small{display:block;color:var(--dim);font-size:.78em;margin-top:2px}
+@keyframes cin{to{opacity:1;transform:none}}
+.timer{height:10px;background:#2a0b12;border:2px solid #5a1624;flex:0 0 auto}
+.timer div{height:100%;background:var(--red);width:100%}
+.kp{display:flex;flex-direction:column;align-items:center;gap:8px}
+.kpd{font-size:40px;letter-spacing:12px;color:var(--red);background:#000;border:2px solid #3a1018;padding:0 14px;text-shadow:0 0 6px #f00}
+.kpg{display:grid;grid-template-columns:repeat(3,72px);gap:7px}
+.kpk{height:50px;background:#0b1a20;border:2px solid #2a4650;color:var(--ink);font-size:26px;box-shadow:3px 3px 0 #000}
+.kpk:active{transform:translate(3px,3px);box-shadow:none;border-color:var(--red)}
+
+/* ---------- OVERLAYS ---------- */
+.ov{position:fixed;inset:0;background:rgba(1,4,6,.97);display:none;flex-direction:column;
+  padding:calc(var(--st) + 10px) 14px calc(var(--sb) + 12px);z-index:50}
+.ov.on{display:flex}
+.ovh{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:10px}
+.ovh h2{margin:0;font-size:30px;font-weight:normal;color:var(--cyan);letter-spacing:2px}
+.ovb{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.row{border:2px solid var(--line);padding:9px 11px;margin-bottom:8px;background:#061015}
+.row h3{margin:0 0 3px;font-size:22px;font-weight:normal;color:#e8f4f4}
+.row p{margin:0;color:var(--dim);font-size:18px;white-space:pre-line}
+.row .acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.btn{background:#0b1a20;border:2px solid #2a4650;color:var(--ink);font-size:19px;padding:6px 12px;box-shadow:3px 3px 0 #000;border-radius:0}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn.on{border-color:var(--cyan);color:var(--cyan)}
+.btn.warn{border-color:#5a1624;color:#f3b5c0}
+.btn.gold{border-color:#ffe08a;color:#ffe08a}
+.opt{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.lbl{color:var(--ink);font-size:20px}
+input.dev{background:#000;border:2px solid #ffe08a;color:#ffe08a;font-family:inherit;font-size:24px;padding:4px 8px;width:150px;text-transform:uppercase;border-radius:0}
+select.dev{background:#000;border:2px solid #2a4650;color:var(--ink);font-family:inherit;font-size:19px;padding:4px;max-width:100%}
+
+/* ---------- TITLE ---------- */
+#title{z-index:60;justify-content:flex-start;align-items:center;background:#000;padding-left:0;padding-right:0}
+#tcv{image-rendering:pixelated;display:block;margin-top:4px}
+#title h1{font-size:84px;margin:-6px 0 0;font-weight:normal;color:#dfeeee;letter-spacing:10px;
+  text-shadow:4px 4px 0 #6e1222, -2px 0 #0aa;animation:tflick 5s steps(1) infinite}
+@keyframes tflick{0%,92%,100%{opacity:1}93%{opacity:.3}95%{opacity:1}96%{opacity:.5}}
+#title .sub{color:var(--dim);font-size:19px;letter-spacing:2px;margin-top:-6px;text-align:center}
+#tmenu{display:flex;flex-direction:column;gap:9px;width:min(320px,86vw);margin-top:14px}
+#tmenu .btn{font-size:24px;padding:9px;text-align:center}
+#title .cw{margin-top:auto;color:#5a3a44;font-size:16px;text-align:center;padding:0 22px}
+#tend{color:var(--dim);font-size:17px;text-align:center;margin-top:6px}
+
+#toast{position:fixed;left:50%;top:calc(var(--st) + 70px);transform:translateX(-50%);z-index:80;background:#000;border:2px solid var(--cyan);
+  color:var(--cyan);padding:4px 12px;font-size:19px;pointer-events:none;opacity:0;transition:opacity .25s;max-width:90vw;text-align:center;box-shadow:3px 3px 0 #000}
+#toast.on{opacity:1}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:45;opacity:0;transition:opacity .5s}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="hud">
+    <div class="hrow">
+      <span id="depth">6,100m</span><span id="chap">I. DESCENT</span>
+      <button class="hbtn" id="btn-save">SAVE</button>
+      <button class="hbtn" id="btn-inv">BAG</button>
+      <button class="hbtn" id="btn-log">LOG</button>
+      <button class="hbtn" id="btn-set">&#9881;</button>
+    </div>
+    <div class="bars">
+      <div class="bar" id="bar-hp"><b>HP</b><div class="track"><div class="fill" id="f-hp"></div></div><i id="v-hp">100</i></div>
+      <div class="bar" id="bar-o2"><b>O2</b><div class="track"><div class="fill" id="f-o2"></div></div><i id="v-o2">100</i></div>
+      <div class="bar" id="bar-san"><b>SAN</b><div class="track"><div class="fill" id="f-san"></div></div><i id="v-san">100</i></div>
+      <div class="bar" id="bar-mut"><b>MUT</b><div class="track"><div class="fill" id="f-mut"></div></div><i id="v-mut">0</i></div>
+    </div>
+    <div class="hrow" id="badges" style="margin-top:3px"><span class="badge" id="b-god">GOD MODE</span><span class="badge" id="b-core">CORE --</span><span class="badge" id="b-inf">INFECTED</span></div>
+  </header>
+  <div id="scenewrap"><canvas id="scene"></canvas></div>
+  <main id="story"></main>
+  <footer id="choices"></footer>
+</div>
+
+<div id="flash"></div>
+
+<div class="ov" id="title">
+  <canvas id="tcv"></canvas>
+  <h1>HADAL</h1>
+  <div class="sub">PRESSURE MAKES US HONEST</div>
+  <div id="tmenu"></div>
+  <div id="tend"></div>
+  <div class="cw">Contains extreme body horror, gore, and isolation. Headphones recommended. Turn off silent mode for sound.</div>
+</div>
+
+<div class="ov" id="modal">
+  <div class="ovh"><h2 id="mtitle">BAG</h2><button class="btn" id="mclose">CLOSE</button></div>
+  <div class="ovb" id="mbody"></div>
+</div>
+
+<div id="toast"></div>
+<script>
+'use strict';
+/* =====================================================================
+   HADAL - engine
+   ===================================================================== */
+const $=s=>document.querySelector(s);
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function inl(s){return esc(s).replace(/\[(r|d|b|v|g)\]([\s\S]*?)\[\/\1\]/g,'<span class="t-$1">$2</span>');}
+
+/* ---------- storage (safe) ---------- */
+const MEM={};
+const store={
+  get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return MEM[k]||null;}},
+  set(k,v){MEM[k]=v;try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},
+  del(k){delete MEM[k];try{localStorage.removeItem(k);}catch(e){}}
+};
+const K={manual:'hadal_manual_v1',auto:'hadal_auto_v1',set:'hadal_settings_v1'};
+const settings=Object.assign({speed:'normal',sound:true,fx:true,timers:'normal',scene:'L',dev:false,god:false,endings:[]},store.get(K.set)||{});
+function saveSettings(){store.set(K.set,settings);}
+
+/* ---------- state ---------- */
+let S=null;
+function newState(){
+  return {node:'d_start',hp:100,o2:100,san:100,mut:0,
+    inv:{knife:1,flare:2,o2can:1},flags:{},logs:[],seen:{},once:{},
+    moves:0,depth:6100,chapter:'I. DESCENT',zone:'bell',infected:false,overload:0,returnTo:null,bodySeen:[]};
+}
+function has(i){return (S.inv[i]||0)>0;}
+function give(i,n){S.inv[i]=(S.inv[i]||0)+(n||1);toast('+ '+ITEMS[i].n+((n||1)>1?' x'+n:''));}
+function take(i,n){S.inv[i]=(S.inv[i]||0)-(n||1);if(S.inv[i]<=0)delete S.inv[i];}
+function setf(k,v){S.flags[k]=(v===undefined)?true:v;}
+function once(k,f){if(S.once[k])return;S.once[k]=1;f();}
+function log(id){if(S.logs.includes(id))return;S.logs.push(id);toast('LOG: '+LOGS[id].t);}
+function infect(){if(!S.infected){S.infected=true;toast('INFECTED');}}
+function mod(d){
+  for(const k in d){
+    const v=d[k];
+    if(settings.god&&(k==='hp'||k==='o2'||k==='san')&&v<0)continue;
+    S[k]=clamp(S[k]+v,0,100);
+    if(settings.god&&k==='mut')S.mut=Math.min(S.mut,95);
+    if(k==='hp'&&v<0)fx('hurt');
+    if(k==='mut'&&v>0)fx('mut');
+  }
+  hud();
+}
+function deathCheck(){
+  if(settings.god)return null;
+  if(S.mut>=100)return 'end_choir';
+  if(S.hp<=0)return 'end_opened';
+  if(S.o2<=0)return 'end_drowned';
+  if(S.san<=0)return 'end_unsealed';
+  return null;
+}
+
+/* ---------- effects ---------- */
+const flashEl=$('#flash'),appEl=$('#app');
+function fx(kind){
+  if(kind==='hurt'){AU.thud();if(!settings.fx)return;flash('rgba(200,10,30,.45)');appEl.classList.remove('shake');void appEl.offsetWidth;appEl.classList.add('shake');ART.shake();}
+  if(kind==='mut'){AU.glitch();if(!settings.fx)return;flash('rgba(230,90,140,.3)');ART.glitch();}
+}
+function flash(c){flashEl.style.transition='none';flashEl.style.background=c;flashEl.style.opacity=1;void flashEl.offsetWidth;flashEl.style.transition='opacity .6s';flashEl.style.opacity=0;}
+let toastT=null;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1900);}
+
+/* ---------- HUD ---------- */
+function setBar(k,v){$('#f-'+k).style.width=v+'%';$('#v-'+k).textContent=Math.round(v);
+  const low=(k==='mut')?v>=75:v<=25;$('#bar-'+k).classList.toggle('low',low);}
+function hud(){
+  if(!S)return;
+  setBar('hp',S.hp);setBar('o2',S.o2);setBar('san',S.san);setBar('mut',S.mut);
+  $('#depth').textContent=S.depth.toLocaleString('en-US')+'m';
+  $('#chap').textContent=S.chapter;
+  $('#b-god').style.display=settings.god?'':'none';
+  const core=$('#b-core');core.style.display=S.flags.overload?'':'none';core.textContent='CORE '+S.overload;
+  $('#b-inf').style.display=S.infected?'':'none';
+  const st=$('#story');
+  st.classList.toggle('warp',settings.fx&&S.mut>=60);
+  st.classList.toggle('insane',S.san<30);
+}
+
+/* ---------- text ---------- */
+function parse(str){
+  str=str.replace(/\n[ \t]+/g,'\n').trim();
+  return str.split(/\n\s*\n/).map(p=>{
+    const segs=[];const re=/\[(r|d|b|v|g)\]([\s\S]*?)\[\/\1\]/g;let last=0,m;
+    while((m=re.exec(p))){if(m.index>last)segs.push({c:'',x:p.slice(last,m.index)});segs.push({c:m[1],x:m[2]});last=re.lastIndex;}
+    if(last<p.length)segs.push({c:'',x:p.slice(last)});
+    return segs;
+  });
+}
+const SPEED={slow:34,normal:17,fast:6,instant:0};
+let typing=null;
+function typeOut(box,paras,done){
+  const spd=SPEED[settings.speed];
+  const q=[];
+  paras.forEach(segs=>{
+    const p=el('p');
+    if(segs.length===1&&segs[0].c==='v'&&segs[0].x.startsWith('​'))p.className='bodyline';
+    box.appendChild(p);
+    segs.forEach(sg=>{const sp=el('span',sg.c?'t-'+sg.c:'');p.appendChild(sp);q.push({sp,x:sg.x.replace('​','')});});
+  });
+  const story=$('#story');
+  if(!spd){q.forEach(o=>o.sp.textContent=o.x);done();return;}
+  let qi=0,ci=0,dead=false,tm=null;
+  const tap=el('div','tap','tap to skip');story.appendChild(tap);
+  function finish(){if(dead)return;dead=true;clearTimeout(tm);for(;qi<q.length;qi++)q[qi].sp.textContent=q[qi].x;typing=null;tap.remove();done();}
+  typing={finish};
+  function step(){
+    if(dead)return;
+    const o=q[qi];if(!o){finish();return;}
+    ci++;o.sp.textContent=o.x.slice(0,ci);
+    const ch=o.x[ci-1];
+    if(ci>=o.x.length){qi++;ci=0;}
+    if(story.scrollHeight-story.scrollTop-story.clientHeight<140)story.scrollTop=story.scrollHeight;
+    let d=spd;if(ch==='.'||ch==='!'||ch==='?')d=spd*9;else if(ch===','||ch===':')d=spd*4;else if(ch==='\n')d=spd*6;
+    if(ch&&ch!==' '&&Math.random()<.18)AU.tick();
+    tm=setTimeout(step,d);
+  }
+  step();
+}
+
+/* ---------- navigation ---------- */
+const storyEl=$('#story'),choicesEl=$('#choices');
+let tmr=null,modalOpen=false,busy=false;
+function clearTimer(){if(tmr)cancelAnimationFrame(tmr);tmr=null;}
+
+function go(id,echo,free){
+  clearTimer();
+  const n=NODES[id];
+  if(!n){toast('Missing node: '+id);console.error('missing',id);return;}
+  S.node=id;
+  S.seen[id]=(S.seen[id]||0)+1;
+  if(n.zone)S.zone=n.zone;
+  if(n.depth!=null)S.depth=n.depth;
+  if(n.ch)S.chapter=n.ch;
+  if(!n.end&&!free){
+    S.moves++;
+    let dr=(n.drain!=null)?n.drain:2;
+    if(S.mut>=40)dr=Math.ceil(dr/2);
+    if(dr)mod({o2:-dr});
+    if(S.infected&&S.moves%2===0)mod({mut:1});
+    if(S.inv.sample)mod({san:-1});
+    if(S.flags.overload&&!settings.god){S.overload--;if(S.overload<=0)return go('end_scuttle',echo,true);}
+    else if(S.flags.overload&&settings.god){S.overload=Math.max(1,S.overload-1);}
+  }
+  if(n.onEnter){const r=n.onEnter(S);if(r)return go(r,echo,true);}
+  if(!n.end){const d=deathCheck();if(d)return go(d,echo,true);}
+  if(n.checkpoint){store.set(K.auto,{S:S,t:Date.now()});setTimeout(()=>toast('PRESSURE LOCK - progress recorded'),400);}
+  render(id,echo);
+}
+
+function bodyLine(){
+  let pool=null;
+  for(const [lv,arr] of BODY){if(S.mut>=lv)pool={lv,arr};}
+  if(!pool)return null;
+  if(Math.random()>.45)return null;
+  const fresh=pool.arr.filter(x=>!S.bodySeen.includes(x));
+  const line=fresh.length?pick(fresh):pick(pool.arr);
+  if(!S.bodySeen.includes(line))S.bodySeen.push(line);
+  return line;
+}
+
+function render(id,echo){
+  const n=NODES[id];
+  busy=false;
+  storyEl.innerHTML='';choicesEl.innerHTML='';
+  storyEl.scrollTop=0;
+  if(echo)storyEl.appendChild(el('div','echo','&gt; '+inl(echo)));
+  if(n.end)storyEl.appendChild(el('div','endtitle','ENDING: '+esc(n.endName)));
+  let txt=typeof n.text==='function'?n.text(S):n.text;
+  if(!n.end&&!n.timed){
+    const b=bodyLine();if(b)txt+='\n\n[v]​'+b.replace(/\[r\]|\[\/r\]/g,'')+'[/v]';
+    if(S.san<30&&Math.random()<.5)txt+='\n\n[g]'+pick(HALLU)+'[/g]';
+  }
+  const box=el('div');storyEl.appendChild(box);
+  hud();
+  ART.set(typeof n.scene==='function'?n.scene(S):(n.scene||'dark'));
+  audioCue(n);
+  typeOut(box,parse(txt),()=>showChoices(id));
+}
+
+function audioCue(n){
+  const sfx=typeof n.sfx==='function'?n.sfx(S):n.sfx;
+  if(sfx==='sting')AU.sting();else if(sfx==='ping')AU.ping();else if(sfx==='thud')AU.thud();
+  let c=typeof n.choir==='function'?n.choir(S):n.choir;
+  if(c==null)c=(n.zone==='bell')?0:.15;
+  AU.setChoir(c);
+  AU.setAlarm(!!(S.flags.overload&&!n.end));
+  if(!n.end&&(S.hp<35||S.o2<25))AU.heartbeat();
+  if(n.zone==='bell'&&!n.end&&Math.random()<.6)setTimeout(()=>AU.ping(),1600);
+}
+
+function showChoices(id){
+  const n=NODES[id];
+  choicesEl.innerHTML='';
+  if(n.end){endButtons(n);return;}
+  if(n.keypad&&(!n.keypadIf||n.keypadIf(S))){keypad(n);return;}
+  let list=(n.choices||[]).filter(c=>!c.if||c.if(S));
+  if(!n.timed&&S.san<35&&id!=='hallu_helmet'&&Math.random()<.35){
+    list=list.slice();
+    list.splice(Math.floor(Math.random()*(list.length+1)),0,{t:'Take off your helmet. Just for a second.',to:()=>{S.returnTo=id;return 'hallu_helmet';}});
+  }
+  list.forEach((c,i)=>{
+    const lock=c.lock?c.lock(S):null;
+    const label=typeof c.t==='function'?c.t(S):c.t;
+    const hint=typeof c.hint==='function'?c.hint(S):c.hint;
+    const b=el('button','ch'+(lock?' lock':'')+(c.cls?' '+c.cls:''));
+    b.innerHTML=inl(label)+(lock?'<small>LOCKED: '+esc(lock)+'</small>':(hint?'<small>'+esc(hint)+'</small>':''));
+    b.style.animationDelay=(i*60)+'ms';
+    b.onclick=()=>{if(busy)return;if(lock){AU.blip();toast(lock);return;}choose(c,label);};
+    choicesEl.appendChild(b);
+  });
+  if(n.timed)startTimer(n);
+  choicesEl.scrollTop=0;
+}
+function choose(c,label){
+  busy=true;AU.blip();
+  if(c.fx)c.fx(S);
+  const to=typeof c.to==='function'?c.to(S):c.to;
+  go(to,label);
+}
+function startTimer(n){
+  const total=n.timed.sec*1000*(settings.timers==='relaxed'?2:1);
+  const bar=el('div','timer'),inner=el('div');bar.appendChild(inner);choicesEl.prepend(bar);
+  let left=total,last=performance.now(),beat=0;
+  const tick=now=>{
+    if(!tmr)return;
+    const dt=Math.min(100,now-last);last=now;
+    if(!modalOpen)left-=dt;
+    inner.style.width=Math.max(0,left/total*100)+'%';
+    beat+=dt;if(beat>650){beat=0;AU.heartbeat(.5);}
+    if(left<=0){tmr=null;if(!busy){busy=true;go(n.timed.fail,'(you hesitated)');}return;}
+    tmr=requestAnimationFrame(tick);
+  };
+  tmr=requestAnimationFrame(tick);
+}
+function keypad(n){
+  const wrap=el('div','kp'),disp=el('div','kpd','____'),grid=el('div','kpg');let code='';
+  const upd=()=>{disp.textContent=(code+'____').slice(0,4);};
+  ['1','2','3','4','5','6','7','8','9','CLR','0','OK'].forEach(k=>{
+    const b=el('button','kpk',k);
+    b.onclick=()=>{
+      if(busy)return;AU.blip();
+      if(k==='CLR')code='';
+      else if(k==='OK'){if(code.length<4){toast('Four digits');return;}busy=true;go(code===n.keypad.answer?n.keypad.ok:n.keypad.fail,'You key in '+code);return;}
+      else if(code.length<4)code+=k;
+      upd();
+    };
+    grid.appendChild(b);
+  });
+  wrap.appendChild(disp);wrap.appendChild(grid);choicesEl.appendChild(wrap);
+  const back=el('button','ch','Step away from the hatch');back.style.animationDelay='0ms';
+  back.onclick=()=>{if(busy)return;busy=true;go(n.keypad.back,'Step away');};
+  choicesEl.appendChild(back);
+}
+function endButtons(n){
+  if(!settings.endings.includes(n.ending)){settings.endings.push(n.ending);saveSettings();}
+  const p=el('p','t-d','Endings discovered: '+settings.endings.length+' / '+ENDINGS.length);
+  storyEl.appendChild(p);
+  const auto=store.get(K.auto),man=store.get(K.manual);
+  const add=(t,f,cls)=>{const b=el('button','ch'+(cls?' '+cls:''),t);b.style.animationDelay='0ms';b.onclick=f;choicesEl.appendChild(b);};
+  if(auto)add('Load last pressure lock',()=>load('auto'));
+  if(man)add('Load manual save',()=>load('manual'));
+  add('Begin a new descent',()=>newGame(),'danger');
+  add('Main menu',()=>showTitle());
+}
+
+/* ---------- save / load ---------- */
+function manualSave(){
+  if(!S){toast('Nothing to save');return;}
+  if(NODES[S.node].end){toast('Cannot save here');return;}
+  store.set(K.manual,{S:S,t:Date.now()});AU.blip();toast('SAVED - '+S.chapter);
+}
+function load(slot){
+  const d=store.get(K[slot]);if(!d){toast('No save found');return;}
+  S=JSON.parse(JSON.stringify(d.S));
+  hideTitle();closeModal();AU.init();
+  render(S.node,slot==='auto'?'(pressure lock restored)':'(save loaded)');
+}
+function newGame(){
+  S=newState();hideTitle();closeModal();AU.init();
+  go('d_start',null,true);
+}
+
+/* ---------- modals ---------- */
+const modal=$('#modal'),mbody=$('#mbody');
+function openModal(title,build){modalOpen=true;$('#mtitle').textContent=title;mbody.innerHTML='';build(mbody);modal.classList.add('on');AU.blip();}
+function closeModal(){modalOpen=false;modal.classList.remove('on');}
+$('#mclose').onclick=closeModal;
+
+function showInv(){
+  if(!S)return;
+  openModal('BAG',b=>{
+    const ids=Object.keys(S.inv);
+    if(!ids.length)b.appendChild(el('p','t-d','Empty.'));
+    ids.forEach(id=>{
+      const it=ITEMS[id];if(!it)return;
+      const r=el('div','row');
+      r.appendChild(el('h3',null,esc(it.n)+(S.inv[id]>1?' <span class="t-d">x'+S.inv[id]+'</span>':'')));
+      r.appendChild(el('p',null,esc(it.d||'')));
+      if(it.use){
+        const a=el('div','acts'),u=el('button','btn',it.useLabel||'USE');
+        u.onclick=()=>{
+          const msg=it.use();
+          if(msg==null){toast('Not now');return;}
+          if(id!=='sample')take(id);
+          hud();toast(msg.length>60?msg.split('(').pop().replace(')',''):msg);
+          const d=deathCheck();if(d){closeModal();go(d,'You used '+it.n,true);return;}
+          showInv();
+          const box=el('p','t-v',esc(msg));mbody.prepend(box);
+        };
+        a.appendChild(u);r.appendChild(a);
+      }
+      b.appendChild(r);
+    });
+    b.appendChild(el('p','t-d','Status: '+(S.infected?'INFECTED - mutation grows as you move.':'clean')+(S.mut>=40?' Gills: O2 use halved.':'')));
+  });
+}
+function showLogs(){
+  if(!S)return;
+  openModal('LOGS',b=>{
+    if(!S.logs.length)b.appendChild(el('p','t-d','No logs found yet.'));
+    S.logs.forEach(id=>{const L=LOGS[id];const r=el('div','row');r.appendChild(el('h3',null,esc(L.t)));const p=el('p',null,inl(L.x));p.style.display='none';r.appendChild(p);
+      r.onclick=()=>{p.style.display=p.style.display==='none'?'block':'none';};b.appendChild(r);});
+    b.appendChild(el('p','t-d','Tap a log to read it. Found '+S.logs.length+' / '+Object.keys(LOGS).length+'.'));
+  });
+}
+function optRow(label,key,opts,after){
+  const r=el('div','row');r.appendChild(el('div','lbl',label));const o=el('div','opt');
+  opts.forEach(([v,t])=>{const b=el('button','btn'+(settings[key]===v?' on':''),t);b.onclick=()=>{settings[key]=v;saveSettings();if(after)after();showSettings();};o.appendChild(b);});
+  r.appendChild(o);return r;
+}
+function showSettings(){
+  openModal('SETTINGS',b=>{
+    b.appendChild(optRow('Text speed','speed',[['slow','SLOW'],['normal','NORMAL'],['fast','FAST'],['instant','INSTANT']]));
+    b.appendChild(optRow('Sound','sound',[[true,'ON'],[false,'OFF']],()=>AU.vol()));
+    b.appendChild(optRow('Screen effects','fx',[[true,'ON'],[false,'OFF']],hud));
+    b.appendChild(optRow('Timed choices','timers',[['normal','NORMAL'],['relaxed','RELAXED x2']]));
+    b.appendChild(optRow('Pixel scene','scene',[['L','LARGE'],['S','SMALL'],['off','OFF']],()=>ART.resize()));
+    const sv=el('div','row');sv.appendChild(el('div','lbl','Saves'));const so=el('div','opt');
+    const m=store.get(K.manual),a=store.get(K.auto);
+    sv.appendChild(el('p',null,'Manual: '+(m?new Date(m.t).toLocaleString()+' - '+esc(m.S.chapter):'none')+'\nPressure lock: '+(a?new Date(a.t).toLocaleString()+' - '+esc(a.S.chapter):'none')));
+    const del=el('button','btn warn','DELETE SAVES');del.onclick=()=>{if(del.dataset.c){store.del(K.manual);store.del(K.auto);toast('Saves deleted');showSettings();}else{del.dataset.c=1;del.textContent='TAP AGAIN TO CONFIRM';}};
+    const mm=el('button','btn','MAIN MENU');mm.onclick=()=>{closeModal();showTitle();};
+    so.appendChild(mm);so.appendChild(del);sv.appendChild(so);b.appendChild(sv);
+    b.appendChild(el('p','t-d','Endings discovered: '+settings.endings.length+' / '+ENDINGS.length));
+    /* DEV */
+    const dv=el('div','row');dv.style.borderColor='#5a4a1a';
+    const devBtn=el('button','btn gold','DEV');dv.appendChild(devBtn);
+    const area=el('div');dv.appendChild(area);
+    devBtn.onclick=()=>{area.innerHTML='';devPanel(area);};
+    if(settings.dev)devPanel(area);
+    b.appendChild(dv);
+  });
+}
+function devPanel(area){
+  area.innerHTML='';
+  if(!settings.dev){
+    area.appendChild(el('p',null,'Enter developer code:'));
+    const o=el('div','opt'),inp=el('input','dev');inp.type='text';inp.autocapitalize='characters';inp.autocomplete='off';inp.spellcheck=false;
+    const ok=el('button','btn gold','ENTER');
+    const sub=()=>{if(inp.value.trim().toUpperCase()==='BURGER'){settings.dev=true;settings.god=true;saveSettings();toast('BURGER ACCEPTED - GOD MODE ON');hud();devPanel(area);}else{toast('ACCESS DENIED');inp.value='';}};
+    ok.onclick=sub;inp.onkeydown=e=>{if(e.key==='Enter')sub();};
+    o.appendChild(inp);o.appendChild(ok);area.appendChild(o);setTimeout(()=>inp.focus(),50);
+    return;
+  }
+  area.appendChild(el('p',null,'GOD MODE: no damage, no drowning, no madness, mutation capped at 95, core never blows. Endings you choose still happen.'));
+  const o=el('div','opt');
+  const B=(t,f,c)=>{const b=el('button','btn'+(c?' '+c:''),t);b.onclick=()=>{f();hud();};o.appendChild(b);};
+  B('GOD: '+(settings.god?'ON':'OFF'),()=>{settings.god=!settings.god;saveSettings();devPanel(area);},settings.god?'on':'');
+  if(S){
+    B('FULL STATS',()=>{S.hp=100;S.o2=100;S.san=100;toast('Restored');});
+    B('MUT +25',()=>{S.mut=clamp(S.mut+25,0,settings.god?95:100);});
+    B('MUT -25',()=>{S.mut=clamp(S.mut-25,0,100);});
+    B('CURE',()=>{S.infected=false;S.mut=0;toast('Clean');});
+    B('ALL ITEMS',()=>{Object.keys(ITEMS).forEach(k=>{if(k!=='sample')S.inv[k]=Math.max(S.inv[k]||0,k==='cauterizer'?3:(k==='keycard'||k==='fuse'||k==='reactorkey')?1:5);});toast('All items');});
+    B('ALL LOGS',()=>{S.logs=Object.keys(LOGS);toast('All logs');});
+    B('HATCH CODE',()=>toast('Code: 3041'));
+  }
+  B('LOCK DEV',()=>{settings.dev=false;settings.god=false;saveSettings();devPanel(area);},'warn');
+  area.appendChild(o);
+  if(S){
+    const j=el('div','opt'),sel=el('select','dev');
+    Object.keys(NODES).forEach(k=>{const op=el('option',null,k);op.value=k;if(k===S.node)op.selected=true;sel.appendChild(op);});
+    const gb=el('button','btn gold','JUMP');gb.onclick=()=>{closeModal();go(sel.value,'(dev jump)',true);};
+    j.appendChild(sel);j.appendChild(gb);area.appendChild(j);
+  }
+}
+
+/* ---------- title ---------- */
+function showTitle(){
+  clearTimer();closeModal();
+  const t=$('#title');t.classList.add('on');
+  const menu=$('#tmenu');menu.innerHTML='';
+  const add=(txt,f,cls)=>{const b=el('button','btn'+(cls?' '+cls:''),txt);b.onclick=()=>{AU.init();f();};menu.appendChild(b);};
+  add('NEW DESCENT',newGame);
+  if(store.get(K.manual))add('CONTINUE (MANUAL SAVE)',()=>load('manual'));
+  if(store.get(K.auto))add('LAST PRESSURE LOCK',()=>load('auto'));
+  add('SETTINGS',showSettings);
+  $('#tend').textContent=settings.endings.length?('Endings discovered: '+settings.endings.length+' / '+ENDINGS.length):'';
+  ART.title(true);
+  if(AU.ctx)AU.setChoir(.25);
+}
+function hideTitle(){$('#title').classList.remove('on');ART.title(false);}
+
+/* ---------- wiring ---------- */
+$('#btn-save').onclick=manualSave;
+$('#btn-inv').onclick=showInv;
+$('#btn-log').onclick=showLogs;
+$('#btn-set').onclick=showSettings;
+storyEl.addEventListener('click',()=>{if(typing)typing.finish();});
+$('#scenewrap').addEventListener('click',()=>{if(typing)typing.finish();});
+/* =====================================================================
+   STORY DATA
+   ===================================================================== */
+const ITEMS={
+  knife:{n:'Dive knife',d:'Titanium, serrated. Meant for rope and kelp. It will be used for neither.'},
+  flare:{n:'Flare',d:'Red marine flare. Light one to steady your nerves (+10 SAN), or keep it for something worse.',
+    use:()=>{mod({san:10});return 'You crack a flare. Red light. For thirty seconds the dark has edges. (+10 SAN)';}},
+  o2can:{n:'O2 canister',d:'Clips into your suit manifold. +40 O2.',
+    use:()=>{if(S.o2>=100)return null;mod({o2:40});return 'Hiss. Cold, clean, metallic air. (+40 O2)';}},
+  medkit:{n:'Medkit',d:'Sealant foam, staples, morphine. +35 HP.',
+    use:()=>{if(S.hp>=100)return null;mod({hp:35});return 'You staple what needs stapling. You do not look at what the staples go into. (+35 HP)';}},
+  sedative:{n:'Sedative',d:'From Ines. +30 SAN, -5 HP.',
+    use:()=>{mod({san:30,hp:-5});return 'The world goes soft at the edges. The song goes quiet, a little. (+30 SAN)';}},
+  adrenaline:{n:'Adrenaline',d:'Autoinjector. +20 HP, +10 SAN.',
+    use:()=>{mod({hp:20,san:10});return 'Your heart kicks like something trying to get out. (+20 HP, +10 SAN)';}},
+  cauterizer:{n:'Cauterizer',d:'One charge per unit. Burns out early filaments: -12 MUT, -15 HP, -5 SAN. Cures infection if MUT drops below 30.',
+    use:()=>{if(S.mut<=0)return null;mod({mut:-12,hp:-15,san:-5});if(S.mut<30&&S.infected){S.infected=false;}
+      return 'You press it to the itch and pull the trigger. The smell is pork. Something under the skin screams in a voice that is not yours. (-12 MUT)'+(S.infected?'':' Infection burned out.');}},
+  serum:{n:'Suppressor',d:'Dr. Sato\'s suppressor. -35 MUT and halts infection. One dose.',
+    use:()=>{mod({mut:-35,san:-5});S.infected=false;fx('mut');
+      return 'It goes in like ice water. Everything new in you clenches, then lets go. Something small and soft slides out of your sleeve and dies on the floor. (-35 MUT, infection halted)';}},
+  keycard:{n:'Lab keycard B',d:'Laminated. The lanyard is still a little pink where it grew into him.'},
+  fuse:{n:'Fuse',d:'Heavy ceramic fuse, 40A. Comms needs one.'},
+  reactorkey:{n:'Reactor key',d:'Commander Kessel\'s. Still warm. Still a little wet.'},
+  sample:{n:'Specimen Zero',d:'Containment flask. Meridian wants this. It hums against your hip. (-1 SAN each move you carry it)',
+    use:()=>{take('sample');mod({mut:3});setf('dumped');return 'You smash the flask against the wall. The pink film flows out and into a seam, unhurried, like it was always going to. (Specimen discarded)';},useLabel:'SMASH'}
+};
+
+const LOGS={
+  lena0:{t:'CALYX - Last transmission',x:`"CALYX to Meridian. Lena Voss, comms. We're fine. Disregard the earlier. Disregard Okafor. We are all fine, we are all so much roomier now.
+
+Don't send anyone.
+
+Or do. Send everyone. There's space."
+
+[Under her voice: a chord. Hundreds of voices holding one note.]`},
+  okafor1:{t:'Okafor - What he said',x:`"It doesn't hurt. I'm a scientist; I would tell you if it hurt. It is so kind. It is only trying to help us fit.
+
+We found it on the fourteenth. March the fourteenth. I remember because Yuki made a cake and none of us ate it, we were all at the microscope."`},
+  ines1:{t:'Ines Moreau - What happened',x:`Okafor brought a film up from the vent in March. It wasn't killing the tubeworms. It was improving them.
+
+It got into Tee through a cut on his hand.
+
+Down here, pressure crushes everything that isn't built for it. Lamina rebuilds you so you fit. Bones go soft so they can't snap. Lungs open to the water. Skin learns to share. It isn't malicious. It's a tailor.
+
+Bram went down to the thing below the anchor. He took the reactor key, so nobody could scuttle the station.`},
+  ines2:{t:'Ines Moreau - The rule',x:`Everything it builds is built for pressure. Take it up past three thousand metres and it comes apart, or it takes whoever's carrying it and blooms.
+
+Don't take anything up. Not the sample. Not yourself, if you're past halfway.`},
+  bram1:{t:'Kessel - Note in locker',x:`Hatch code changed. Nobody goes to the anchor without me.
+
+Code is the day we found it, written backwards, like everything else down here.
+
+- B.K.`},
+  sato1:{t:'Sato - Day 1',x:`14/03. Halvard brought up a sample from the vent at 8,190 m. Pink biofilm, extraordinarily dense. Halvard wants to name it Lamina. Fine. Cake went uneaten.`},
+  sato2:{t:'Sato - Day 31',x:`It is not a parasite. Parasites take. Lamina restructures. It reads the body like a draft and edits it toward one goal: survive pressure.
+
+I've synthesised a suppressor. It strips the new tissue back. It cannot strip it all. One dose in the cold store; the rest went into Ines and it was not enough.`},
+  sato3:{t:'Sato - Final',x:`Ines strapped herself to the table today. Tee won't stop rowing. Bram has gone down to listen.
+
+I'm going to sit by the window. I want to see it. I think, soon, I'll be able to see everything.`},
+  lena1:{t:'Lena - Postcard',x:`Mira -
+They say you can't see the sun from here but that's not true, you can see it in everyone's face when the supply drop comes. Eighteen more days. Save me the room by the window.
+- L.`},
+  cole1:{t:'Meridian - Cole',x:`"Corporate is on the line. They don't care about the crew. Bring Specimen Zero up and you're set for life.
+
+...and Three? If it's in you, don't come up. I'm sorry. I'll make sure the contract pays out."`},
+  lena2:{t:'Lena - What the song is',x:`It's not a song. It's a map. Every voice it takes, it takes a little higher. It is showing the others where we are.
+
+It wants to go up. It wants the light.`},
+  choir1:{t:'The Choir - What it wants',x:`It has been patient for four hundred million years. Every animal that has fallen into the trench, it has kept. It has kept them singing.
+
+It cannot climb. It needs to be carried.`}
+};
+
+const BODY=[
+ [15,[
+  `Your left glove feels tight. When you flex your hand, something in your knuckles flexes back, half a second late.`,
+  `There's an itch under your tongue, deep, like a seed working its way up toward the light.`,
+  `You catch your reflection in the faceplate. Your pupils are huge. They do not shrink when you point the lamp at them.`,
+  `Your gums ache. When you press your tongue to a molar it moves, loose as a pebble in mud.`]],
+ [35,[
+  `A tooth comes free and rattles into the chin cup of your helmet. In the gap, your tongue finds something smaller pushing up. It has a ridge. It has [r]a lot of[/r] ridges.`,
+  `The skin between your fingers has grown. Thin translucent webbing. When you spread your hand in front of the lamp, it glows pink.`,
+  `Your ribs creak when you breathe. Then they stop creaking. They have gone soft. Bendable. Built for pressure.`,
+  `Under your jaw, on both sides, three thin slits have opened. They flutter when you're afraid. They are fluttering now.`]],
+ [60,[
+  `You can hear the song all the time now. When you hum along, and you did not decide to, the walls hum back.`,
+  `You flex your left hand and the fingers don't separate. The webbing has thickened into a single paddle of meat. Your fingernails float loose inside it like seeds in fruit.`,
+  `Your spine is lengthening. The suit's back plate presses against new vertebrae. You count them with your tongue, somehow, from the inside. There are [r]too many[/r].`,
+  `Your eyes have migrated. Only a little. Only enough that the edges of the faceplate frame everything wrong.`]],
+ [80,[
+  `[r]You're not cold any more. You were cold for so long.[/r]`,
+  `Your heart has started beating in two places. The second one is lower, and it beats in time with the song.`,
+  `You can't remember your mother's face. You can remember Okafor's mother's face perfectly.`]]
+];
+const HALLU=[`there's room in you`,`you have always been down here`,`the helmet is the only thing hurting you`,`behind you behind you behind you`,`we can hear your heart`,`take it off take it off take it off`,`it doesn't hurt it doesn't hurt`];
+const AMB=[
+ `Somewhere above the ceiling panels, something drags itself along slowly, then stops directly over your head.`,
+ `The lichen on the walls brightens as you pass, then dims, like a crowd turning to watch you go.`,
+ `A door down the ring opens and closes. Opens. Closes. Like a mouth practising.`,
+ `The station groans under eight kilometres of water. For a moment it sounds exactly like a word.`,
+ `Water drips from the ceiling in a slow rhythm. It's dripping in time with your heartbeat. Then it speeds up, and your heart follows it.`,
+ `The lights go out. Your lamp is the only thing in the world. Something is breathing in the dark, a little out of rhythm with you. The lights come back. Nothing there.`,
+ `A handprint on the wall, at shoulder height. Too many fingers. Still wet.`,
+ `Your radio clicks. For a second you hear Cole say your name. Then a hundred voices say it too, a semitone lower.`
+];
+
+/* ending resolver for the bell */
+function bellEnding(s){
+  if(s.mut>=50) return 'end_bloom';
+  if(s.inv.sample) return 'end_cargo';
+  if(s.flags.overload) return 'end_true';
+  return 'end_surface';
+}
+
+const NODES={
+/* ------------------------------------------------ I. DESCENT */
+d_start:{ch:'I. DESCENT',depth:6100,zone:'bell',scene:'bell',sfx:'ping',
+ text:`The bell is the size of a coffin stood on end, and it smells like one: rubber, sweat, cold metal.
+
+[d]6,100 metres.[/d] Outside the viewport, the last of the light gave up a long time ago. Your lamp makes a small yellow room inside an infinite black one.
+
+The radio crackles. [b]COLE:[/b] "Diver Three, Meridian. Two thousand to go. How's the suit?"
+
+Station CALYX went silent nineteen days ago. Six crew, bolted to the wall of the Mariana Trench at 8,140 metres. Meridian Deepcore is paying you very well to find out why.
+
+The hull ticks as the pressure tightens around you, like a fist closing very slowly.`,
+ choices:[
+  {t:'Run a suit diagnostic',to:'d_diag',if:s=>!s.flags.diag},
+  {t:'Play CALYX\'s last transmission',to:'d_trans',if:s=>!s.flags.trans},
+  {t:'Look out the viewport',to:'d_view',if:s=>!s.flags.view},
+  {t:'"Keep it coming, Cole."',to:'d_dock'}]},
+
+d_bell:{zone:'bell',scene:'bell',
+ text:s=>`The bell keeps falling. The pressure gauge climbs in slow, patient clicks.
+
+[d]${s.depth.toLocaleString('en-US')} metres.[/d]`,
+ onEnter:s=>{s.depth=Math.min(8000,s.depth+550);},
+ choices:[
+  {t:'Run a suit diagnostic',to:'d_diag',if:s=>!s.flags.diag},
+  {t:'Play CALYX\'s last transmission',to:'d_trans',if:s=>!s.flags.trans},
+  {t:'Look out the viewport',to:'d_view',if:s=>!s.flags.view},
+  {t:'"Keep it coming, Cole."',to:'d_dock'}]},
+
+d_diag:{zone:'bell',scene:'bell',
+ onEnter:s=>{setf('diag');once('kit',()=>{give('medkit');});},
+ text:`Green lights down your left wrist. Seals hold. Reserve air 100%. Heater nominal.
+
+One amber light: a hairline scratch across the knuckle of your left glove. [d]Cosmetic,[/d] the diagnostic says.
+
+You tape it anyway. Two layers. Then a third.
+
+[b]COLE:[/b] "Good habit. Don't bleed down there, Three. Okafor's last report said the water was 'biologically active.' Whatever that means."
+
+You check the kit: dive knife, two flares, one spare O2 canister. A medkit, which you clip to your hip.`,
+ choices:[{t:'Continue',to:'d_bell'}]},
+
+d_trans:{zone:'bell',scene:'bell',sfx:'sting',
+ onEnter:s=>{setf('trans');once('t_san',()=>mod({san:-6}));log('lena0');},
+ text:`You thumb the playback. A woman's voice, too close to the microphone.
+
+"CALYX to Meridian. Lena Voss, comms. We're fine. Disregard the earlier. Disregard Okafor. We are all fine, we are all [g]so much roomier[/g] now-"
+
+A wet click.
+
+Under her voice, something that is not static. A chord. Hundreds of voices holding one note, and the note is moving up and down your spine like a fingertip.
+
+"-don't send anyone. Or do. Send everyone. [r]There's space.[/r]"`,
+ choices:[{t:'Continue',to:'d_bell'}]},
+
+d_view:{zone:'bell',scene:'shoal',sfx:'sting',
+ onEnter:s=>{setf('view');once('v_san',()=>mod({san:-4}));},
+ text:`Your lamp catches them at the edge of its reach: a shoal of fish, maybe a hundred, turning as one.
+
+As they turn, you see they are not separate. A single sheet of grey skin stretches between them. A hundred bodies stitched into one wide, rippling flag of flesh.
+
+Every eye on the sheet rolls toward the bell at the same moment.
+
+Then the sheet folds itself, gently, like a hand closing, and sinks below your light.`,
+ choices:[{t:'Continue',to:'d_bell'}]},
+
+d_dock:{ch:'I. DESCENT',depth:8140,zone:'bell',scene:'dock',sfx:'thud',checkpoint:true,
+ text:`At 8,140 metres the bell kisses CALYX's docking collar with a sound like a dropped plate. Magnetic clamps bite.
+
+The radio dissolves into a long, slow hiss, and under the hiss, very faintly: [v]humming[/v].
+
+[b]COLE:[/b] "Three- losing yo- ...something on the line, is that y-"
+
+Then nothing.
+
+The hatch beneath your boots is stencilled MOON POOL. Something has been smeared across the letters, and has dried brown.`,
+ choices:[{t:'Open the hatch',to:'mp_enter'}]},
+
+/* ------------------------------------------------ II. CALYX */
+mp_enter:{ch:'II. CALYX',depth:8140,zone:'station',scene:'moonpool',sfx:'sting',choir:.12,
+ text:`The moon pool is a round room around a round hole of black water. Emergency lights pulse red, slowly, like something breathing.
+
+Someone is on the ceiling.
+
+Dr. Halvard Okafor (you know him from the briefing photo, or from what's left of his face) is fused to the ceiling above the pool, spread like a starfish. His chest has opened. Not torn: [r]opened[/r]. The ribs have folded outward like the petals of a flower, and each rib ends in a small, perfect human tooth.
+
+Inside the bloom of his chest, his lungs inflate. Deflate. Inflate.
+
+He's still breathing.`,
+ choices:[
+  {t:'Look closer at Okafor',to:'mp_okafor'},
+  {t:'Fire a flare into the pool',to:'mp_flare',if:s=>has('flare')&&!s.flags.poolflare,fx:()=>take('flare')},
+  {t:'Leave him. Go into the station',to:'ring'}]},
+
+mp_okafor:{zone:'station',scene:'moonpool',choir:.12,
+ onEnter:s=>{once('ok_san',()=>mod({san:-8}));log('okafor1');},
+ text:`You step under him. Water drips from his fingers. No. Not water. His fingers are dripping [r]themselves[/r], lengthening into pink threads that reach down for the pool like roots looking for soil.
+
+His eyes open. Milky. Gentle.
+
+"Oh," he says, delighted. "A new one."
+
+His voice comes from the bloom in his chest. The teeth on his ribs click together when he speaks.
+
+"It doesn't hurt. That's what I want you to know. I'm a scientist; I would tell you if it hurt. It is [b]so kind[/b]. It is only trying to help us fit. We found it on the fourteenth, you know. March the fourteenth. Yuki made a cake."
+
+A lanyard hangs from his collar. A keycard turns slowly on it: [b]LAB ACCESS - B[/b].`,
+ choices:[
+  {t:'Take the keycard',to:'mp_card',if:s=>!has('keycard')},
+  {t:'End it. Knife through the throat',to:'mp_mercy',cls:'danger',if:s=>!s.flags.okmercy},
+  {t:'Step back',to:'mp_room'}]},
+
+mp_card:{zone:'station',scene:'moonpool',
+ onEnter:s=>{once('card',()=>give('keycard'));},
+ text:`The lanyard doesn't come free. The nylon has grown into his neck, woven through with pink. You saw through it with the knife while he watches you fondly.
+
+"Ask Yuki about the date," he murmurs. "Bram always writes it backwards. Bram does everything backwards now. We all do. We're all [g]facing down[/g]."
+
+[d]Lab keycard B acquired.[/d]`,
+ choices:[
+  {t:'End it. Knife through the throat',to:'mp_mercy',cls:'danger',if:s=>!s.flags.okmercy},
+  {t:'Leave him breathing',to:'ring'}]},
+
+mp_mercy:{zone:'station',scene:'moonpool',sfx:'sting',
+ onEnter:s=>{setf('okmercy');once('okm',()=>{mod({san:-6});if(!s.flags.diag){mod({mut:8});infect();}});},
+ text:s=>`It takes longer than it should. The flesh is soft as wet bread and then suddenly hard as horn, and he hums the whole time, encouraging you.
+
+When it's done, the bloom of ribs closes slowly, like a flower at dusk. The teeth click once, all together. [d]Thank you[/d], or only a reflex. You don't let yourself decide which.
+
+`+(s.flags.diag?`Something warm runs down your glove. You check the scratch on your knuckle: the tape you put on in the bell is holding. Good. [b]Good.[/b]`
+ :`Something warm runs down your glove and finds the scratch across your knuckle. You feel it go in: cold, then warm, then nothing at all, which is worse.
+
+[r]You are infected.[/r]`),
+ choices:[{t:'Go into the station',to:'ring'},{t:'Stay a moment',to:'mp_room'}]},
+
+mp_flare:{zone:'station',scene:'poolface',sfx:'sting',choir:.35,
+ onEnter:s=>{setf('poolflare');once('pf',()=>mod({san:-10}));},
+ text:`The flare hits the water and keeps burning as it sinks, a red thread unspooling downward.
+
+Ten metres. Twenty. The pool has no bottom; the station's floor is open to the trench.
+
+At thirty metres the light finds a face looking up.
+
+It is the size of the bell. It is made of faces. Fish faces, human faces, faces of things you have no names for, packed together like scales. Every mouth is open in the same perfect O, singing a note too low to hear. You feel it in your fillings.
+
+Then the flare goes out, and the faces are still there. You just can't see them.`,
+ choices:[{t:'Back away from the edge',to:'mp_room'}]},
+
+mp_room:{ch:'II. CALYX',zone:'station',scene:'moonpool',choir:.12,
+ text:s=>`The moon pool. Red light breathing in and out. `+(s.flags.okmercy?`Okafor hangs still on the ceiling, his bloom of ribs folded shut.`:`Above the black water, Okafor breathes and hums, pleased to see you again.`)+`
+
+Your bell waits at the docking collar. It is the only way up.`+(s.flags.overload?`
+
+[r]Klaxons. The whole station is shaking. CORE OVERLOAD IN ${s.overload}.[/r]`:''),
+ choices:[
+  {t:'Look closer at Okafor',to:'mp_okafor',if:s=>!s.flags.okmercy},
+  {t:'Fire a flare into the pool',to:'mp_flare',if:s=>has('flare')&&!s.flags.poolflare,fx:()=>take('flare')},
+  {t:'Board the bell and ascend',to:'bell_confirm',cls:'danger'},
+  {t:'Go into the station',to:'ring'}]},
+
+bell_confirm:{zone:'bell',scene:'bell',
+ text:s=>{let w=[];
+  if(s.inv.sample) w.push(`The flask on your hip is humming. [r]Specimen Zero is coming with you.[/r]`);
+  if(s.mut>=50) w.push(`Your body has changed more than half way. [r]Ines said not to go up past halfway.[/r]`);
+  else if(s.mut>=35) w.push(`The slits under your jaw flutter. You are close to halfway.`);
+  if(!s.flags.overload) w.push(`CALYX is still intact. The song is still playing.`);
+  else w.push(`[b]The core is counting down. CALYX will not be here much longer.[/b]`);
+  return `You seal yourself into the bell. One lever drops the ballast, and then there is no coming back down.
+
+`+w.join('\n\n');},
+ choices:[
+  {t:'Drop the ballast. Go up.',to:s=>bellEnding(s),cls:'danger'},
+  {t:'Not yet',to:'mp_room'}]},
+
+ring:{ch:'II. CALYX',depth:8140,zone:'station',scene:'ring',choir:.15,checkpoint:true,
+ text:s=>{
+  let t;
+  if(s.seen.ring===1) t=`The Ring Corridor loops around the station's core, a circle of white panels gone the colour of old teeth. Emergency strips glow red along the floor.
+
+The walls are [r]growing[/r]. A pink lichen has crept across the panels, glossy and finely veined. When your lamp touches it, it brightens and pulses, slowly, like a gum around a new tooth.
+
+Doors lead off the ring: MED BAY. CREW. LAB. COMMS. ENGINEERING.
+
+In the floor at the centre: a heavy circular hatch. [b]LOWER ACCESS - TRENCH ANCHOR[/b].
+
+Behind you, the moon pool, and your bell.`;
+  else t=`The Ring Corridor. Red light, pink walls.
+
+`+pick(AMB);
+  if(s.flags.overload) t+=`
+
+[r]Klaxons scream. CORE OVERLOAD IN ${s.overload}. Get to the bell.[/r]`;
+  return t;},
+ choices:[
+  {t:'Med Bay',to:'med',hint:s=>s.flags.ines==='dead'?'Ines is at rest':(s.seen.med?'Ines':'')},
+  {t:'Crew Quarters',to:'crew',hint:s=>s.seen.crew?'visited':''},
+  {t:'Lab',to:'lab',lock:s=>has('keycard')?null:'Keycard B required'},
+  {t:'Comms',to:'comms',hint:s=>s.seen.comms?'Lena':''},
+  {t:'Engineering',to:'eng',hint:s=>'flooded'},
+  {t:'Lower Access hatch',to:'hatch',hint:s=>s.flags.hatchopen?'open - lift to the trench':'4-digit code'},
+  {t:'Moon pool & the bell',to:'mp_room'}]},
+
+/* ---- MED BAY */
+med:{zone:'station',scene:'med',choir:.15,
+ text:s=>{
+  if(s.flags.ines==='dead') return `The med bay. White light, merciless.
+
+Ines lies still on the table. Her face is younger now. The tail lies in a loose coil on the floor where it finished writing. You still don't read it.`;
+  if(s.seen.med===1) return `The med bay. The lights here still work, white and merciless.
+
+Ines Moreau, the station medic, is strapped to the surgical table. She did the straps herself; the buckles have her teeth marks on them.
+
+From the waist up she is a tired woman in her forties with a shaved head and very steady eyes. From the waist down she is something else. Her legs have fused into a single long segmented tail that hangs off the end of the table and coils on the floor, three metres of it, and every segment is lined with [r]fingernails[/r]. Hundreds. Human. Painted in a chipped coral polish she must have worn on her toes.
+
+The tail moves when she isn't looking at it.
+
+"Don't touch anything wet," she says. "Hello. You're from Meridian. I'm so sorry they sent you."`;
+  let t=`Ines watches you come back in. The tail lifts, curious, then settles. "Still you?" she asks.`;
+  if(s.mut>=35) t+=`
+
+She looks at your neck. At your hands. Her face doesn't change, but her voice goes very gentle. "Ah," she says. "Not all the way, though. Not yet."`;
+  return t;},
+ choices:[
+  {t:'"What happened here?"',to:'med_what',if:s=>s.flags.ines!=='dead'&&!s.flags.m_what},
+  {t:'"If it\'s in me, how do I stop it?"',to:'med_cure',if:s=>s.flags.ines!=='dead'&&!s.flags.m_cure},
+  {t:'"Can I get you out of here?"',to:'med_out',if:s=>s.flags.ines!=='dead'&&!s.flags.m_out},
+  {t:'"Do you want me to end it?"',to:'med_mercy',cls:'danger',if:s=>s.flags.ines!=='dead'},
+  {t:'Search the medical cabinets',to:'med_search',if:s=>!s.flags.m_search},
+  {t:'Back to the ring',to:'ring'}]},
+
+med_what:{zone:'station',scene:'med',
+ onEnter:s=>{setf('m_what');log('ines1');},
+ text:`"Halvard brought a film up from the vent in March. It wasn't killing the tubeworms down there. It was [b]improving[/b] them. Then it got into Tee through a cut on his hand."
+
+She looks at the ceiling as if she can see eight kilometres of water pressing on it.
+
+"Down here, the pressure crushes everything that isn't built for it. Lamina rebuilds you so you fit. Bones go soft so they can't snap. Lungs open to the water. Skin learns to [r]share[/r]. It isn't malicious, love. It's a tailor."
+
+The fingernails on her tail rattle softly, like applause in another room.
+
+"And everything it changes, it connects. Down below the anchor there's... Bram called it the Choir. Bram went down to it. He took the reactor key with him, the idiot, so nobody could scuttle the station. It talks in your head like it's you. He thought it was his idea."`,
+ choices:[{t:'Continue',to:'med'}]},
+
+med_cure:{zone:'station',scene:'med',
+ onEnter:s=>{setf('m_cure');once('icure',()=>{give('cauterizer',3);give('sedative');});},
+ text:`She nods at a steel tray. "Cauterizer. Burns out the filaments early, before they root. It hurts more than anything you've ever felt. Use it when you feel the itch."
+
+"And Yuki, Dr. Sato, was building a suppressor in the lab. If there's a dose left in the cold store, it'll strip it back. Not all the way. Nothing goes all the way."
+
+She pushes a little case toward you with her elbow. "Sedative. For you, not me. I've been saving it for the day I stopped being able to tell the difference."
+
+[d]Cauterizer (3 charges) and Sedative acquired.[/d]`,
+ choices:[{t:'Continue',to:'med'}]},
+
+med_out:{zone:'station',scene:'med',
+ onEnter:s=>{setf('m_out');log('ines2');},
+ text:`She laughs, and the tail laughs too: the fingernails rattle along its whole length.
+
+"Out. I weigh four hundred kilos, love."
+
+Then, serious: "Listen to me. Everything it builds is built for pressure. That's the only good news. Take it up past three thousand metres and it comes apart, or it takes whoever's carrying it and goes [r]bloom[/r]."
+
+"Don't take anything up. Not the sample in Yuki's lab. Not yourself, if you're past halfway." She looks at your hands. "You'll know halfway. You'll feel it."`,
+ choices:[{t:'Continue',to:'med'}]},
+
+med_search:{zone:'station',scene:'med',
+ onEnter:s=>{setf('m_search');once('msearch',()=>{give('o2can');give('adrenaline');});},
+ text:`Most of the drawers are empty. One is full of teeth, sorted by size by someone very patient.
+
+At the back of a cabinet you find an O2 canister and an adrenaline autoinjector.
+
+[d]O2 canister and Adrenaline acquired.[/d]`,
+ choices:[{t:'Continue',to:'med'}]},
+
+med_mercy:{zone:'station',scene:'med',
+ text:`"Yes," she says, so fast it's obvious she has been waiting nineteen days for someone to ask.
+
+"The tail's the problem. It'll fight. Not the throat, it's grown armour there." She taps her temple. "Here. Quick. Don't let it see the knife."`,
+ choices:[{t:'Do it',to:'med_kill',cls:'danger'},{t:'"Not yet."',to:'med'}]},
+
+med_kill:{zone:'station',scene:'med',sfx:'sting',timed:{sec:5,fail:'med_kill_fail'},
+ text:`You set the point of the knife at her temple. She closes her eyes.
+
+The tail does not agree.
+
+It rises behind you like a cobra, three metres of segmented meat, every fingernail along it flaring out like the scales of a furious fish-`,
+ choices:[
+  {t:'Drive the knife in. Now.',to:'med_kill_hit'},
+  {t:'Throw yourself flat',to:'med_duck'}]},
+
+med_duck:{zone:'station',scene:'med',
+ text:`You drop. The tail whips through the air where your helmet was and buries a hundred fingernails in the cabinet door.
+
+While it tears itself free, you stand, and you do it.`,
+ choices:[{t:'Continue',to:'med_kill_done'}]},
+med_kill_hit:{zone:'station',scene:'med',
+ onEnter:s=>{once('mk_hit',()=>mod({hp:-15}));},
+ text:`You push. At the same moment the tail comes down across your back, and a hundred fingernails scrape your suit like a bag of knives. Two of them get through.
+
+But you push.`,
+ choices:[{t:'Continue',to:'med_kill_done'}]},
+med_kill_fail:{zone:'station',scene:'med',
+ onEnter:s=>{once('mk_fail',()=>{mod({hp:-30,mut:5});});fx('hurt');},
+ text:`You hesitate, and the tail does not.
+
+It wraps your torso twice and squeezes, gently at first, then not gently. Fingernails find the seams of your suit and work into them, patient, like someone picking at a scab. Something pops in your side.
+
+Ines screams at it, and it lets you go: sulky, like a dog called off.
+
+On the floor, wheezing, you get up, and you do it.`,
+ choices:[{t:'Continue',to:'med_kill_done'}]},
+med_kill_done:{zone:'station',scene:'med',
+ onEnter:s=>{s.flags.ines='dead';once('mk_done',()=>mod({san:-8}));},
+ text:`It is over very quickly.
+
+Her face relaxes into someone younger. The tail goes on moving for a long time afterwards, slowly writing something on the floor with its fingernails.
+
+You don't read it.`,
+ choices:[{t:'Continue',to:'med'}]},
+
+/* ---- CREW */
+crew:{zone:'station',scene:'crew',choir:.15,
+ text:s=>s.seen.crew===1?`Six bunks. Five are empty.
+
+The sixth has someone in it, under a sheet, and the sheet is [r]breathing[/r].
+
+Photos are still taped above the bunks. Lena Voss's has a postcard tucked into the frame. Commander Bram Kessel's locker hangs open.`
+ :`Crew quarters. `+(s.flags.sheet?`The shed skin lies on the bunk, deflated now, like a coat somebody stepped out of.`:`The sheet on the sixth bunk rises. Falls. Rises.`),
+ choices:[
+  {t:'Search Kessel\'s locker',to:'crew_bram',if:s=>!s.flags.c_bram},
+  {t:'Search Lena\'s bunk',to:'crew_lena',if:s=>!s.flags.c_lena},
+  {t:'Lift the sheet',to:'crew_sheet',cls:'danger',if:s=>!s.flags.sheet},
+  {t:'Back to the ring',to:'ring'}]},
+
+crew_bram:{zone:'station',scene:'crew',
+ onEnter:s=>{setf('c_bram');log('bram1');},
+ text:`Uniforms. A photo of two kids on a beach. A bottle of something brown with two fingers left in it.
+
+Taped inside the door, a note in block capitals:
+
+[b]HATCH CODE CHANGED. NOBODY GOES TO THE ANCHOR WITHOUT ME. CODE IS THE DAY WE FOUND IT, WRITTEN BACKWARDS, LIKE EVERYTHING ELSE DOWN HERE. - B.K.[/b]
+
+[d]Log added.[/d]`,
+ choices:[{t:'Continue',to:'crew'}]},
+
+crew_lena:{zone:'station',scene:'crew',
+ onEnter:s=>{setf('c_lena');log('lena1');once('clena',()=>give('o2can'));},
+ text:`A postcard to someone called Mira, never sent. [d]Eighteen more days. Save me the room by the window.[/d]
+
+Under the mattress, wrapped in a T-shirt like contraband: a full O2 canister.
+
+[d]O2 canister acquired.[/d]`,
+ choices:[{t:'Continue',to:'crew'}]},
+
+crew_sheet:{zone:'station',scene:'crew',sfx:'sting',
+ onEnter:s=>{setf('sheet');once('csh',()=>mod({san:-10}));},
+ text:`You lift it.
+
+It's a person. It's the [r]outside[/r] of a person. A whole human skin, shed in one piece like a snake's, still holding the shape of a man, Tomas Reyes by the tattoo on the forearm. The face is a soft empty mask.
+
+It's breathing because it's full. The pink lichen has filled it like stuffing, and the lichen respires, slowly, so the empty chest rises and falls.
+
+In the open mouth, neatly arranged in a circle, someone has placed all thirty-two of his teeth.
+
+Above you, the ceiling vent rattles.`,
+ choices:[{t:'Look up',to:'crew_crawl'}]},
+
+crew_crawl:{zone:'station',scene:'crawler',sfx:'sting',timed:{sec:4,fail:'crew_bit'},
+ text:`Something drops from the vent and lands on the bunk with a soft wet slap.
+
+It's a hand. A woman's hand, walking on its fingertips. The fingers have grown long, too long, four joints each, and the fingernails at the ends have thickened into little hooves. In the centre of the palm, an [r]eye[/r] opens and looks at you.
+
+It runs at your faceplate.`,
+ choices:[
+  {t:'Stomp it',to:'crew_stomp'},
+  {t:'Burn it with a flare',to:'crew_burn',if:s=>has('flare'),fx:()=>take('flare')},
+  {t:'Swat it away',to:'crew_swat'}]},
+crew_stomp:{zone:'station',scene:'crew',
+ onEnter:s=>{once('cst',()=>mod({san:-3}));},
+ text:`You bring your boot down. It crunches like a bag of shrimp. The eye in the palm looks up at you, surprised, then fogs over.
+
+The fingers keep walking in place for a while.`,
+ choices:[{t:'Continue',to:'crew'}]},
+crew_burn:{zone:'station',scene:'crew',
+ text:`You jam the flare into its palm. It screams. A hand cannot scream, so it does it with the eye, somehow, and you will hear that sound for the rest of your life.
+
+It curls up like a dead spider and smokes.`,
+ choices:[{t:'Continue',to:'crew'}]},
+crew_swat:{zone:'station',scene:'crew',
+ onEnter:s=>{once('csw',()=>mod({hp:-6}));},
+ text:`You swat it. It catches your glove and climbs, fast, and you feel the little hooves try the seams of your sleeve before you tear it off and fling it against the wall. It scuttles back into the vent.
+
+It will remember you.`,
+ choices:[{t:'Continue',to:'crew'}]},
+crew_bit:{zone:'station',scene:'crawler',
+ onEnter:s=>{once('cbit',()=>{mod({hp:-15,mut:6});infect();});fx('hurt');},
+ text:`Too slow.
+
+It lands on your faceplate and spreads its fingers across the glass like a face-hugging starfish. The eye in its palm presses right against the glass, looking into your eye from two centimetres away. Then a fingertip finds the seal at your collar and [r]goes in[/r].
+
+You tear it off and smash it into the wall until it stops. There's a neat little puncture at your collar seam. It itches.
+
+[r]You are infected.[/r]`,
+ choices:[{t:'Continue',to:'crew'}]},
+
+/* ---- LAB */
+lab:{zone:'station',scene:'lab',choir:.25,sfx:s=>s.seen.lab===1?'sting':null,
+ onEnter:s=>{once('lab_s',()=>mod({san:-8}));},
+ text:s=>s.seen.lab===1?`The lab door unlocks with a cheerful chirp that sounds obscene in the silence.
+
+The lab windows used to look out onto the trench. Now they look out onto Dr. Yuki Sato.
+
+She is on the outside of the glass. She is on the [r]inside[/r] of the glass. She has been stretched, somehow, across the whole forward wall: a translucent membrane of her, thin as a drum skin, eight metres wide. Her face is in the centre, enormous, flattened, smooth, the features drifted apart like continents. Her eyes are two metres apart.
+
+They follow you.
+
+Below her, the specimen tank is cracked. A pink film fills the floor drain.`
+ :`The lab. Yuki Sato's vast face watches you from the window, her eyes sliding slowly across the glass to keep you in view.`,
+ choices:[
+  {t:'Read Sato\'s terminal',to:'lab_term',if:s=>!s.flags.l_term},
+  {t:'Open the cold store',to:'lab_cold',if:s=>!s.flags.l_cold},
+  {t:'Take Specimen Zero',to:'lab_sample',if:s=>!s.inv.sample&&!s.flags.l_sample},
+  {t:'Talk to Sato',to:'lab_sato'},
+  {t:'Back to the ring',to:'ring'}]},
+
+lab_term:{zone:'station',scene:'lab',
+ onEnter:s=>{setf('l_term');log('sato1');log('sato2');log('sato3');},
+ text:`The terminal is still logged in. Three entries matter.
+
+[b]14/03.[/b] [d]Halvard brought up a sample from the vent at 8,190 m. Pink biofilm. Halvard wants to name it Lamina. Fine. Cake went uneaten.[/d]
+
+[b]DAY 31.[/b] [d]It is not a parasite. Parasites take. Lamina restructures. I've synthesised a suppressor. One dose in the cold store; the rest went into Ines and it was not enough.[/d]
+
+[b]FINAL.[/b] [d]I'm going to sit by the window. I want to see it. I think, soon, I'll be able to see everything.[/d]
+
+[d]Logs added.[/d]`,
+ choices:[{t:'Continue',to:'lab'}]},
+
+lab_cold:{zone:'station',scene:'lab',timed:{sec:3.5,fail:'lab_bitten'},
+ onEnter:s=>{setf('l_cold');},
+ text:`You kneel at the cold store. The seal is stiff.
+
+Beside you, the floor drain gurgles.
+
+A filament as thin as a hair lifts out of it, tasting the air like a tongue. Then another. Then they all turn toward the scratch-thin seam at your wrist, and [r]whip[/r]-`,
+ choices:[
+  {t:'Yank your hand back',to:'lab_dodge'},
+  {t:'Jam a flare into the drain',to:'lab_burn',if:s=>has('flare'),fx:()=>take('flare')}]},
+lab_dodge:{zone:'station',scene:'lab',
+ onEnter:s=>{once('serum',()=>give('serum'));},
+ text:`You throw yourself sideways. The filaments snap shut on air, confused, and slowly sink back into the drain like they're embarrassed.
+
+You get the cold store open with your other hand. One injector. Handwritten label: [b]SUPPRESSOR - LAST - Y.S.[/b]
+
+[d]Suppressor acquired.[/d]`,
+ choices:[{t:'Continue',to:'lab'}]},
+lab_burn:{zone:'station',scene:'lab',
+ onEnter:s=>{once('serum',()=>give('serum'));},
+ text:`The flare goes into the drain hissing. The filaments shrivel back with a smell like burnt hair and sugar. Somewhere deep in the pipes, many small voices sing a single note of complaint.
+
+The cold store holds one injector. Handwritten label: [b]SUPPRESSOR - LAST - Y.S.[/b]
+
+[d]Suppressor acquired.[/d]`,
+ choices:[{t:'Continue',to:'lab'}]},
+lab_bitten:{zone:'station',scene:'lab',
+ onEnter:s=>{once('lbit',()=>{mod({mut:12,hp:-5});infect();give('serum');});fx('hurt');},
+ text:`Too slow.
+
+The filaments find your wrist seam and go in. It feels like a cold thread being pulled through the bone of your forearm, out the other side, and back.
+
+You rip your arm away. The ends stay in you. You watch them, under the fabric of your sleeve, [r]settle[/r].
+
+You get the cold store open with your shaking hand. One injector: [b]SUPPRESSOR - LAST - Y.S.[/b]
+
+[r]You are infected.[/r] [d]Suppressor acquired.[/d]`,
+ choices:[{t:'Continue',to:'lab'}]},
+
+lab_sample:{zone:'station',scene:'lab',
+ onEnter:s=>{setf('l_sample');once('samp',()=>give('sample'));},
+ text:`Specimen Zero sits in a containment flask the size of your palm, in a rack that has been bolted, welded and then bolted again.
+
+Inside, the pink film slowly writes itself into the shape of a [r]hand[/r] pressing against the glass from the inside. As you lift it, the hand presses harder. It's warm. It's pleased.
+
+Meridian wants this. It's why they paid you.
+
+[d]Specimen Zero acquired. It drains your sanity while you carry it.[/d]`,
+ choices:[{t:'Continue',to:'lab'}]},
+
+lab_sato:{zone:'station',scene:'lab',choir:.3,
+ onEnter:s=>{if(s.mut<30) once('sato_s',()=>mod({san:-5})); else setf('satoheard');},
+ text:s=>s.mut>=30?`Sato's mouth moves, two metres wide. Before, it was only a vibration in the glass. Now, with the new slits under your jaw open, you understand her perfectly.
+
+[v]"Hello, Diver. Thank you for coming. The reactor key: Bram took it down to the Choir. Get it. Set the core. Burn us. [b]Please.[/b]"[/v]
+
+[v]"And whatever you do, don't let it ride up with you. It wants the light so badly."[/v]
+
+Her eyes close, slowly, two metres apart.`
+ :`Her vast mouth moves slowly. The glass hums. You can't make out words, just a vibration that comes up through your boots and makes your teeth ache in their sockets.
+
+[d]Maybe if you were a little more like her, you'd understand.[/d]`,
+ choices:[{t:'Continue',to:'lab'}]},
+
+/* ---- COMMS */
+comms:{zone:'station',scene:'comms',choir:s=>s.flags.unplug?.2:.55,
+ onEnter:s=>{once('comms_s',()=>mod({san:-8}));},
+ text:s=>s.seen.comms===1?`Comms. Lena Voss sits at her station with her back to you, headphones on.
+
+She turns around.
+
+Her lower jaw is gone. Not gone: [r]grown[/r]. It hangs to her waist, elongated, hinged in three new places, flared at the end into a wide bell of cartilage like the horn of an old gramophone. Her tongue lies inside the bell, flat and broad as a speaker cone, vibrating.
+
+The humming you heard on the radio is coming out of her. She's broadcasting it. She has been broadcasting it for nineteen days.
+
+Her eyes are entirely human, and they are crying.`
+ :`Comms. Lena turns her head to watch you, the great horn of her jaw swinging. `+(s.flags.unplug?`The transmitter is dark. Her tongue vibrates into the silence anyway.`:`The transmitter is live. The song pours out of her into the dark.`),
+ choices:[
+  {t:'Pull the transmitter plug',to:'comms_plug',if:s=>!s.flags.unplug},
+  {t:'Repair the radio and call Meridian',to:'comms_radio',if:s=>!s.flags.cole,lock:s=>has('fuse')?null:'Blown fuse. Engineering has spares.'},
+  {t:'Listen to her song',to:'comms_listen',cls:'mut',if:s=>s.mut>=25&&!s.flags.listen},
+  {t:'Back to the ring',to:'ring'}]},
+
+comms_plug:{zone:'station',scene:'comms',
+ onEnter:s=>{setf('unplug');once('plug',()=>mod({san:6}));},
+ text:`You find the transmitter feed and rip it out.
+
+The humming in your helmet stops so suddenly your ears ring. Lena convulses, once, and the horn of her jaw swings toward you. For a second there's something like relief in her eyes.
+
+Then she points, very deliberately, at the radio set: the fuse housing is black and blistered. She mimes slotting something in.
+
+[d]Your sanity steadies a little.[/d]`,
+ choices:[{t:'Continue',to:'comms'}]},
+
+comms_radio:{zone:'station',scene:'comms',
+ onEnter:s=>{setf('cole');take('fuse');log('cole1');},
+ text:`The fuse seats with a thunk. The set warms up. You find the Meridian frequency.
+
+[b]COLE:[/b] "-ree, Three, is that you? Thank God. Status?"
+
+You tell him. You tell him all of it. There's a long silence.
+
+[b]COLE:[/b] "Okay. Okay. Listen. Corporate's on the other line. They don't care about the crew. They want Specimen Zero. Bring it up and you are set for [b]life[/b], Three. Ten million. They said ten."
+
+Another pause. His voice changes.
+
+[b]COLE:[/b] "...and Three? If it's in you, don't come up. I'm sorry. I'll make sure the contract pays out. I'm sorry."`,
+ choices:[{t:'Continue',to:'comms'}]},
+
+comms_listen:{zone:'station',scene:'comms',choir:.8,
+ onEnter:s=>{setf('listen');once('lis',()=>mod({san:-6,mut:3}));log('lena2');},
+ text:`You stop fighting it. You let the song in.
+
+The slits under your jaw flutter open, and suddenly it isn't humming. It's language.
+
+[v]"It's not a song,"[/v] Lena is saying, through the horn, through you. [v]"It's a map. Every voice it takes, it takes a little higher. It's showing the others where we are."[/v]
+
+[v]"It wants to go up. It wants the light. Don't carry it. Don't you dare carry it."[/v]
+
+When you pull yourself back, you're humming. You don't remember starting.`,
+ choices:[{t:'Continue',to:'comms'}]},
+
+/* ---- ENGINEERING */
+eng:{zone:'station',scene:'flood',choir:.15,
+ text:s=>`ENGINEERING. The door opens on water.
+
+The lower ring flooded at some point. The corridor beyond is submerged, black, ceiling to floor, for maybe forty metres. Your suit can take it, but the swim will burn air.`+(s.mut>=40?`
+
+[v]Your neck itches. The slits under your jaw are opening and closing on their own. You realise, with a sick, calm certainty, that you could [b]breathe[/b] this water.[/v]`:''),
+ choices:[
+  {t:'Swim it on suit air',to:'eng_swim',hint:'heavy O2 use'},
+  {t:'Crack your neck seal. Breathe the water.',to:'eng_gills',cls:'mut',if:s=>s.mut>=40},
+  {t:'Back to the ring',to:'ring'}]},
+eng_swim:{zone:'station',scene:'flood',drain:18,
+ text:`You pull yourself hand over hand along a cable tray. Your lamp shows you things floating at the edge of the light: a mug, a boot, a long ribbon of something that was once part of a person and is now very interested in your lamp.
+
+Your air gauge drops in steady little clicks. Your breathing sounds very loud.`,
+ choices:[{t:'Surface into the reactor hall',to:s=>s.flags.stitched?'eng_room':'stitched1'}]},
+eng_gills:{zone:'station',scene:'flood',drain:0,
+ onEnter:s=>{once('gills1',()=>mod({san:-6,mut:5}));},
+ text:`You crack the seal at your collar. The water comes in, cold, pressing, eight kilometres of it trying to be inside you.
+
+The slits under your jaw open wide and [r]drink[/r].
+
+It's the best breath you've ever taken. You hate how good it is. You swim the forty metres without using a single breath of suit air, and you are almost sad when it's over.`,
+ choices:[{t:'Surface into the reactor hall',to:s=>s.flags.stitched?'eng_room':'stitched1'}]},
+
+stitched1:{zone:'station',scene:'stitched',sfx:'sting',timed:{sec:4.5,fail:'st_caught'},
+ onEnter:s=>{setf('stitched');once('st_s',()=>mod({san:-10}));},
+ text:`You haul yourself out into the reactor hall, and something is already in here with you.
+
+It's coming down the catwalk on too many legs. It used to be Tomas Reyes, the engineer, and it used to be some other people too. His torso is the centre. Around it, [r]arms[/r]. Not his: different skin tones, different sizes, one wearing a wedding ring. They've been grafted along his spine like the oars of a galley, and they row him across the floor.
+
+His head is on backwards. He's smiling with the back of it: a second mouth has opened in his scalp.
+
+"Diver," says the scalp-mouth, in Bram Kessel's voice. "Hold still. We'll make room."`,
+ choices:[
+  {t:'Run for the fuse cabinet',to:'st_run'},
+  {t:'Flare in its face',to:'st_flare',if:s=>has('flare'),fx:()=>take('flare')},
+  {t:'Hide under the catwalk',to:'st_hide'}]},
+st_run:{zone:'station',scene:'stitched',timed:{sec:3,fail:'st_caught'},
+ text:`You run. It is faster than you. Of course it is, it has [b]twenty arms[/b].
+
+A hand closes around your ankle. Another one, with the wedding ring, closes around the first one, gently, as if they're holding hands.`,
+ choices:[{t:'Kick free',to:'st_kick'},{t:'Cut the hands off',to:'st_cut'}]},
+st_kick:{zone:'station',scene:'reactor',onEnter:s=>{once('stk',()=>mod({hp:-10}));},
+ text:`You kick until something breaks. You don't know if it's its fingers or your ankle. You're free; you scramble behind the reactor shielding and it loses you, rowing in slow puzzled circles before sliding back into the water.`,
+ choices:[{t:'Continue',to:'eng_room'}]},
+st_cut:{zone:'station',scene:'reactor',onEnter:s=>{once('stc',()=>mod({san:-6}));},
+ text:`You saw through the wrist with the ringed hand. It lets go of the other hand last, reluctantly. The creature makes a sound in five voices that might be grief.
+
+It slides back into the water, and you are left holding a hand with a wedding ring on it. You set it down very carefully. You don't know why that matters. It matters.`,
+ choices:[{t:'Continue',to:'eng_room'}]},
+st_flare:{zone:'station',scene:'reactor',
+ text:`The flare hits it square in the scalp-mouth. It shrieks in five voices at once and the arms row backwards in a panic, slapping the floor, carrying it back into the dark water in a boil of bubbles.
+
+It'll be back. But not now.`,
+ choices:[{t:'Continue',to:'eng_room'}]},
+st_hide:{zone:'station',scene:'stitched',
+ onEnter:s=>{if(s.san<40){once('sth',()=>mod({hp:-20}));}},
+ text:s=>s.san<40?`You slide under the catwalk. It's a good spot. But your breathing is ragged and your hands are shaking against the grating, and it [r]hears[/r] you.
+
+An arm reaches under, then three. They drag you out by the suit and squeeze you like a toothpaste tube before you get free and roll behind the reactor shielding. It loses you there and slides back into the water, humming.`
+ :`You slide under the catwalk and make yourself very small and very slow.
+
+It stops directly above you. Twenty fingers drum on the grating. You can see the backwards face through the gaps, its real face, upside down, eyes closed, as if asleep.
+
+It moves on.`,
+ choices:[{t:'Continue',to:'eng_room'}]},
+st_caught:{zone:'station',scene:'stitched',
+ onEnter:s=>{once('stcg',()=>{mod({hp:-30,mut:10});infect();});fx('hurt');},
+ text:`The arms hold you down with tender, crushing strength.
+
+The scalp-mouth comes close to your faceplate. It isn't biting. It's [r]kissing[/r] the seam at your neck, working at it with a tongue that's grown thin as a pipe-cleaner, and you feel it get in: cold, then warm, then nothing.
+
+Then it lets you go, as if it's done what it came for.
+
+"Room," it sighs. "Soon."
+
+[r]You are infected.[/r]`,
+ choices:[{t:'Crawl away',to:'eng_room'}]},
+
+eng_room:{ch:'II. CALYX',zone:'station',scene:'reactor',choir:.15,checkpoint:true,
+ text:s=>`The reactor hall. The core hums behind its shielding, blue light leaking out of the seams. Catwalks. A fuse cabinet. A locker marked EMERGENCY.
+
+The reactor console blinks patiently: [b]COMMAND KEY REQUIRED[/b].`+(s.flags.overload?`
+
+[r]The console shows a countdown: ${s.overload}. The whole hall is strobing red.[/r]`:''),
+ choices:[
+  {t:'Take a fuse',to:'eng_fuse',if:s=>!s.flags.e_fuse},
+  {t:'Open the emergency locker',to:'eng_locker',if:s=>!s.flags.e_locker},
+  {t:'Use the reactor console',to:'eng_console',if:s=>!s.flags.overload,lock:s=>has('reactorkey')?null:'Command key required (Kessel has it)'},
+  {t:'Swim back to the ring',to:'eng_back'}]},
+eng_fuse:{zone:'station',scene:'reactor',onEnter:s=>{setf('e_fuse');once('fuse',()=>give('fuse'));},
+ text:`The fuse cabinet sticks, then gives. You pull a 40-amp ceramic fuse. Comms could use this.
+
+[d]Fuse acquired.[/d]`,
+ choices:[{t:'Continue',to:'eng_room'}]},
+eng_locker:{zone:'station',scene:'reactor',onEnter:s=>{setf('e_locker');once('elock',()=>{give('o2can');give('flare');});},
+ text:`Inside: an O2 canister and a flare. Someone has scratched into the inside of the door with a screwdriver, over and over, in a hand that gets worse as it goes:
+
+[d]I AM TOMAS REYES. I AM TOMAS REYES. I AM TOMAS. I AM. I AM WE. WE ARE.[/d]
+
+[d]O2 canister and Flare acquired.[/d]`,
+ choices:[{t:'Continue',to:'eng_room'}]},
+eng_console:{zone:'station',scene:'reactor',
+ text:`You turn Kessel's key. The console wakes. The menu is short:
+
+[b]1. DELAYED OVERLOAD (EVAC TIMER)
+2. IMMEDIATE OVERLOAD[/b]
+
+A note taped to the screen, in Kessel's capitals: [d]IF YOU'RE READING THIS AND YOU'RE STILL YOU, PICK ONE.[/d]`,
+ choices:[
+  {t:'Set delayed overload (evac timer)',to:'eng_set',cls:'danger'},
+  {t:'Overload it NOW',to:'end_scuttle_now',cls:'danger'},
+  {t:'Not yet',to:'eng_room'}]},
+eng_set:{zone:'station',scene:'reactor',sfx:'sting',
+ onEnter:s=>{setf('overload');s.overload=14;},
+ text:`You key it in. The core's hum climbs a full octave and keeps climbing. Red strobes snap on. A calm recorded voice begins counting.
+
+[r]CORE OVERLOAD. EVACUATE.[/r]
+
+Somewhere far below, through eight kilometres of water and rock, the Choir changes its note. It has noticed.
+
+[b]You have ${14} moves to reach the bell.[/b]`,
+ choices:[{t:'Swim. Now.',to:'eng_back'}]},
+eng_back:{zone:'station',scene:'flood',drain:12,
+ text:s=>`You go back into the black water.`+(s.mut>=40?` The slits under your jaw drink it gratefully.`:` Your air gauge clicks down, steady and merciless.`)+(s.flags.overload?` The water is shaking. Every pipe in the station is ringing like a bell.`:``),
+ choices:[{t:'Surface in the Ring Corridor',to:'ring'}]},
+
+/* ---- HATCH */
+hatch:{zone:'station',scene:'hatch',choir:.25,
+ text:s=>s.flags.hatchopen?`The lower access hatch stands open. The cage lift waits on the anchor cable, swaying slightly, as if something below has just let go of it.`
+ :`The LOWER ACCESS hatch is a steel disc two metres across, bolted into the floor of the ring. A keypad beside it wants four digits.
+
+Someone has scratched words into the paint beside it, deep, with a lot of force:
+
+[r]IT'S NOT A DOOR. IT'S A THROAT.[/r]`,
+ keypad:{answer:'3041',ok:'hatch_ok',fail:'hatch_bad',back:'ring'},keypadIf:s=>!s.flags.hatchopen,
+ choices:[{t:'Ride the lift down',to:'lift_down',cls:'danger'},{t:'Back to the ring',to:'ring'}]},
+hatch_bad:{zone:'station',scene:'hatch',
+ onEnter:s=>{s.flags.tries=(s.flags.tries||0)+1;if(s.flags.tries>=3){mod({hp:-15,san:-5});fx('hurt');}else mod({san:-3});},
+ text:s=>s.flags.tries>=3?`[r]WRONG.[/r] An alarm whoops, once.
+
+The hatch shudders. Something on the other side has heard the alarm and is pushing up. The steel bows. A dozen fingers worm through the gap at the rim and grab your boot and pull, and you leave skin behind getting free.
+
+The fingers withdraw. The hatch settles. It's waiting.`
+ :`The keypad buzzes. [r]WRONG.[/r] Below your feet, faintly, something knocks back. Four knocks. As if it's trying to tell you the number.`,
+ choices:[{t:'Try again',to:'hatch'},{t:'Back to the ring',to:'ring'}]},
+hatch_ok:{zone:'station',scene:'hatch',sfx:'thud',
+ onEnter:s=>{setf('hatchopen');},
+ text:`The keypad goes green. Bolts withdraw one by one with heavy clunks, like someone working down a spine.
+
+The hatch swings up. Below is a shaft, and in the shaft a cage lift hangs on the anchor cable, which runs down into darkness.
+
+The song comes up out of the shaft like warm air.`,
+ choices:[{t:'Ride the lift down',to:'lift_down',cls:'danger'},{t:'Not yet',to:'ring'}]},
+
+/* ------------------------------------------------ III. THE CHOIR */
+lift_down:{ch:'III. THE CHOIR',depth:8300,zone:'deep',scene:'lift',choir:.6,drain:4,
+ text:`The cage rides the anchor cable down the trench wall. It takes four minutes. They are long minutes.
+
+The wall slides past your lamp: black rock, white bacterial mats, and then [r]eyes[/r], set into the rock in pairs, opening as your light passes and closing after it like a wave going down the wall with you.
+
+The song gets louder. Not in your ears. In your teeth. In the long bones of your legs.
+
+The cage stops with a jolt at the bottom of the world.`,
+ choices:[{t:'Step out',to:'choir1'}]},
+
+choir1:{ch:'III. THE CHOIR',depth:8412,zone:'deep',scene:'choir',choir:1,checkpoint:true,
+ onEnter:s=>{once('ch_s',()=>mod({san:-12}));},
+ text:s=>{let t=s.seen.choir1===1?`It's a cathedral. That's the only word your brain will offer.
+
+Arches rise into the dark, ribbed and glistening, and the ribs are [r]ribs[/r]: human, whale, things that were never either. Between them stretch membranes of skin, pale as candle wax. Set into the skin, in rows like pews, are mouths. Thousands. Fish mouths, octopus beaks, human mouths. Every one open. Every one singing the same note.
+
+At the altar end (there is an altar end) a figure sits on a throne grown from its own spine.
+
+Commander Bram Kessel. The reactor key hangs at his chest on its chain. The chain has grown through his sternum like a vine through a fence.`
+ :`The Choir. Ten thousand mouths, one note. Bram waits on his throne of spine.`;
+  if(s.mut>=60) t+=`
+
+[v]None of them turn toward you. You are not an intruder here. You are a late guest.[/v]`;
+  if(s.inv.sample) t+=`
+
+[v]Every mouth in the cathedral closes at once. In the silence, the flask on your hip is warm. It's pleased. Then the song resumes, one voice louder.[/v]`;
+  if(s.flags.overload) t+=`
+
+[r]Far above you, the core is counting: ${s.overload}.[/r]`;
+  return t;},
+ choices:[
+  {t:'Walk the aisle to Bram',to:s=>s.mut>=60?'choir_bram':'choir_sneak',if:s=>!has('reactorkey')},
+  {t:'Listen',to:'choir_listen',cls:'mut',if:s=>!s.flags.c_listen},
+  {t:'Take off your helmet. Join them.',to:'choir_join',cls:'danger'},
+  {t:'Ride the lift back up',to:'lift_up'}]},
+
+choir_listen:{zone:'deep',scene:'choir',choir:1,
+ onEnter:s=>{setf('c_listen');once('cl',()=>mod({san:-10,mut:8}));log('choir1');},
+ text:`You stand still and let it in.
+
+It has been here four hundred million years. Every animal that ever fell into the trench, it has kept, and it has kept them singing. It does not want to hurt anyone. It wants what everything wants.
+
+[v]It wants to go up.[/v]
+
+It cannot climb. It needs to be [r]carried[/r]. It has been waiting so long for something that comes down and goes back up again.
+
+Something like you.
+
+You come back to yourself with your hand on your helmet clasp.`,
+ choices:[{t:'Continue',to:'choir1'}]},
+
+choir_sneak:{zone:'deep',scene:'choir',choir:1,timed:{sec:4,fail:'choir_run'},
+ text:`You start down the aisle. The mouths in the walls turn to follow your lamp. One by one. Then a hundred at a time.
+
+The note bends.
+
+Something is noticing you.`,
+ choices:[
+  {t:'Kill your lamp. Walk on blind.',to:'choir_dark'},
+  {t:'Run for the altar',to:'choir_run'}]},
+choir_dark:{zone:'deep',scene:'dark',choir:1,
+ onEnter:s=>{once('cdk',()=>mod({san:-10}));},
+ text:`Darkness. Total. You walk with your hand out.
+
+Things touch your hand. Lips. Soft, curious, wet. Something takes one of your fingers into its mouth and sucks it gently, like a baby, and lets go. You keep walking. You keep walking.
+
+The note bends back. You are not interesting in the dark.
+
+You switch your lamp on at the foot of the throne.`,
+ choices:[{t:'Look up at Bram',to:'choir_bram'}]},
+choir_run:{zone:'deep',scene:'choir',choir:1,
+ onEnter:s=>{once('crun',()=>{mod({hp:-20,mut:8});infect();});fx('hurt');},
+ text:`You run. The membranes lash out as you pass, wet and clinging, wrapping your arms, your helmet, and you tear through them with a sound like ripping wet paper. Every mouth on both sides of the aisle screams the note at you at once.
+
+You reach the throne with pink membrane hanging off you in rags. It's already working its way into the seams.
+
+[r]You are infected.[/r]`,
+ choices:[{t:'Look up at Bram',to:'choir_bram'}]},
+
+choir_bram:{zone:'deep',scene:'bram',choir:.9,
+ text:`Bram Kessel's face is sunken and grey and very tired. His spine has grown out of his back and down into the floor and back up into the throne he sits on; you can't tell where the man ends and the chair begins.
+
+"You came for the key," he says. "Good. I was hoping somebody would."
+
+"I brought it down so nobody could burn it. That was [r]it[/r] talking. It talks in your head in your own voice. I thought it was my idea for weeks."
+
+He looks down at the chain through his sternum.
+
+"Take it. I'm still enough me to want that. Take it, and go burn my station."`,
+ choices:[{t:'Pull the chain',to:'choir_key',cls:'danger'},{t:'Step back',to:'choir1'}]},
+choir_key:{zone:'deep',scene:'bram',choir:.9,sfx:'sting',
+ onEnter:s=>{once('ckey',()=>{mod({hp:-10,san:-10});give('reactorkey');});},
+ text:`The chain comes through him link by link. Each link is coated in something pink that doesn't want to let go. Bram doesn't scream. He hums, low, to keep from screaming, and the whole cathedral hums with him.
+
+The key comes free, warm, slick, and heavy in your glove.
+
+"Console in engineering," Bram says. "There's a delay, if you want to get out first. Or do it now. Your call, Diver."
+
+"I'd go up. Somebody should."
+
+[d]Reactor key acquired.[/d]`,
+ choices:[{t:'Ride the lift back up',to:'lift_up'}]},
+
+choir_join:{zone:'deep',scene:'choir',choir:1,
+ text:`Your hands are on the helmet clasps. You don't remember putting them there. It doesn't matter.
+
+The song is so warm. There's so much room.
+
+One twist and you'll never be alone again.`,
+ choices:[{t:'Open the helmet',to:'end_choir',cls:'danger'},{t:'No. NO.',to:'choir1'}]},
+
+lift_up:{zone:'deep',scene:'lift',choir:.5,drain:4,
+ text:`The cage climbs. The eyes in the trench wall open as you pass and close behind you, watching you go up, as if memorising the route.
+
+The song follows you up the shaft, a little fainter at every metre. You feel it pulling at you, like a hand on your belt.`,
+ choices:[{t:'Climb out into the ring',to:'ring'}]},
+
+/* ---- hallucination */
+hallu_helmet:{zone:'station',scene:'dark',
+ onEnter:s=>{if(s.san<12&&!settings.god) return 'end_unsealed'; once('h'+s.moves,()=>mod({san:-4}));},
+ text:`Your fingers are on the helmet clasps.
+
+You don't remember putting them there. The first clasp is already open. Cold water beads at the seal.
+
+You close it. You hold your own hands in your lap until they stop shaking.
+
+[d]That wasn't you. Was it?[/d]`,
+ choices:[{t:'Breathe',to:s=>s.returnTo||'ring'}]},
+
+/* ------------------------------------------------ ENDINGS */
+end_true:{end:true,depth:0,endName:'PRESSURE RELEASE',ending:'true',scene:'surface',choir:0,ch:'END',
+ text:s=>`The bell drops its ballast, and you rise.
+
+[d]8,000. 7,000. 6,000.[/d]
+
+At 5,200 metres the bell shudders. Below you, the trench lights up: a soft white bloom against the wall of the world, silent at this distance. Then the shockwave arrives as a long, gentle push, like a hand on your back. Like someone helping you up.
+
+The song stops.
+
+Not fades. [b]Stops.[/b] All those voices, mid-note. You didn't know how loud it was until it was gone. You cry for most of the next three thousand metres, and you don't entirely know who for.`+
+(s.flags.okmercy||s.flags.ines==='dead'?`
+
+You think of `+[s.flags.okmercy?'Okafor\'s ribs folding shut like a flower at dusk':null,s.flags.ines==='dead'?'Ines\'s face going young':null].filter(Boolean).join(', and ')+`. You think you did right. Down there, right was very small, but it was there.`:``)+`
+
+At the surface, Cole is waiting at the hatch with a decompression team and the face of a man who hasn't slept in nine days.
+
+"Three," he says. "Are you- is it-"
+
+You hold up your left hand. `+(s.mut<20?`Five fingers. Separate. [b]Yours.[/b]`:`Five fingers. The webbing between them is almost gone. Almost.`)+`
+
+"I'm fine," you say. Then, because pressure makes people honest: "I'm not. But I'm [b]me[/b]."
+
+Months later, sometimes, you catch yourself humming. You stop. Each time, it's a little easier to stop.`},
+
+end_surface:{end:true,depth:0,endName:'SURFACE',ending:'surface',scene:'surface_grey',choir:.05,ch:'END',
+ text:`The bell drops its ballast and you rise. You left CALYX standing.
+
+At the surface, Cole helps you out of the bell and doesn't ask questions you can't answer. Meridian pays. You sign things. You go home.
+
+The song is still on the radio band, if you know where to listen. You know where to listen. Some nights you listen for hours.
+
+In March, Meridian sends a second team. Better suits. Six of them.
+
+They stop transmitting after nine days.
+
+Four months after that, a trawler off Guam hauls up a net full of fish that are all [r]one fish[/r]. The crew film it on their phones. In the background of the video, under the wind, if you know what you're listening for, something is humming.`},
+
+end_cargo:{end:true,depth:0,endName:'CARGO',ending:'cargo',scene:'cargo',choir:.2,ch:'END',
+ text:s=>`You rise with Specimen Zero warm against your hip.
+
+On deck, Cole won't look at you. Two men in good jackets take the flask with gloved hands, and the bonus clears before you've finished decompressing. Ten million. They meant it.
+
+The lab in Houston is very clean. You see it once, on a tour. Behind three layers of glass, Specimen Zero has been given a tank of its own, and pressure equipment, and a team. It's grown. It presses a hand against the glass when you walk past.
+
+It's grown a [b]second[/b] hand.
+
+On the fourteenth of March the following year, the lab in Houston stops answering its phones.`+(s.flags.overload?`
+
+You think about CALYX, burned to slag at the bottom of the world, and how none of that mattered at all, in the end, because you carried it up yourself.`:``)+`
+
+You're watching the news when you notice your own hand has begun, very gently, to [r]hum[/r].`},
+
+end_bloom:{end:true,depth:0,endName:'BLOOM',ending:'bloom',scene:'bloom',choir:.6,ch:'END',
+ text:`Ines told you. Not past halfway.
+
+At 3,000 metres your body starts to disagree with the sky.
+
+The soft bones it built for pressure have nothing left to push against, and so they [r]expand[/r]. Your ribs open first, outward, upward, the way Okafor's did, and it doesn't hurt. That's the worst part. It is so kind. Your skin learns to share with the inside of the bell. Your lungs climb out of your chest to see.
+
+By the time the bell breaks the surface there's no diver in it. There is a flower, pink and wet and enormous, filling the bell like a fist fills a glove.
+
+Cole opens the hatch.
+
+You are so happy to see him. You have [b]so much room[/b] for him.`},
+
+end_choir:{end:true,endName:'THE CHOIR',ending:'choir',scene:'choirend',choir:1,ch:'END',
+ text:`The helmet comes away.
+
+The water comes in like a held breath let go. It doesn't crush you. You were built for this now; your bones bend to it, your lungs open to it, your skin opens to the skin around you and you are [b]not alone[/b], for the first time in your life you are not alone.
+
+You find your place in the pews, between Okafor's mother and something with a lantern on its head. You open your mouth. You sing. And the song climbs one voice higher.
+
+One voice closer to the light.
+
+Up on the surface, on a ship called Meridian, a man named Cole puts on his headphones, and hears, under the static, someone he knows, [r]humming[/r].`},
+
+end_scuttle:{end:true,endName:'SCUTTLE',ending:'scuttle',scene:'blast',choir:0,ch:'END',
+ text:s=>(s.zone==='deep'?`You were still at the bottom of the world when the timer ran out.
+
+The light comes down the trench like a falling sun, and the Choir sees it coming, and for one second every mouth in the cathedral stops singing and simply [b]looks[/b].`
+ :`You didn't make it to the bell.
+
+The core lets go behind you, and for one long moment you are standing at the centre of a small white sun at the bottom of the sea.`)+`
+
+It's very quick.
+
+The last thing you hear is the song, every voice in it, cut off at once. And then, so faint you might have imagined it, one voice that sounds like Bram Kessel saying [b]thank you[/b].
+
+Nobody on the surface ever learns what you did. The song is just gone from the radio band, one Tuesday, and nobody can explain it.
+
+That's all right. Somebody should.`},
+
+end_scuttle_now:{end:true,endName:'SCUTTLE',ending:'scuttle',scene:'blast',choir:0,ch:'END',
+ text:`You choose IMMEDIATE.
+
+You aren't sure what you were going to go up to anyway. You think of Cole's voice: [d]if it's in you, don't come up.[/d]
+
+The core's hum climbs past hearing. The floor goes white. For one long moment you are standing at the centre of a small sun at the bottom of the world, and it is warm, warmer than the song, warmer than anything.
+
+The last thing you hear is the Choir, every voice in it, cut off at once. And then, so faint you might have imagined it, one voice that sounds like Bram Kessel saying [b]thank you[/b].
+
+The song is gone from the radio band one Tuesday. Nobody can explain it.
+
+That's all right. Somebody should.`},
+
+end_drowned:{end:true,endName:'DROWNED',ending:'drowned',scene:'drown',choir:.4,ch:'END',
+ text:`The air gauge has been flashing for a while. You stopped looking at it.
+
+The last breath tastes of metal and nothing. You pull at the air and the suit gives you nothing back, and your chest works and works like a fish on a deck.
+
+The dark comes in from the edges of your faceplate.
+
+As your eyes close, you see the lichen on the walls brighten, all at once, the way a crowd leans forward. [r]It doesn't waste anything.[/r] By morning you'll be useful.`},
+
+end_opened:{end:true,endName:'OPENED',ending:'opened',scene:'opened',choir:.4,ch:'END',
+ text:`Your body gives up the argument.
+
+You sit down against the wall because your legs have stopped being legs. There's a warmth spreading in your chest that isn't blood, or isn't only blood, and when you look down your suit is bulging outward around your ribs, as if something inside is [r]opening[/r].
+
+Like a flower. Like Okafor.
+
+It doesn't hurt. That's the worst part. It is so kind.`},
+
+end_unsealed:{end:true,endName:'UNSEALED',ending:'unsealed',scene:'mist',choir:.6,ch:'END',
+ text:`It's fine. It's fine. The helmet is the only thing hurting you, and you're so tired of being hurt.
+
+You open the clasps. All of them. You lift.
+
+At eight kilometres the water does not come in. It [b]arrives[/b], all at once, with the weight of the whole ocean behind it.
+
+In the fraction of a second before there's nothing left of you to think, you'd swear you heard the song welcome you home.`}
+};
+const ENDINGS=['true','surface','cargo','bloom','choir','scuttle','drowned','opened','unsealed'];
+/* =====================================================================
+   AUDIO - all synthesized, no files
+   ===================================================================== */
+const AU={ctx:null,master:null,choirG:null,alarmG:null,bus:null,
+  init(){
+    if(this.ctx){if(this.ctx.state!=='running')this.ctx.resume();return;}
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+    let c;try{c=this.ctx=new AC();}catch(e){return;}
+    this.master=c.createGain();this.master.connect(c.destination);this.vol();
+    // echo bus
+    const dl=c.createDelay(2);dl.delayTime.value=.42;const fb=c.createGain();fb.gain.value=.38;const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1800;
+    dl.connect(lp);lp.connect(fb);fb.connect(dl);lp.connect(this.master);this.bus=dl;
+    // deep rumble (brown noise)
+    const len=c.sampleRate*4,buf=c.createBuffer(1,len,c.sampleRate),d=buf.getChannelData(0);let l=0;
+    for(let i=0;i<len;i++){const w=Math.random()*2-1;l=(l+.02*w)/1.02;d[i]=l*3.5;}
+    this.noise=buf;
+    const n=c.createBufferSource();n.buffer=buf;n.loop=true;const nf=c.createBiquadFilter();nf.type='lowpass';nf.frequency.value=260;
+    const ng=c.createGain();ng.gain.value=.5;n.connect(nf);nf.connect(ng);ng.connect(this.master);n.start();
+    // drone
+    const df=c.createBiquadFilter();df.type='lowpass';df.frequency.value=170;df.Q.value=4;const dg=c.createGain();dg.gain.value=.07;df.connect(dg);dg.connect(this.master);
+    [41.2,55,61.7,82.4].forEach((f,i)=>{const o=c.createOscillator();o.type=i%2?'sawtooth':'triangle';o.frequency.value=f;o.detune.value=(i-1.5)*6;o.connect(df);o.start();});
+    const lfo=c.createOscillator();lfo.frequency.value=.06;const lg=c.createGain();lg.gain.value=90;lfo.connect(lg);lg.connect(df.frequency);lfo.start();
+    // the choir: detuned voices through vowel formants
+    this.choirG=c.createGain();this.choirG.gain.value=0;this.choirG.connect(this.master);
+    const vow=c.createGain();vow.gain.value=1;
+    [[650,6,1],[1080,8,.6],[2650,10,.25]].forEach(([f,q,g])=>{const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=f;bp.Q.value=q;const gg=c.createGain();gg.gain.value=g;vow.connect(bp);bp.connect(gg);gg.connect(this.choirG);});
+    const vlfo=c.createOscillator();vlfo.frequency.value=.11;const vlg=c.createGain();vlg.gain.value=120;vlfo.connect(vlg);vlfo.start();
+    [98,98.6,146.8,155.6,196,207.6,293.7,110].forEach((f,i)=>{
+      const o=c.createOscillator();o.type='sawtooth';o.frequency.value=f;
+      const vib=c.createOscillator();vib.frequency.value=4.5+i*.37;const vg=c.createGain();vg.gain.value=f*.012;vib.connect(vg);vg.connect(o.frequency);vib.start();
+      const g=c.createGain();g.gain.value=.05;o.connect(g);g.connect(vow);o.start();
+    });
+    // overload alarm
+    this.alarmG=c.createGain();this.alarmG.gain.value=0;this.alarmG.connect(this.master);
+    const ao=c.createOscillator();ao.type='square';ao.frequency.value=620;const am=c.createOscillator();am.type='square';am.frequency.value=1.6;
+    const amg=c.createGain();amg.gain.value=180;am.connect(amg);amg.connect(ao.frequency);const af=c.createBiquadFilter();af.type='lowpass';af.frequency.value=1200;
+    const ag=c.createGain();ag.gain.value=.05;ao.connect(af);af.connect(ag);ag.connect(this.alarmG);ao.start();am.start();
+  },
+  vol(){if(this.master)this.master.gain.setTargetAtTime(settings.sound?.85:0,this.ctx.currentTime,.05);},
+  ok(){return this.ctx&&settings.sound;},
+  env(o,g,peak,a,dcy,t){t=t||this.ctx.currentTime;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(0.0001,t+a+dcy);o.start(t);o.stop(t+a+dcy+.05);},
+  ping(){if(!this.ok())return;const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=1320;o.connect(g);g.connect(this.master);g.connect(this.bus);this.env(o,g,.18,.005,1.4);},
+  blip(){if(!this.ok())return;const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=180;o.connect(g);g.connect(this.master);this.env(o,g,.04,.003,.06);},
+  tick(){if(!this.ok())return;const c=this.ctx,o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.value=900+Math.random()*300;o.connect(g);g.connect(this.master);this.env(o,g,.012,.002,.025);},
+  thud(){if(!this.ok())return;const c=this.ctx,o=c.createOscillator(),g=c.createGain(),t=c.currentTime;o.type='sine';o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(32,t+.4);o.connect(g);g.connect(this.master);this.env(o,g,.7,.01,.6);},
+  heartbeat(v){if(!this.ok())return;v=v||.6;const c=this.ctx;[0,.24].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+d;o.type='sine';o.frequency.setValueAtTime(70,t);o.frequency.exponentialRampToValueAtTime(38,t+.15);o.connect(g);g.connect(this.master);this.env(o,g,v*(i?.6:1),.008,.22,t);});},
+  sting(){if(!this.ok())return;const c=this.ctx,t=c.currentTime,f=c.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(3000,t);f.frequency.exponentialRampToValueAtTime(200,t+2.5);f.connect(this.master);f.connect(this.bus);
+    [196,207.6,293.7,311.1,415.3].forEach(fr=>{const o=c.createOscillator(),g=c.createGain();o.type='sawtooth';o.frequency.value=fr;o.detune.setValueAtTime(0,t);o.detune.linearRampToValueAtTime(-90,t+2.5);o.connect(g);g.connect(f);this.env(o,g,.06,.02,2.6);});
+    this.thud();},
+  glitch(){if(!this.ok())return;const c=this.ctx,s=c.createBufferSource();s.buffer=this.noise;const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=400+Math.random()*2400;bp.Q.value=8;const g=c.createGain();s.connect(bp);bp.connect(g);g.connect(this.master);g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.9,c.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.35);s.start(0,Math.random()*3);s.stop(c.currentTime+.4);},
+  setChoir(v){if(!this.ctx)return;this.choirG.gain.setTargetAtTime(v*.32,this.ctx.currentTime,1.2);},
+  setAlarm(on){if(!this.ctx)return;this.alarmG.gain.setTargetAtTime(on?1:0,this.ctx.currentTime,.2);}
+};
+/* =====================================================================
+   PIXEL ART - every scene is drawn live at 120x72 and scaled up crisp
+   ===================================================================== */
+const ART=(()=>{
+const W=120,H=72;
+const lo=document.createElement('canvas');lo.width=W;lo.height=H;
+let g=lo.getContext('2d');
+const view=$('#scene'),vctx=view.getContext('2d');
+const tcv=$('#tcv'),tctx=tcv.getContext('2d');
+let scene='dark',sT0=performance.now(),shakeT=0,glitchT=0,titleOn=false,last=0;
+
+const P={k:'#010305',a0:'#040b10',a1:'#07141c',a2:'#0b1f2b',a3:'#11303f',a4:'#1a4656',a5:'#2a6670',a6:'#4b9a9c',a7:'#94d4cc',w:'#e9f5ee',
+ r0:'#1c0408',r1:'#3f0912',r2:'#701424',r3:'#ab2236',r4:'#e0405a',p1:'#e8789a',p2:'#f6aebe',p3:'#ffe0e6',
+ s0:'#2e1a14',s1:'#5c3a2e',s2:'#94624e',s3:'#c99478',s4:'#ecc6a8',
+ m0:'#12171b',m1:'#20292f',m2:'#36434b',m3:'#5d6d75',m4:'#95a5ac',m5:'#c9d4d8',
+ y0:'#3e2808',y1:'#8a5c16',y2:'#d9a73a',y3:'#fff0a8',bn0:'#5e5642',bn1:'#9c9072',bn2:'#d8ccaa',bn3:'#f2ead2'};
+const BY=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+
+/* ---------- primitives ---------- */
+function R(x,y,w,h,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+function px(x,y,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),1,1);}
+function ell(cx,cy,rx,ry,c){g.fillStyle=c;cx=Math.round(cx);cy=Math.round(cy);rx=Math.max(0,rx);ry=Math.max(0,Math.round(ry));
+  for(let y=-ry;y<=ry;y++){const w=Math.round(rx*Math.sqrt(Math.max(0,1-(y*y)/((ry+.5)*(ry+.5)))));g.fillRect(cx-w,cy+y,w*2+1,1);}}
+function ring(cx,cy,rx,ry,c,step){step=step||.04;for(let a=0;a<6.3;a+=step)px(cx+Math.cos(a)*rx,cy+Math.sin(a)*ry,c);}
+function line(x0,y0,x1,y1,c){x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);g.fillStyle=c;
+  const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx+dy,n=0;
+  while(n++<400){g.fillRect(x0,y0,1,1);if(x0===x1&&y0===y1)break;const e2=2*e;if(e2>=dy){e+=dy;x0+=sx;}if(e2<=dx){e+=dx;y0+=sy;}}}
+function thick(x0,y0,x1,y1,c){line(x0,y0,x1,y1,c);line(x0+1,y0,x1+1,y1,c);}
+function dith(x,y,w,h,c,lv){g.fillStyle=c;x=Math.round(x);y=Math.round(y);for(let j=0;j<h;j++)for(let i=0;i<w;i++){const X=x+i,Y=y+j;if(BY[(Y&3)*4+(X&3)]<lv)g.fillRect(X,Y,1,1);}}
+function dpx(x,y,c,lv){x=Math.round(x);y=Math.round(y);if(BY[(y&3)*4+(x&3)]<lv)px(x,y,c);}
+function vgrad(x,y,w,h,c1,c2){R(x,y,w,h,c1);g.fillStyle=c2;for(let j=0;j<h;j++){const lv=Math.floor(j/h*17);for(let i=0;i<w;i++){const X=x+i,Y=y+j;if(BY[(Y&3)*4+(X&3)]<lv)g.fillRect(X,Y,1,1);}}}
+function bands(y0,arr){let y=y0;arr.forEach(([h,c1,c2])=>{if(c2)vgrad(0,y,W,h,c1,c2);else R(0,y,W,h,c1);y+=h;});}
+function glow(x,y,r,col,a,add){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');
+  g.save();g.globalAlpha=a;if(add)g.globalCompositeOperation='lighter';g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);g.restore();}
+function tint(col,a,mode){g.save();g.globalAlpha=a;if(mode)g.globalCompositeOperation=mode;g.fillStyle=col;g.fillRect(0,0,W,H);g.restore();}
+function hash(i){const s=Math.sin(i*127.1+311.7)*43758.5453;return s-Math.floor(s);}
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const lerp=(a,b,f)=>a+(b-a)*f;
+const CACHE={};
+function cached(key,w,h,fn){if(!CACHE[key]){const c=document.createElement('canvas');c.width=w;c.height=h;const old=g;g=c.getContext('2d');fn();g=old;CACHE[key]=c;}return CACHE[key];}
+
+/* 3x5 pixel font */
+const FONT={};
+('0:111101101101111,1:010110010010111,2:111001111100111,3:111001111001111,4:101101111001001,5:111100111001111,6:111100111101111,7:111001001010010,8:111101111101111,9:111101111001111,'+
+'A:111101111101101,B:110101110101110,C:011100100100011,D:110101101101110,E:111100110100111,F:111100110100100,G:011100101101011,H:101101111101101,I:111010010010111,'+
+'J:001001001101010,K:101101110101101,L:100100100100111,M:101111111101101,N:111101101101101,O:010101101101010,P:110101110100100,Q:010101101110011,R:110101110101101,'+
+'S:011100010001110,T:111010010010010,U:101101101101111,V:101101101101010,W:101101111111101,X:101101010101101,Y:101101010010010,Z:111001010100111,'+
+'.:000000000000010,-:000000111000000,!:010010010000010,?:110001010000010,/:001001010100100').split(',').forEach(p=>{FONT[p[0]]=p.slice(2);});
+function txt(s,x,y,c){s=String(s).toUpperCase();g.fillStyle=c;for(let i=0;i<s.length;i++){const f=FONT[s[i]];if(f)for(let b=0;b<15;b++)if(f[b]==='1')g.fillRect(x+i*4+b%3,y+Math.floor(b/3),1,1);}}
+
+/* ---------- shared pieces ---------- */
+function snow(T,n,spd,col,seed,area){area=area||[0,0,W,H];const[ax,ay,aw,ah]=area;
+  for(let i=0;i<n;i++){const h1=hash(i+seed),h2=hash(i*3.1+seed),h3=hash(i*7.7+seed);
+    let y=(h2*ah-T*spd*(.4+h3))%ah;if(y<0)y+=ah;const x=ax+((h1*aw+Math.sin(T*.4+i)*1.5)%aw+aw)%aw;
+    px(x,ay+y,h3>.8?P.a7:col);}}
+function bubbles(T,x,y,n,spd,col){for(let i=0;i<n;i++){const ph=(T*spd+hash(i)*20)%20;const by=y-ph*3.2;if(by<0)continue;const bx=x+Math.sin(ph*1.7+i)*2+hash(i+9)*6-3;
+  if(hash(i+3)>.6){ring(bx,by,1,1,col,.8);}else px(bx,by,col);}}
+function rivet(x,y){px(x,y,P.m4);px(x+1,y+1,P.m0);}
+function eye(x,y,open,iris,look){ // 3x2 eye
+  if(open<=0){R(x-1,y,3,1,P.s1);return;}
+  R(x-1,y,3,1,P.p3);if(open>.5)R(x-1,y-1,3,1,P.p3);
+  px(x+(look||0),y,iris||P.k);}
+
+/* first-person helmet frame drawn over gameplay scenes */
+const crackSeed=rng(77),CRACKS=[];
+(function(){const r=rng(1234);for(let i=0;i<6;i++){const pts=[];let x=W-2-r()*40,y=1+r()*3,a=1.6+r()*1.2;for(let j=0;j<10;j++){pts.push([x,y]);x+=Math.cos(a)*(2+r()*4);y+=Math.sin(a)*(2+r()*4);a+=(r()-.5)*1.2;}CRACKS.push(pts);}})();
+const VEINS=[];
+(function(){const r=rng(999);for(let i=0;i<14;i++){const left=i%2===0;let x=left?0:W-1,y=4+r()*64,a=left?(r()-.5)*1.2:Math.PI+(r()-.5)*1.2;const pts=[];
+  for(let j=0;j<26;j++){pts.push([x,y]);x+=Math.cos(a)*1.4;y+=Math.sin(a)*1.4;a+=(r()-.5)*.8;}VEINS.push({pts,th:i/14});}})();
+function helmet(T){
+  if(!S)return;
+  // corners
+  g.fillStyle=P.k;const rad=11;
+  for(let y=0;y<rad;y++){const w=Math.round(rad-Math.sqrt(Math.max(0,rad*rad-(rad-y)*(rad-y))));g.fillRect(0,y,w,1);g.fillRect(W-w,y,w,1);g.fillRect(0,H-1-y,w,1);g.fillRect(W-w,H-1-y,w,1);}
+  // mutation veins
+  if(S.mut>=20){const len=Math.floor((S.mut-15)/85*26),pulse=.5+.5*Math.sin(T*2.2);
+    VEINS.forEach(v=>{if(v.th>(S.mut-10)/90)return;for(let j=0;j<Math.min(len,v.pts.length);j++){const[x,y]=v.pts[j];px(x,y,j<len*.5?P.r2:(pulse>.5?P.p1:P.r3));if(j<4)px(x,y+1,P.r1);}});}
+  // cracks
+  if(S.hp<45){const n=Math.ceil((45-S.hp)/8);for(let i=0;i<Math.min(n,CRACKS.length);i++){const p=CRACKS[i];for(let j=1;j<p.length;j++)line(p[j-1][0],p[j-1][1],p[j][0],p[j][1],j%2?P.a7:P.w);}}
+  // fog when air is low
+  if(S.o2<30){const lv=Math.floor((30-S.o2)/30*9)+1;dith(0,H-22,W,22,'#8aa',lv);}
+  // faceplate glare
+  px(9,4,P.a7);px(10,3,P.a7);px(11,3,P.a7);px(8,5,P.a6);
+}
+
+/* =====================================================================
+   SCENES
+   ===================================================================== */
+function bellInterior(T,inner){
+  vgrad(0,0,W,H,P.m1,P.m0);
+  R(0,8,W,1,P.m2);R(0,63,W,1,P.m2);for(let x=4;x<W;x+=9){rivet(x,10);rivet(x,60);}
+  for(let x=0;x<W;x+=30)R(x,0,1,H,P.m0);
+  // viewport
+  const cx=60,cy=35;
+  ell(cx,cy,26,26,P.m2);ell(cx,cy,25,25,P.m3);ell(cx,cy,23,23,P.m1);
+  g.save();g.beginPath();g.arc(cx+.5,cy+.5,22,0,Math.PI*2);g.clip();
+  inner(cx,cy);
+  g.restore();
+  ring(cx,cy,22.5,22.5,P.m1,.02);ring(cx,cy,23.5,23.5,P.m2,.02);
+  for(let i=0;i<12;i++){const a=i/12*Math.PI*2;rivet(cx+Math.cos(a)*24.6,cy+Math.sin(a)*24.6);}
+  px(cx-12,cy-15,P.a7);px(cx-13,cy-14,P.a7);px(cx-14,cy-12,P.a7);px(cx-15,cy-10,P.a6);px(cx-9,cy-16,P.a6);
+  // gauges
+  const gauge=(x,y,v,col)=>{ell(x,y,8,8,P.m3);ell(x,y,7,7,P.m0);ell(x,y,6,6,P.a1);
+    for(let i=0;i<9;i++){const a=Math.PI*.75+i/8*Math.PI*1.5;px(x+Math.cos(a)*5,y+Math.sin(a)*5,P.a6);}
+    const a=Math.PI*.75+v*Math.PI*1.5+Math.sin(T*9)*.03;line(x,y,x+Math.cos(a)*5,y+Math.sin(a)*5,col);px(x,y,P.m4);};
+  gauge(13,22,clamp(S?S.depth/11000:.5,0,1),P.r4);gauge(13,48,S?S.o2/100:1,P.a7);
+  txt('D',3,31,P.m3);txt('O2',3,40,P.m3);
+  // readout
+  R(92,14,26,11,P.k);R(92,14,26,1,P.m2);R(92,24,26,1,P.m3);
+  txt(String(S?S.depth:6100).padStart(5,' '),93,17,P.a6);
+  // lights
+  const bl=Math.floor(T*2)%2;
+  ell(104,34,2,2,bl?P.r4:P.r1);if(bl)glow(104,34,6,'#ff3050',.35,true);
+  ell(104,42,2,2,P.y1);ell(104,50,2,2,P.a6);glow(104,50,4,'#50c0c0',.2,true);
+  // pipe
+  R(0,66,W,4,P.m2);R(0,66,W,1,P.m3);R(0,69,W,1,P.m0);for(let x=20;x<W;x+=40){R(x,65,3,6,P.m3);}
+}
+function waterIn(cx,cy,T,spd){vgrad(cx-22,cy-22,45,45,P.a2,P.k);glow(cx,cy+6,24,'#2a7080',.35,true);snow(T,46,spd,P.a5,3,[cx-22,cy-22,45,45]);}
+
+const SC={
+title(t,T){
+  vgrad(0,0,W,H,P.a3,P.k);
+  for(let i=0;i<5;i++){const x=20+i*22+Math.sin(T*.3+i)*6;g.save();g.globalAlpha=.07;g.globalCompositeOperation='lighter';g.fillStyle='#7fd';
+    g.beginPath();g.moveTo(x,0);g.lineTo(x+6,0);g.lineTo(x+22,H);g.lineTo(x+10,H);g.fill();g.restore();}
+  snow(T,60,4,P.a5,1);
+  // trench walls
+  const rock=cached('trtitle',W,H,()=>{const r=rng(5);for(let y=0;y<H;y++){const l=Math.floor(10+Math.sin(y*.2)*4+r()*3+y*.25),rr=Math.floor(12+Math.cos(y*.17)*4+r()*3+y*.25);
+    R(0,y,l,1,P.a1);R(W-rr,y,rr,1,P.a1);px(l,y,P.a2);px(W-rr-1,y,P.a2);}});
+  g.drawImage(rock,0,0);
+  // diver sinking
+  const dy=24+Math.sin(T*.7)*2,dx=60+Math.sin(T*.4)*3;
+  glow(dx,dy+18,22,'#ffe9a0',.18,true);
+  g.save();g.globalAlpha=.08;g.globalCompositeOperation='lighter';g.fillStyle='#fe9';g.beginPath();g.moveTo(dx-2,dy+4);g.lineTo(dx+2,dy+4);g.lineTo(dx+16,H);g.lineTo(dx-16,H);g.fill();g.restore();
+  R(dx-5,dy+6,10,12,P.m1);R(dx-7,dy+8,3,9,P.m1);R(dx+4,dy+8,3,9,P.m1);R(dx-4,dy+18,3,8,P.m1);R(dx+1,dy+18,3,8,P.m1);
+  ell(dx,dy,6,6,P.m2);ell(dx,dy,5,5,P.m3);ell(dx,dy+1,3,3,P.a1);px(dx-2,dy-1,P.a7);ell(dx,dy-6,1,1,P.y3);
+  bubbles(T,dx,dy-6,8,3,P.a6);
+  // things watching
+  for(let i=0;i<6;i++){const ex=8+hash(i)*104,ey=50+hash(i+4)*20,bl=Math.sin(T*.8+i*2.1)>.3;if(bl){px(ex,ey,P.p1);px(ex+3,ey,P.p1);}}
+},
+bell(t,T){bellInterior(T,(cx,cy)=>{waterIn(cx,cy,T,6);
+  const fx=((T*7)%140)-30;if(fx>30&&fx<90){ell(fx,cy+8,3,1,P.a3);px(fx-4,cy+8,P.a3);px(fx-4,cy+7,P.a3);}});},
+shoal(t,T){bellInterior(T,(cx,cy)=>{waterIn(cx,cy,T,3);
+  const sink=t>7?(t-7)*7:0,look=t>2.2;
+  for(let x=cx-24;x<cx+24;x++){const yc=cy-2+Math.sin(x*.12+T*1.5)*6+Math.sin(x*.31+T)*1.5+sink;
+    for(let k=-4;k<=4;k++){px(x,yc+k,Math.abs(k)>3?P.m2:(k<0?P.m4:P.m3));}}
+  for(let i=0;i<7;i++){const x=cx-21+i*7;const yc=cy-2+Math.sin(x*.12+T*1.5)*6+Math.sin(x*.31+T)*1.5+sink;
+    ell(x,yc,3,1,P.m5);px(x-4,yc-1,P.m4);px(x-4,yc+1,P.m4);R(x+1,yc-1,2,2,P.w);px(look?x+1:x+2,yc-(look?0:1),P.k);px(x+2,yc+1,P.r2);}
+  glow(cx,cy,30,'#000',.0);});},
+dock(t,T){
+  vgrad(0,0,W,H,P.a2,P.k);snow(T,40,3,P.a4,8);
+  const rock=cached('dockrock',W,H,()=>{const r=rng(22);for(let y=0;y<H;y++){const l=Math.floor(16+Math.sin(y*.15)*6+r()*4);R(0,y,l,1,P.a1);px(l,y,P.a3);if(r()>.7)px(r()*l,y,P.a2);if(r()>.92)px(l-1,y,P.a6);}});
+  g.drawImage(rock,0,0);
+  line(80,58,80,H,P.m2);
+  R(34,38,84,18,P.m1);R(34,38,84,2,P.m2);R(34,54,84,2,P.m0);ell(34,47,3,9,P.m2);ell(117,47,3,9,P.m0);
+  for(let x=42;x<118;x+=12)R(x,38,1,18,P.m0);
+  ell(80,36,16,5,P.m1);R(64,36,33,2,P.m2);R(78,24,1,8,P.m3);px(78,23,Math.floor(T*1.5)%2?P.r4:P.r1);
+  for(let i=0;i<9;i++){const x=40+i*8,on=hash(i)>.35,fl=Math.sin(T*3+i*5)>-.8;R(x,44,3,2,on&&fl?(i===5?P.p1:P.r3):P.m0);}
+  dith(90,40,14,6,P.p1,3);dith(50,50,10,5,P.r2,4);
+  // docking collar & bell
+  R(46,30,10,8,P.m2);R(46,30,10,1,P.m3);
+  const by=Math.min(22,6+t*6);line(51,0,51,by-6,P.m3);
+  ell(51,by,6,6,P.m3);ell(51,by,5,5,P.m2);ell(50,by-1,2,2,P.y2);glow(50,by-1,10,'#ffd070',.35,true);
+  g.save();g.globalAlpha=.07;g.globalCompositeOperation='lighter';g.fillStyle='#fd8';g.beginPath();g.moveTo(49,by+4);g.lineTo(53,by+4);g.lineTo(70,H);g.lineTo(30,H);g.fill();g.restore();
+  glow(80,46,30,'#ff2040',.12+.05*Math.sin(T*2),true);
+},
+moonpool(t,T){
+  const dead=S&&S.flags.okmercy;
+  R(0,0,W,24,P.m0);for(let x=0;x<W;x+=6)R(x,0,1,24,P.k);R(0,20,W,2,P.m1);R(0,6,W,2,P.m1);
+  vgrad(0,24,W,16,P.m1,P.m0);for(let x=8;x<W;x+=16){R(x,24,1,16,P.k);}
+  R(0,40,W,32,P.m1);for(let y=42;y<H;y+=3)R(0,y,W,1,P.m0);for(let x=2;x<W;x+=5)R(x,40,1,32,P.m0);
+  // bell hatch on wall
+  ell(14,32,6,6,P.m3);ell(14,32,4,4,P.m2);ell(14,32,2,2,P.y1);glow(14,32,8,'#ffc060',.25,true);
+  // pool
+  ell(60,56,36,12,P.m3);ell(60,56,34,11,P.m2);ell(60,57,32,10,P.k);
+  for(let i=0;i<3;i++){const ph=((T*.4+i/3)%1);ring(60,57,4+ph*28,1+ph*8.5,ph<.7?P.a2:P.a1,.03);}
+  // okafor
+  const cx=60,cy=12,br=dead?0:Math.sin(T*1.3);
+  const hands=[[34,4],[86,4],[44,23],[76,23]];const shoulders=[[55,9],[65,9],[57,17],[63,17]];
+  hands.forEach((h,i)=>{thick(shoulders[i][0],shoulders[i][1],h[0],h[1],P.s2);
+    for(let k=0;k<3;k++){let x=h[0]+k-1,y=h[1];const len=10+hash(i*3+k)*12;for(let j=0;j<len;j++){y++;x+=Math.sin(j*.4+T*1.4+i+k)*.45;px(x,y,j>len-3?P.p2:(j%3?P.p1:P.r3));}
+      const dp=((T*.6+hash(i*5+k))%1);px(h[0]+k-1,h[1]+len+dp*25,P.p1);}});
+  ell(cx,cy+1,6,8,P.s2);ell(cx,cy+1,5,7,P.s3);
+  ell(cx,cy-9,3,3,P.s3);R(cx-3,cy-12,7,1,P.s1);eye(cx-1,cy-9,dead?0:1,P.a7);eye(cx+2,cy-9,dead?0:1,P.a7);
+  // bloom of ribs
+  const L=dead?3:8;
+  for(let i=0;i<10;i++){const a=-Math.PI*.95+i/9*Math.PI*1.9+Math.PI/2;const ex=cx+Math.cos(a)*L,ey=cy+2+Math.sin(a)*L*.8;
+    line(cx+Math.cos(a)*3,cy+2+Math.sin(a)*2,ex,ey,P.bn2);px(ex,ey,P.w);if(!dead)px(ex+Math.cos(a),ey+Math.sin(a),P.bn3);}
+  ell(cx,cy+2,3,3,P.r1);
+  if(!dead){ell(cx-1,cy+2,1+Math.max(0,br),2+Math.round(br),P.p1);ell(cx+2,cy+2,1+Math.max(0,br),2+Math.round(br),P.r3);}
+  // red pulse
+  const pu=.5+.5*Math.sin(T*1.2);
+  ell(4,28,2,2,P.r4);ell(116,28,2,2,P.r4);glow(4,28,26,'#ff1030',.25*pu,true);glow(116,28,26,'#ff1030',.25*pu,true);
+  tint('#600010',.12*pu,'multiply');
+},
+poolface(t,T){
+  R(0,0,W,H,P.m1);for(let y=0;y<H;y+=3)R(0,y,W,1,P.m0);
+  ell(60,37,58,34,P.m3);ell(60,37,56,33,P.k);
+  const I=t<9?Math.max(0,1-t/9):0,fy=37+t*2.2,fr=Math.max(1,9-t);
+  const r=rng(42),shade=[P.r1,P.r2,P.r3,P.p1];
+  if(t>1.5){for(let gy=-5;gy<=5;gy++)for(let gx=-8;gx<=8;gx++){const x=60+gx*6+(gy%2?3:0),y=45+gy*5;const d=Math.hypot((x-60)/1.4,y-45);if(d>32){r();continue;}
+    const rv=r(),lit=I*1.4-Math.hypot(x-60,y-fy)/40;
+    if(lit<=.05){if(Math.sin(T*2+gx*gy)>.97){px(x-1,y,P.r2);px(x+1,y,P.r2);}continue;}
+    const c=shade[Math.min(3,Math.floor(lit*4))];ell(x,y,2,2,c);px(x-1,y-1,P.k);px(x+1,y-1,P.k);
+    const op=Math.sin(T*3+rv*6)>0;if(op)R(x,y+1,1,1,P.k);else px(x,y+1,P.r0);}}
+  if(I>0){glow(60,fy,30*I+6,'#ff2020',.6*I,true);ell(60,fy,Math.round(fr/4),Math.round(fr/4),P.y3);glow(60,fy,fr,'#ff8060',.9,true);}
+},
+ring(t,T){corridor(t,T,false);},
+flood(t,T){corridor(t,T,true);},
+med(t,T){
+  const dead=S&&S.flags.ines==='dead';
+  R(0,0,W,46,P.m3);for(let y=4;y<46;y+=6)R(0,y,W,1,P.m4);for(let x=3;x<W;x+=6)R(x,0,1,46,P.m4);
+  R(0,46,W,26,P.m2);for(let y=48;y<H;y+=5)R(0,y,W,1,P.m1);
+  vgrad(0,0,W,20,P.m2,P.m3);
+  // monitor
+  R(4,14,20,14,P.m1);R(5,15,18,12,P.k);const bx=Math.floor((T*10)%18);
+  for(let x=0;x<18;x++){const v=dead?0:((x===bx%18||x===(bx+9)%18)?-4:(x===(bx+1)%18?3:0));px(5+x,21+v,x<=bx?P.a6:P.a3);}
+  // cabinets
+  R(96,10,22,30,P.m4);R(96,24,22,1,P.m3);R(106,10,1,30,P.m3);px(104,18,P.m1);px(108,18,P.m1);px(104,32,P.m1);px(108,32,P.m1);
+  // lamp
+  ell(56,3,9,3,P.m4);ell(56,4,6,1,P.w);
+  g.save();g.globalAlpha=.1;g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.moveTo(50,5);g.lineTo(62,5);g.lineTo(80,46);g.lineTo(32,46);g.fill();g.restore();
+  // table
+  R(30,40,58,4,P.m5);R(30,43,58,1,P.m3);R(34,44,3,18,P.m1);R(80,44,3,18,P.m1);
+  if(dead){ell(60,64,14,2,P.r2);ell(62,64,8,1,P.r3);}
+  // ines
+  ell(40,34,4,4,P.s3);px(38,31,P.s4);px(39,31,P.s4);
+  if(dead){R(38,34,2,1,P.s1);R(41,34,2,1,P.s1);}else{px(38,34,P.k);px(42,34,P.k);px(38+(Math.sin(T*.5)>.6?1:0),34,P.k);}
+  px(40,37,P.s1);R(44,35,18,6,P.m5);R(44,40,18,1,P.m4);R(48,34,2,8,P.m1);R(56,34,2,8,P.m1);
+  // tail
+  const segs=26,pts=[];
+  for(let i=0;i<segs;i++){const f=i/(segs-1);let x,y;
+    if(f<.3){x=62+f/.3*24;y=40;}else if(f<.55){const q=(f-.3)/.25;x=86+q*10;y=40+q*18;}else{const q=(f-.55)/.45*Math.PI*1.6;x=88+Math.cos(q)*9;y=62+Math.sin(q)*3.5;}
+    const amp=dead?0:(f>.55?(f-.55)*6:0);x+=Math.sin(T*1.6+i*.5)*amp;y+=Math.cos(T*1.3+i*.4)*amp*.5-(f>.9&&!dead?Math.max(0,Math.sin(T*.7))*8*(f-.9)*10:0);pts.push([x,y]);}
+  for(let i=pts.length-1;i>=0;i--){const[x,y]=pts[i];const r2=Math.round(3.4-i/segs*2.4);ell(x,y,r2,r2,i%2?P.s2:P.s3);px(x,y-r2,P.p1);if(r2>1)px(x-1,y-r2+1,P.r4);}
+  if(dead){for(let i=0;i<8;i++)line(70+i*3,68+(i%2),72+i*3,70,P.p1);}
+},
+crew(t,T){
+  const sheet=S&&S.flags.sheet;
+  vgrad(0,0,W,H,P.m1,P.k);R(0,52,W,20,P.m0);for(let x=0;x<W;x+=8)line(x,52,x-10,H,P.k);
+  // bunks
+  const bunk=(x,y,w)=>{R(x,y,w,2,P.m3);R(x,y+2,w,3,P.m2);R(x,y+5,w,1,P.m0);R(x,y-12,2,22,P.m3);R(x+w-2,y-12,2,22,P.m3);};
+  bunk(2,22,30);bunk(2,44,30);bunk(88,22,30);
+  // photos
+  R(40,10,6,5,P.y2);R(41,11,4,3,P.a5);R(50,12,5,5,P.m5);R(51,13,3,2,P.s3);R(76,10,6,6,P.p2);
+  // locker
+  R(98,30,18,22,P.m2);R(98,30,8,22,P.m3);R(99,31,1,20,P.m4);R(108,34,6,3,P.a4);R(108,40,4,6,P.y1);
+  // centre bunk with sheet
+  R(36,46,48,3,P.m3);R(36,49,48,3,P.m2);R(36,40,2,16,P.m3);R(82,40,2,16,P.m3);
+  const br=sheet?0:Math.sin(T*1.1)*1.2;
+  if(!sheet){ell(58,44,18,3+br,P.m4);ell(58,43,16,2+br,P.m5);ell(42,43,4,3,P.m4);for(let i=0;i<5;i++)px(48+i*5,44+Math.round(br),P.m3);}
+  else{ell(58,45,17,2,P.s3);ell(58,44,15,1,P.s4);ell(42,43,4,3,P.s3);px(41,43,P.k);px(43,43,P.k);dith(48,43,22,3,P.p1,6+Math.round(Math.sin(T)*2));
+    for(let i=0;i<8;i++){const a=i/8*Math.PI*2;px(42+Math.cos(a)*2.4,46+Math.sin(a)*1.2,P.w);}R(64,46,30,1,P.s2);}
+  // vent
+  R(54,0,14,4,P.m2);for(let x=55;x<67;x+=2)R(x,0,1,4,P.k);if(Math.sin(T*.9)>.85){px(58,2,P.p1);px(61,2,P.p1);}
+  // swinging bulb
+  const sw=Math.sin(T*.8)*4;line(60,0,60+sw,12,P.m2);ell(60+sw,13,1,1,P.y3);glow(60+sw,13,40,'#ffd88a',.2+.05*Math.sin(T*13),true);
+  tint('#000',.25+.1*Math.sin(T*.8));
+},
+crawler(t,T){
+  vgrad(0,0,W,H,P.m1,P.k);R(0,56,W,16,P.m0);for(let x=-10;x<W;x+=12)line(x,56,x-14,H,P.m1);
+  const near=Math.min(1,t/3.5),bob=Math.sin(T*8)*1,cx=60,cy=38+bob+near*3;
+  for(let i=0;i<5;i++){const side=i<2?-1:(i>2?1:0),ang=[-2.6,-2.0,-1.57,-1.1,-.5][i]+Math.PI;
+    const bx=cx+Math.cos(ang)*8,by=cy+Math.sin(ang)*5,ph=Math.sin(T*9+i*1.3);
+    const kx=bx+Math.cos(ang)*8+side*2,ky=by-9-ph*2,mx=kx+Math.cos(ang)*8,my=ky+6,fx=mx+Math.cos(ang)*5,fy=Math.min(60,my+12+Math.max(0,ph)*-3);
+    thick(bx,by,kx,ky,P.s3);thick(kx,ky,mx,my,P.s3);thick(mx,my,fx,fy,P.s2);px(kx,ky,P.s1);px(mx,my,P.s1);R(fx-1,fy,3,2,P.p2);}
+  ell(cx,cy,11+near*2,8+near,P.s2);ell(cx,cy-1,10+near*2,7+near,P.s3);line(cx-8,cy+2,cx+6,cy+5,P.s1);line(cx-6,cy-4,cx+7,cy-2,P.s1);
+  const bl=Math.sin(T*.7)>.95;ell(cx,cy,5,bl?0:3,P.p3);if(!bl){ell(cx+Math.sin(T*1.7)*2,cy,2,2,P.a5);px(cx+Math.sin(T*1.7)*2,cy,P.k);px(cx+Math.sin(T*1.7)*2-1,cy-1,P.w);}
+  ring(cx,cy,5,bl?1:3,P.r2,.15);
+  px(cx-3,cy+9+((T*20)%10),P.p1);
+},
+lab(t,T){
+  R(0,0,W,46,P.a1);
+  // Sato membrane
+  const memb=cached('sato',W,46,()=>{const r=rng(31);for(let y=0;y<46;y++)for(let x=0;x<W;x++){const d=Math.hypot((x-60)/60,(y-22)/24);const lv=Math.floor(Math.max(0,14-d*10));
+    if(BY[(y&3)*4+(x&3)]<lv)px(x,y,lv>9?P.s4:(lv>5?P.p2:P.s3));else if(r()>.85)px(x,y,P.a2);}
+    for(let i=0;i<14;i++){let x=r()*W,y=r()<.5?0:45,a=y?-1.2:1.2;for(let j=0;j<30;j++){px(x,y,j<10?P.r2:P.r3);x+=Math.cos(a)*1.3;y+=Math.sin(a)*1.3;a+=(r()-.5)*.9;}}});
+  g.drawImage(memb,0,0);
+  const look=Math.sin(T*.35)*4,blink=(T%7)>6.75;
+  [32,88].forEach(ex=>{ell(ex,20,10,5,P.s2);if(blink){R(ex-10,20,21,1,P.s1);return;}ell(ex,20,9,4,P.p3);ell(ex+look,20,4,4,P.a5);ell(ex+look,20,2,2,P.k);px(ex+look-2,18,P.w);R(ex-10,15,21,1,P.s1);});
+  px(57,30,P.s1);px(63,30,P.s1);dith(56,26,8,4,P.s2,4);
+  const mo=Math.max(0,Math.sin(T*.8))*2;R(40,37,40,1,P.s1);if(mo>.5)ell(60,38,14,Math.round(mo/2),P.r1);
+  R(0,0,W,2,P.m2);R(0,44,W,2,P.m2);R(0,0,2,46,P.m2);R(W-2,0,2,46,P.m2);R(40,0,2,46,P.m2);R(78,0,2,46,P.m2);
+  for(let i=0;i<5;i++)px(8+i,10-i,P.a7);px(50+3,5,P.a7);px(54,4,P.a7);
+  // bench
+  R(0,46,W,26,P.m1);R(0,50,W,3,P.m3);R(0,53,W,1,P.m2);
+  R(46,36,10,14,P.m2);R(48,38,6,6,P.k);for(let i=0;i<3;i++)R(49,39+i*2,Math.floor(2+hash(i+Math.floor(T))*3),1,P.a6);
+  // tank
+  R(10,28,16,22,P.a3);dith(10,28,16,22,P.a5,3);R(10,27,16,2,P.m3);R(10,49,16,2,P.m3);ell(18,47,7,2,P.p1);
+  line(14,30,19,38,P.w);line(19,38,16,44,P.w);line(19,38,24,40,P.a7);
+  // cold store & drain
+  R(84,54,24,16,P.m4);R(84,54,24,1,P.m5);px(104,62,P.m1);dith(84,54,24,4,P.w,4);
+  ell(70,66,5,2,P.k);for(let i=0;i<3;i++){let x=68+i*2,y=66;for(let j=0;j<6+i*2;j++){y--;x+=Math.sin(j*.6+T*3+i)*.6;px(x,y,P.p1);}}
+},
+comms(t,T){
+  const unplug=S&&S.flags.unplug;
+  R(0,0,W,H,P.m0);
+  for(let i=0;i<4;i++){const x=4+i*30;R(x,6,24,16,P.m2);R(x+1,7,22,14,P.k);
+    for(let k=0;k<22;k++){const v=unplug?0:Math.round(Math.sin(k*.6+T*(4+i))*3*Math.sin(T+i));px(x+1+k,14+v,P.a6);}}
+  R(0,40,W,32,P.m1);R(0,40,W,2,P.m2);for(let i=0;i<8;i++)px(6+i*15,46,Math.sin(T*3+i)>0?P.r4:P.r1);
+  // transmitter
+  R(98,46,18,14,P.m2);ell(106,50,1,1,unplug?P.m3:P.r4);if(!unplug)glow(106,50,5,'#ff3050',.4,true);
+  // sound rings
+  if(!unplug)for(let i=0;i<4;i++){const ph=((T*.5+i/4)%1);const r=6+ph*40;g.save();g.globalAlpha=1-ph;ring(60,58,r,r*.45,P.a6,.03);g.restore();}
+  // chair & body
+  R(46,18,28,30,P.m1);R(48,20,24,26,P.m2);
+  R(46,30,28,26,P.a4);R(46,30,28,2,P.a5);
+  // head
+  ell(60,15,7,7,P.s0);ell(60,17,5,5,P.s3);R(53,10,14,3,P.s0);
+  ring(60,14,8,7,P.m2,.05);R(51,14,3,5,P.m3);R(66,14,3,5,P.m3);px(52,16,P.a6);
+  eye(58,16,1,P.a4);eye(62,16,1,P.a4);
+  const tear=(T*.7)%1;px(57,18+tear*6,P.w);px(63,18+((tear+.5)%1)*6,P.w);
+  // the horn jaw
+  for(let y=21;y<54;y++){const f=(y-21)/33,w=Math.round(2+f*f*13);R(60-w,y,w*2+1,1,(y%7===0)?P.s1:(f>.8?P.p2:P.s3));px(60-w,y,P.s2);px(60+w,y,P.s2);}
+  for(let i=0;i<4;i++)px(58+i,22,P.w);
+  ell(60,55,15,4,P.p2);ell(60,55,13,3,P.r1);
+  const vib=unplug?0:(Math.floor(T*20)%2);ell(60,55+vib,8,1+vib,P.p1);ell(60,55,3,1,P.r3);
+},
+stitched(t,T){
+  R(0,0,W,H,P.k);vgrad(0,0,W,50,P.m0,P.k);
+  ell(60,20,10,24,P.m1);for(let i=0;i<5;i++)R(52+i*4,0,1,44,P.m0);
+  R(0,56,W,3,P.m2);for(let x=0;x<W;x+=4)R(x,59,1,8,P.m1);R(0,52,W,1,P.m3);
+  const sk=[P.s1,P.s2,P.s3,P.s4,P.s2,P.s0];
+  for(let i=0;i<12;i++){const side=i%2?1:-1,row=Math.floor(i/2),sy=30+row*4,sx=60+side*3,ph=T*3+row*.9;
+    const ex=sx+side*(12+Math.cos(ph)*4),ey=sy-6+Math.sin(ph)*3,hx=sx+side*(20+Math.cos(ph+1)*5),hy=Math.min(55,sy+10+Math.sin(ph+1)*6);
+    thick(sx,sy,ex,ey,sk[i%6]);thick(ex,ey,hx,hy,sk[(i+2)%6]);R(hx-1,hy,3,2,sk[(i+3)%6]);if(i===5)px(hx,hy-1,P.y3);}
+  ell(60,40,7,11,P.s2);ell(60,39,6,10,P.s3);for(let y=34;y<48;y+=3)R(56,y,9,1,P.s2);
+  ell(60,24,6,6,P.s1);dith(55,19,11,6,P.s0,9);
+  const mo=Math.round(1.5+Math.sin(T*4)*1.5);ell(60,25,4,mo,P.r1);for(let i=-3;i<=3;i+=2){px(60+i,25-mo,P.w);px(60+i,25+mo,P.w);}
+  if(mo>1)ell(60,25,1,1,P.p1);
+  tint('#ff0020',.12+.1*Math.max(0,Math.sin(T*3)),'lighter');
+},
+reactor(t,T){
+  const ov=S&&S.flags.overload,strobe=ov&&Math.floor(T*3)%2;
+  R(0,0,W,H,P.m0);for(let x=0;x<W;x+=12){R(x,0,1,56,P.k);}
+  R(46,4,28,54,P.m2);R(46,4,28,2,P.m3);for(let x=50;x<72;x+=6){R(x,6,1,52,P.m1);}
+  const cc=ov?(strobe?'#ff3050':'#ffe0e0'):'#60f0f0',pu=.6+.4*Math.sin(T*(ov?9:2));
+  for(let x=50;x<72;x+=6)for(let y=8;y<56;y+=2)if(hash(x*y)>.6)px(x,y,ov?P.r4:P.a6);
+  ell(60,30,8,10,P.k);ell(60,30,6,8,ov?P.r3:P.a6);ell(60,30,4,6,ov?P.p3:P.a7);ell(60,30,2,3,P.w);
+  glow(60,30,40,cc,.35*pu,true);
+  R(0,56,W,3,P.m3);R(0,59,W,13,P.m1);for(let x=0;x<W;x+=4)R(x,59,1,13,P.m0);for(let x=0;x<W;x+=10)R(x,48,1,8,P.m3);R(0,48,W,1,P.m3);
+  R(8,38,24,14,P.m2);R(10,40,20,8,P.k);
+  if(ov)txt(String(S.overload).padStart(2,'0'),16,42,strobe?P.r4:P.y3);else txt(S&&has('reactorkey')?'KEY':'LOCK',12,42,P.a6);
+  R(92,24,16,22,P.m3);R(92,24,16,1,P.m4);R(99,24,1,22,P.m2);px(97,34,P.k);px(101,34,P.k);txt('F',94,27,P.y2);
+  ell(104,66,10,3,P.k);ring(104,66,10,3,P.m3,.05);ring(104,66,4+((T*3)%6),1+((T*3)%6)/3,P.a3,.1);
+  if(ov)tint('#ff0020',strobe?.25:.05,'lighter');
+},
+hatch(t,T){
+  const open=S&&S.flags.hatchopen;
+  R(0,0,W,H,P.m1);for(let y=0;y<H;y+=6)R(0,y,W,1,P.m0);for(let x=0;x<W;x+=6)R(x,0,1,H,P.m0);
+  dith(0,0,30,20,P.p1,2);dith(90,50,30,22,P.r2,3);
+  ell(58,34,24,24,P.m3);ell(58,34,23,23,P.m2);
+  if(open){ell(58,34,20,20,P.k);const pu=.5+.5*Math.sin(T*1.5);glow(58,40,26,'#ff5080',.3*pu,true);line(58,14,58,54,P.m3);
+    R(50,40,16,12,P.m2);for(let x=51;x<66;x+=3)R(x,40,1,12,P.m3);for(let i=0;i<3;i++){const ph=(T*.5+i/3)%1;ring(58,34,ph*20,ph*20,P.r2,.06);}}
+  else{ell(58,34,19,19,P.m3);for(let i=0;i<8;i++){const a=i/8*Math.PI*2+.2;thick(58,34,58+Math.cos(a)*16,34+Math.sin(a)*16,P.m2);rivet(58+Math.cos(a)*21,34+Math.sin(a)*21);}
+    ell(58,34,5,5,P.m4);ell(58,34,3,3,P.m2);dith(40,30,36,10,P.r1,2);}
+  R(96,16,20,30,P.k);R(96,16,20,1,P.m3);R(98,18,16,5,P.r0);
+  txt(open?'OPEN':(Math.floor(T*2)%2?'----':''),98,18,open?P.a6:P.r4);
+  for(let r=0;r<4;r++)for(let c=0;c<3;c++)R(99+c*5,26+r*5,3,3,P.m3);
+  txt('NOT A DOOR',3,57,P.r2);txt('NOT A DOOR',2,56,P.r3);txt('A THROAT',3,64,P.r2);txt('A THROAT',2,63,P.r4);
+},
+lift(t,T){
+  const up=S&&S.node==='lift_up';
+  R(0,0,W,H,P.a0);
+  const wall=cached('liftwall',W,192,()=>{const r=rng(91);for(let y=0;y<192;y++){const l=Math.floor(30+Math.sin(y*.11)*7+Math.sin(y*.37)*3+r()*3),rr=Math.floor(30+Math.cos(y*.13)*7+r()*3);
+    R(0,y,l,1,P.a2);R(W-rr,y,rr,1,P.a2);for(let x=0;x<l;x++){if(r()>.85)px(x,y,P.a1);if(r()>.985)px(x,y,P.a5);}for(let x=W-rr;x<W;x++){if(r()>.85)px(x,y,P.a1);if(r()>.985)px(x,y,P.a5);}
+    px(l,y,P.a3);px(W-rr-1,y,P.a3);if(y%24<4&&r()>.3){dith(l-8,y,8,2,P.a6,5);}}});
+  const off=((up?-1:1)*T*14)%192,oy=-((off+192)%192);
+  g.drawImage(wall,0,oy);g.drawImage(wall,0,oy+192);
+  for(let i=0;i<10;i++){const side=i%2,ey=((hash(i)*192+oy+600)%192)-10,ex=side?96+hash(i+2)*14:6+hash(i+2)*16;const near=Math.abs(ey-38)<16;
+    if(near){R(ex,ey,2,2,P.p3);px(ex,ey+1,P.k);R(ex+5,ey,2,2,P.p3);px(ex+6,ey+1,P.k);}else{R(ex,ey+1,2,1,P.s1);R(ex+5,ey+1,2,1,P.s1);}}
+  line(60,0,60,H,P.m3);
+  glow(60,40,30,'#ffe9a0',.18,true);
+  R(48,26,24,2,P.m2);R(48,52,24,2,P.m2);for(let x=48;x<=72;x+=4)R(x,26,1,28,P.m3);
+  R(58,38,4,9,P.m1);ell(60,36,2,2,P.m3);px(60,34,P.y3);R(58,47,1,5,P.m1);R(61,47,1,5,P.m1);
+  for(let i=0;i<3;i++){const ph=(T*.4+i/3)%1;g.save();g.globalAlpha=(1-ph)*.6;ring(60,H+4,10+ph*50,6+ph*20,P.p1,.03);g.restore();}
+  snow(T,30,up?-8:12,P.a4,4);
+},
+choir(t,T){choirScene(t,T,false);},
+choirend(t,T){choirScene(t,T,true);},
+bram(t,T){
+  const taken=S&&has('reactorkey');
+  R(0,0,W,H,P.r0);dith(0,0,W,H,P.r1,6);glow(60,30,60,'#ff4080',.18,true);
+  for(let i=0;i<9;i++){const y=4+i*7;ell(24,y,6,3,P.bn1);ell(24,y-1,5,2,P.bn2);ell(96,y,6,3,P.bn1);ell(96,y-1,5,2,P.bn2);}
+  for(let i=0;i<4;i++){ell(60,2+i*5-4,4,2,P.bn2);}
+  const br=Math.round(Math.sin(T*.9));
+  R(36,32+br,48,40,P.a3);R(36,32+br,48,2,P.a4);dith(36,40,48,32,P.k,5);R(56,32+br,8,6,P.s2);
+  ell(60,18,9,12,P.s2);ell(60,17,8,11,P.s3);dith(52,20,16,8,P.s1,6);
+  ell(56,15,2,2,P.k);ell(64,15,2,2,P.k);px(56,15,P.a7);px(64,15,P.a7);R(53,12,6,1,P.s1);R(61,12,6,1,P.s1);
+  R(56,23,8,1,P.s1);px(60,19,P.s1);
+  ell(60,45+br,5,4,P.r1);ell(60,45+br,3,2,P.r0);
+  if(!taken){for(let y=29;y<62;y+=2)px(60,y+br,y%4?P.y1:P.y2);R(58,60,5,7,P.y1);R(59,61,3,2,P.k);R(60,64,1,4,P.y2);if(Math.sin(T*3)>.6)px(62,60,P.y3);}
+  else{for(let i=0;i<4;i++)px(60+i-2,50+((T*6+i*3)%14),P.r3);ell(60,45+br,6,5,P.r2);ell(60,45+br,4,3,P.r0);}
+},
+dark(t,T){
+  R(0,0,W,H,P.k);
+  for(let i=0;i<14;i++){const x=10+hash(i)*100,y=8+hash(i+40)*56,on=Math.sin(T*.8+i*1.9);if(on>.6){const o=Math.round((on-.6)*5);ell(x,y,3,o,P.r1);ring(x,y,3,o+.5,P.r2,.3);}}
+  if(Math.sin(T*.37)>.93){px(56,30,P.p3);px(64,30,P.p3);}
+},
+surface(t,T){
+  bands(0,[[10,P.a3,P.a5],[12,P.a5,P.p2],[10,P.p2,P.y2],[8,P.y2,P.y3]]);
+  for(let i=0;i<3;i++){const x=((T*2+i*50)%160)-20;R(x,8+i*6,24,1,P.p2);R(x+4,9+i*6,14,1,P.p3);}
+  ell(60,40,8,8,P.y3);ell(60,40,5,5,P.w);
+  vgrad(0,40,W,32,P.a5,P.a2);
+  for(let y=41;y<H;y+=2){const w=Math.max(1,Math.round(10-(y-40)/4));for(let k=0;k<3;k++){const x=60+Math.sin(T*2+y*1.3+k*2)*(y-38)*.7;R(x-w/2,y,w,1,k?P.y2:P.y3);}}
+  for(let i=0;i<20;i++){const x=hash(i)*W,y=44+hash(i+5)*28;if(Math.sin(T*3+i)>.7)px(x,y,P.a7);}
+  R(78,34,36,6,P.m0);R(80,40,32,2,P.k);R(90,26,10,8,P.m1);R(94,20,2,6,P.m1);line(84,34,74,18,P.m1);line(74,18,70,20,P.m1);line(70,20,70,26,P.m2);ell(70,29,3,3,P.y1);px(69,28,P.y2);
+  px(30,14,P.k);px(31,13,P.k);px(32,14,P.k);px(40,10,P.k);px(41,9,P.k);px(42,10,P.k);
+},
+surface_grey(t,T){
+  vgrad(0,0,W,40,P.m3,P.m2);for(let i=0;i<40;i++){const x=(hash(i)*W+T*30)%W,y=(hash(i+3)*72+T*60)%72;px(x,y,P.m4);}
+  vgrad(0,40,W,32,P.a3,P.a0);
+  for(let y=42;y<H;y+=3)for(let x=(y*7)%9;x<W;x+=9)R(x+Math.sin(T+y)*2,y,4,1,P.a4);
+  R(10,34,40,6,P.m0);R(12,40,36,2,P.k);R(22,26,10,8,P.m1);
+  const pu=.5+.5*Math.sin(T*.8);ell(80,62,26,6,P.a1);dith(54,56,52,12,P.k,8);px(80,60,pu>.5?P.p1:P.r2);glow(80,62,14,'#ff4080',.12*pu,true);
+},
+cargo(t,T){
+  R(0,0,W,H,P.a0);R(6,4,70,40,P.a1);for(let i=0;i<14;i++){const x=8+i*5,h=6+hash(i)*24;R(x,44-h,4,h,P.k);for(let j=0;j<h/3;j++)if(hash(i*9+j)>.6)px(x+1+(j%2),44-h+j*3+1,P.y2);}
+  R(6,4,70,1,P.m2);R(40,4,1,40,P.m2);
+  R(0,48,W,24,P.m1);R(0,48,W,2,P.m3);
+  const pu=.5+.5*Math.sin(T*2);glow(84,36,28,'#ff6090',.3+.2*pu,true);
+  R(76,22,16,26,P.a4);dith(76,22,16,26,P.a7,2);R(76,22,16,1,P.m4);R(76,47,16,2,P.m3);
+  dith(77,30,14,17,P.p1,8+Math.round(pu*4));ell(81,34,2,3,P.p2);for(let i=0;i<4;i++)R(79+i,30,1,3,P.p2);ell(88,38,2,3,P.p2);for(let i=0;i<4;i++)R(86+i,34,1,3,P.p2);
+  R(20,52,26,20,P.s3);R(20,52,26,2,P.s4);for(let i=0;i<4;i++)R(22+i*6,46,4,8,P.s3);
+  for(let i=0;i<6;i++){const a=hash(i)*3;line(33,62,33+Math.cos(a)*10,62+Math.sin(a)*8,Math.sin(T*2+i)>0?P.p1:P.r3);}
+},
+bloom(t,T){
+  vgrad(0,0,W,40,P.m3,P.m4);vgrad(0,40,W,32,P.a4,P.a2);
+  for(let y=42;y<H;y+=3)for(let x=(y*5)%11;x<W;x+=11)R(x+Math.sin(T+y)*2,y,4,1,P.a5);
+  R(0,30,30,12,P.m1);R(0,42,28,2,P.k);
+  const grow=Math.min(1,t/5),cx=64,cy=46;
+  ell(cx,cy+6,12,6,P.y1);ell(cx,cy+5,10,4,P.y0);
+  for(let i=0;i<11;i++){const a=-Math.PI+i/10*Math.PI+Math.sin(T*.8+i)*.08;const L=(10+hash(i)*14)*grow;
+    for(let j=0;j<L;j++){const x=cx+Math.cos(a)*j,y=cy+Math.sin(a)*j*.9+Math.sin(j*.3)*1;ell(x,y,Math.max(0,Math.round(2-j/L*2)),Math.max(0,Math.round(2-j/L*2)),j%4?P.p1:P.r3);}
+    px(cx+Math.cos(a)*L,cy+Math.sin(a)*L*.9,P.w);px(cx+Math.cos(a)*(L+1),cy+Math.sin(a)*(L+1)*.9,P.bn3);}
+  const br=Math.sin(T*1.3);ell(cx-3,cy,3+Math.round(br),4,P.p2);ell(cx+3,cy,3+Math.round(br),4,P.p1);ell(cx,cy+1,2,2,P.r2);
+  glow(cx,cy,30,'#ff6090',.25,true);
+},
+blast(t,T){
+  R(0,0,W,H,P.k);
+  if(t<6){const r=t*28;ell(60,60,r*1.2,r*.8,P.a3);ell(60,60,r,r*.65,P.a7);ell(60,60,r*.75,r*.5,P.w);dith(0,0,W,H,P.w,Math.min(16,Math.floor(t*3)));if(t<.3)tint('#fff',1);}
+  else{const f=Math.min(1,(t-6)/3);R(0,0,W,H,P.w);dith(0,0,W,H,P.a3,Math.floor(f*16));if(f>=1){R(0,0,W,H,P.a3);vgrad(0,0,W,H,P.a3,P.a1);snow(T,50,2,P.a6,12);}}
+},
+drown(t,T){
+  R(0,0,W,H,P.a1);snow(T,20,2,P.a3,2);
+  const n=Math.max(0,8-Math.floor(t));bubbles(T,60,70,n,4,P.a6);
+  const r=Math.max(0,80-t*7);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const d=Math.hypot((x-60)*.8,y-36);if(d>r)px(x,y,P.k);else if(d>r-6)dpx(x,y,P.k,Math.floor((d-r+6)/6*16));}
+  if(Math.floor(T*2)%2&&t<8)txt('O2 0',50,4,P.r4);
+},
+opened(t,T){
+  R(0,0,W,H,P.r0);R(10,20,100,52,P.m2);R(10,20,100,2,P.m3);R(56,20,8,52,P.m1);
+  const o=Math.min(1,t/6),cx=60,cy=46;
+  ell(cx,cy,10*o+2,12*o+2,P.r1);
+  for(let i=0;i<12;i++){const a=i/12*Math.PI*2;const L=4+o*14;line(cx+Math.cos(a)*3,cy+Math.sin(a)*3,cx+Math.cos(a)*L,cy+Math.sin(a)*L,P.bn2);px(cx+Math.cos(a)*L,cy+Math.sin(a)*L,P.w);}
+  ell(cx,cy,3+Math.round(Math.sin(T*1.2)),4,P.p1);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const d=Math.hypot(x-60,(y-40)*1.4);if(d>58)dpx(x,y,P.k,Math.min(16,Math.floor((d-58)/2)));}
+},
+mist(t,T){
+  R(0,0,W,H,P.k);
+  for(let i=0;i<220;i++){const a=hash(i)*Math.PI*2,sp=10+hash(i+7)*30,d=Math.min(70,t*sp)+Math.sin(T+i)*2;const x=60+Math.cos(a)*d,y=36+Math.sin(a)*d*.7+t*1.5;px(x,y,hash(i+2)>.5?P.p1:(hash(i+3)>.5?P.r3:P.p2));}
+  if(t<.5)tint('#fff',1-t*2);
+}
+};
+
+/* the corridor (dry ring or flooded) */
+function corridor(t,T,wet){
+  const VX=60,VY=30,zMax=6;
+  const wallC=wet?[P.a3,P.a2,P.a1]:[P.m3,P.m2,P.m1];
+  R(0,0,W,H,P.k);
+  for(let x=0;x<W;x++){
+    const dx=Math.abs(x-VX);if(dx<10)continue;
+    const z=60/dx;if(z>zMax)continue;
+    const top=VY-30/z,bot=VY+42/z,panel=Math.floor(z*2)%2,lv=Math.floor((z-1)/(zMax-1)*16);
+    R(x,top,1,bot-top,wallC[panel?1:0]);
+    g.fillStyle=P.k;for(let y=Math.round(top);y<bot;y++)if(BY[(y&3)*4+(x&3)]<lv)g.fillRect(x,y,1,1);
+    if(Math.abs((z*2)%1)<.12)R(x,top,1,bot-top,wallC[2]);
+    if(!wet){px(x,bot-1,(Math.sin(T*6+x)>-.9)?P.r3:P.r1);px(x,top+2,P.m1);}
+  }
+  for(let y=Math.ceil(VY+42/zMax);y<H;y++){const z=42/(y-VY),hw=60/z,lv=Math.floor((z-1)/(zMax-1)*16);
+    for(let x=Math.round(VX-hw);x<=VX+hw;x++){const c=(Math.abs((z*2)%1)<.14)?P.m0:(wet?P.a2:P.m1);if(BY[(y&3)*4+(x&3)]<lv)px(x,y,P.k);else px(x,y,c);}}
+  for(let y=0;y<Math.floor(VY-30/zMax);y++){const z=30/(VY-y),hw=60/z,lv=Math.floor((z-1)/(zMax-1)*16);
+    for(let x=Math.round(VX-hw);x<=VX+hw;x++){if(BY[(y&3)*4+(x&3)]<lv)px(x,y,P.k);else px(x,y,wet?P.a1:P.m0);}
+    if(Math.abs((z*1)%1)<.1&&!wet)R(VX-hw*.3,y,hw*.6,1,(Math.sin(T*17+z)>.3)?P.m4:P.m2);}
+  // doors
+  const door=(z1,z2,left)=>{for(let z=z1;z<z2;z+=.02){const x=left?VX-60/z:VX+60/z;const top=VY-30/z+ (14/z),bot=VY+42/z;R(x,top,1,bot-top,wet?P.a0:P.k);
+    if(z<z1+.05||z>z2-.05)R(x,top,1,bot-top,P.m3);}};
+  door(1.4,1.9,true);door(2.4,2.9,false);door(3.3,3.7,true);door(1.6,2.0,false);
+  if(!wet){txt('LAB',8,22,P.a6);txt('MED',101,20,P.a6);
+    for(let i=0;i<9;i++){const z=1.2+hash(i)*3.5,left=hash(i+1)>.5,x=left?VX-60/z:VX+60/z,y=VY+(hash(i+2)*60-25)/z,pu=.5+.5*Math.sin(T*1.3+i*2),r=Math.max(1,Math.round(5/z));
+      ell(x,y,r,r,P.r2);ell(x,y,Math.max(0,r-1),Math.max(0,r-1),pu>.5?P.p1:P.r3);if(pu>.7)glow(x,y,r*4,'#ff70a0',.25,true);}
+    ell(60,64,14,4,P.m3);ell(60,64,12,3,P.m2);line(48,64,72,64,P.m1);line(60,61,60,67,P.m1);
+    const cyc=T%11;if(cyc>8&&cyc<8.5){R(58,27,4,10,P.k);px(59,28,P.p3);px(61,28,P.p3);}
+    glow(60,70,40,'#ff1030',.15,true);
+    if(Math.sin(T*.5)>.985)tint('#000',.85);
+  }else{
+    g.save();g.globalAlpha=.12;g.globalCompositeOperation='lighter';g.fillStyle='#8ff';g.beginPath();g.moveTo(52,H);g.lineTo(68,H);g.lineTo(64,30);g.lineTo(56,30);g.fill();g.restore();
+    glow(60,34,20,'#60e0e0',.2,true);
+    const dr=(i,c,w,h)=>{const x=(hash(i)*W+T*(2+i))%W,y=20+hash(i+3)*36+Math.sin(T+i)*3;R(x,y,w,h,c);};
+    dr(1,P.m4,2,2);dr(2,P.m2,3,2);dr(3,P.s1,2,3);
+    let rx=30+Math.sin(T*.3)*10,ry=24;for(let j=0;j<18;j++){px(rx+j,ry+Math.sin(j*.5+T*2)*2,P.p1);}
+    if(!(S&&S.mut>=40))bubbles(T,60,70,10,5,P.a7);
+    snow(T,40,-2,P.a5,6);tint('#003040',.3,'lighter');
+  }
+}
+
+/* the cathedral */
+function choirScene(t,T,end){
+  R(0,0,W,H,P.k);glow(60,34,60,'#ff4078',.22,true);
+  const VX=60,VY=32;
+  for(let i=7;i>=1;i--){const z=i*.9,rx=56/z,ry=50/z,base=VY+38/z,shade=i>4?P.bn0:(i>2?P.bn1:P.bn2);
+    for(let a=0;a<=Math.PI;a+=.03){const x=VX+Math.cos(a)*rx,y=base-Math.sin(a)*ry;dpx(x,y-1,P.p2,3);}
+    if(i<6){for(let yy=Math.round(base-ry);yy<base;yy+=1){const f=1-(base-yy)/ry;const hw=rx*Math.sqrt(Math.max(0,1-(1-f)*(1-f)));
+      for(let xx=Math.round(VX-hw);xx<=VX+hw;xx++){if(Math.abs(xx-VX)>hw-2-(7-i))dpx(xx,yy,i%2?P.r1:P.r0,4);}}}
+    for(let a=0;a<=Math.PI;a+=.015){const x=VX+Math.cos(a)*rx,y=base-Math.sin(a)*ry;px(x,y,shade);if(i<3)px(x+1,y,shade);}
+    const n=Math.max(2,Math.round(10/z));
+    for(let k=0;k<n;k++){[-1,1].forEach(sd=>{const a=Math.PI/2+sd*(.3+k/n*1.1);const x=VX+Math.cos(a)*rx*.92,y=base-Math.sin(a)*ry*.92;
+      const op=Math.max(0,Math.sin(T*3-i*.7-k*.5));const mr=Math.max(1,Math.round(3/z*1.6));ell(x,y,mr,Math.round(op*mr*.8),P.r1);px(x-mr,y,P.p1);px(x+mr,y,P.p1);});}}
+  for(let y=VY+6;y<H;y++){const hw=(y-VY)*.35;for(let x=Math.round(VX-hw);x<=VX+hw;x++)dpx(x,y,(Math.sin(x*.7+y+T)>.85)?P.p1:P.a1,10);}
+  R(58,22,4,12,P.bn1);for(let y=22;y<34;y+=2)R(57,y,6,1,P.bn2);ell(60,20,2,2,P.s2);R(59,23,2,5,P.a2);
+  if(!(S&&has('reactorkey'))&&!end&&Math.sin(T*3)>.3)px(60,26,P.y3);
+  for(let i=0;i<30;i++){const x=(hash(i)*W+Math.sin(T*.3+i)*6),y=(hash(i+9)*H-T*(1+hash(i)*2))%H;px(x,y<0?y+H:y,i%3?P.p1:P.a6);}
+  if(end){const hy=60-t*4;if(hy>-10){ell(40,hy,5,5,P.m3);ell(40,hy+1,3,3,P.a1);bubbles(T,40,hy-4,5,4,P.a7);}
+    const pu=.5+.5*Math.sin(T*2);ell(60,52,4,Math.round(1+pu*2),P.r1);ring(60,52,5,3,P.w,.15);glow(60,52,10,'#fff',.2*pu,true);}
+}
+
+/* ---------- loop ---------- */
+function frame(now){
+  requestAnimationFrame(frame);
+  if(now-last<66)return;last=now;
+  const T=now/1000;
+  if(titleOn){
+    g.setTransform(1,0,0,1,0,0);SC.title(0,T);
+    tctx.imageSmoothingEnabled=false;tctx.drawImage(lo,0,0,tcv.width,tcv.height);return;
+  }
+  if(settings.scene==='off')return;
+  const t=(now-sT0)/1000;
+  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';
+  (SC[scene]||SC.dark)(t,T);
+  const node=S&&NODES[S.node];
+  if(node&&!node.end)helmet(T);
+  // sanity / mutation glitch
+  const gl=now<glitchT||(S&&S.san<35&&Math.random()<(35-S.san)/250);
+  if(gl&&settings.fx){for(let i=0;i<3;i++){const y=Math.floor(Math.random()*H),h=1+Math.floor(Math.random()*6),dx=Math.floor(Math.random()*9)-4;g.drawImage(lo,0,y,W,h,dx,y,W,h);}
+    if(S&&S.san<20&&Math.random()<.3){px(40+Math.random()*40,20+Math.random()*30,P.p3);}}
+  let ox=0,oy=0;if(now<shakeT&&settings.fx){ox=Math.round(Math.random()*4-2);oy=Math.round(Math.random()*4-2);}
+  vctx.imageSmoothingEnabled=false;vctx.fillStyle='#000';vctx.fillRect(0,0,view.width,view.height);
+  const sc=view.width/W;vctx.drawImage(lo,ox*sc,oy*sc,view.width,view.height);
+}
+function resize(){
+  const dpr=Math.min(3,window.devicePixelRatio||1);
+  let sc=Math.max(1,Math.min(4,Math.floor((window.innerWidth-8)/W)));
+  if(settings.scene==='S')sc=Math.max(1,sc-1);
+  const wrap=$('#scenewrap');wrap.classList.toggle('off',settings.scene==='off');
+  view.style.width=W*sc+'px';view.style.height=H*sc+'px';view.width=W*sc*dpr;view.height=H*sc*dpr;
+  const ts=Math.max(1,Math.min(4,Math.floor((window.innerWidth-8)/W)));
+  tcv.style.width=W*ts+'px';tcv.style.height=H*ts+'px';tcv.width=W*ts*dpr;tcv.height=H*ts*dpr;
+}
+window.addEventListener('resize',resize);
+resize();requestAnimationFrame(frame);
+return{
+  set(name){if(name!==scene){scene=name;sT0=performance.now();}},
+  restart(){sT0=performance.now();},
+  shake(){shakeT=performance.now()+350;},
+  glitch(){glitchT=performance.now()+450;},
+  title(on){titleOn=on;},
+  resize
+};
+})();
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+showTitle();
+</script>
+
+</body>
+</html>

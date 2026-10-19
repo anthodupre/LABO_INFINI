@@ -1,0 +1,30 @@
+Tu contribues au jeu incrémental « LABO INFINI » (style Cookie Clicker, thème laboratoire qui devient complètement over-the-top, tout en français, pixel art soigné).
+Répertoire du projet : /home/user/games/_dev/labo. LIS D'ABORD /home/user/games/_dev/labo/SPEC.md (règles globales, liste des 20 bâtiments et ères) et /home/user/games/_dev/labo/src/js/01_palette.js (palette).
+Tu écris UN SEUL fichier (indiqué ci-dessous). Ne touche à aucun autre fichier. Ne déclare au niveau global QUE les constantes demandées.
+Pas de dépendances, pas de réseau. Travaille avec soin : la qualité finale compte plus que la vitesse.
+Ta réponse finale (texte) : un court résumé (fichier, nombre d'éléments, points d'attention). Pas de dump du fichier.
+FICHIER : /home/user/games/_dev/labo/src/js/10_txt_buildings.js
+Déclare EXACTEMENT deux constantes : TXT_BUILDINGS et TXT_SYNERGIES.
+TXT_BUILDINGS = { <id>: { name, plural, desc, q, tiers: [15 × {n,q}], spec: {n,q} }, ... } pour les 20 ids dans l'ordre : pipette, stagiaire, bunsen, microscope, centrifugeuse, robot, clonage, fusion, accelerateur, quantique, orbitale, nanobots, portail, chrono, forge, trounoir, simulateur, cerveau, bigbang, infini.
+- name : nom singulier (reprendre ceux de SPEC.md), plural : pluriel correct.
+- desc : une phrase (≤ 80 caractères) qui dit ce que fait le bâtiment, avec humour (« Clique la fiole pour vous, sans jamais se plaindre. »).
+- q : citation d'ambiance du bâtiment.
+- tiers : EXACTEMENT 15 améliorations du bâtiment, débloquées en possédant 1, 5, 25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600 exemplaires ;
+  chacune double sa production. Les noms escaladent : améliorations réalistes (meilleur matériel, formation…) → absurdes → cosmiques → métaphysiques.
+  CAS SPÉCIAL pipette : tiers[0..2] = améliorations de la pipette (elles doublent pipettes ET clics) ; tiers[3..14] = l'escalade de la CAFÉINE
+  (le café du labo rend chaque pipette et chaque clic plus efficaces pour chaque autre bâtiment possédé) : de « Café filtre » à un café cosmique délirant.
+- spec : SEULEMENT pour les 18 bâtiments de bunsen à infini (PAS pour pipette ni stagiaire) : « stagiaires spécialisés » formés à ce bâtiment
+  (ex. bunsen → « Stagiaires pyromanes », microscope → « Stagiaires myopes »…). Cette amélioration double les stagiaires et booste le bâtiment.
+TXT_SYNERGIES = { 'a+b': {n,q}, ... } avec EXACTEMENT ces 15 clés (synergie entre deux bâtiments, nom qui marie les deux thèmes) :
+'bunsen+forge', 'microscope+nanobots', 'centrifugeuse+accelerateur', 'robot+cerveau', 'clonage+simulateur', 'fusion+orbitale', 'accelerateur+trounoir',
+'quantique+cerveau', 'orbitale+portail', 'nanobots+bigbang', 'portail+chrono', 'chrono+infini', 'forge+bigbang', 'trounoir+simulateur', 'stagiaire+infini'.
+Comptes à vérifier par script : 20 bâtiments, 15 tiers chacun (300 au total), 18 spec, 15 synergies, aucun nom en double.
+
+RÈGLES TEXTE :
+- Tout en français impeccable (accents, cédilles, « guillemets », apostrophes). Humour absurde/scientifique, tout public, escalade
+  du réaliste vers le cosmique/métaphysique au fil de la progression. Jeux de mots bienvenus. Pas de marques réelles. Pas de répétitions.
+- Entrées {n, q} : n = nom court (1 à 5 mots, sans point final) ; q = phrase d'ambiance courte (≤ 110 caractères), peut être
+  une fausse citation « … » — Auteur fictif. NE JAMAIS écrire les effets chiffrés (×2, +1 %…) : le moteur les affiche lui-même.
+- Chaînes JS : utilise des guillemets doubles "…" (les apostrophes françaises passent alors sans échappement) ; échappe les " internes.
+- VALIDATION OBLIGATOIRE : node -e "const vm=require('vm');const c={};vm.createContext(c);vm.runInContext(require('fs').readFileSync('<fichier>','utf8')+';this.out={...}',c)" 
+  (adapte pour exposer tes constantes) et vérifie les comptes exacts demandés avec un petit script Node. Corrige jusqu'à ce que tout soit exact.

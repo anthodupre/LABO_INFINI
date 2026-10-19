@@ -1,0 +1,59 @@
+Tu contribues au jeu incrémental « LABO INFINI » (style Cookie Clicker, thème laboratoire qui devient complètement over-the-top, tout en français, pixel art soigné).
+Répertoire du projet : /home/user/games/_dev/labo. LIS D'ABORD /home/user/games/_dev/labo/SPEC.md (règles globales, liste des 20 bâtiments et ères) et /home/user/games/_dev/labo/src/js/01_palette.js (palette).
+Tu écris UN SEUL fichier (indiqué ci-dessous). Ne touche à aucun autre fichier. Ne déclare au niveau global QUE les constantes demandées.
+Pas de dépendances, pas de réseau. Travaille avec soin : la qualité finale compte plus que la vitesse.
+Ta réponse finale (texte) : un court résumé (fichier, nombre d'éléments, points d'attention). Pas de dump du fichier.
+FICHIER : /home/user/games/_dev/labo/src/js/12_txt_misc.js
+Déclare EXACTEMENT ces constantes (et aucune autre) :
+TXT_PROVISIONS = [60 × {n,q,i}] : provisions du labo (nourriture/en-cas des chercheurs, PAS de café — le café est réservé aux pipettes), chacune multiplie
+  toute la production. Escalade du banal (croissant) à l'absurde cosmique (repas de l'infini). i = icône parmi 'f_01'..'f_20' (f_01 croissant, f_02 pain au chocolat,
+  f_03 madeleine, f_04 donut, f_05 pizza, f_06 nouilles, f_07 sandwich, f_08 cookie, f_09 fromage, f_10 baguette, f_11 macaron, f_12 bento, f_13 boisson énergisante,
+  f_14 éclair, f_15 burger, f_16 gâteau d'anniversaire, f_17 tartine radioactive, f_18 soupe primordiale, f_19 gâteau fractal, f_20 pomme dorée cosmique) — choisis
+  l'icône qui correspond au nom ; les 60 entrées peuvent réutiliser les icônes (variantes : « croissant aux amandes quantiques »…), en suivant l'ordre d'escalade.
+TXT_CLICKPCT = [14 × {n,q}] : équipements pour mieux cliquer (gants, doigts bioniques, … main cosmique) ; chacun ajoute un % de la production à chaque clic.
+TXT_GOLDUP = [6 × {n,q}] : améliorations liées aux fioles dorées : [0] et [1] les fioles dorées apparaissent plus souvent, [2] leurs effets durent plus longtemps,
+  [3] la « pluie de fioles » est plus généreuse, [4] elles restent plus longtemps à l'écran, [5] la « réaction en chaîne » rapporte plus.
+TXT_REPUP = [12 × {n,q}] : hiérarchie académique de plus en plus démesurée qui exploite la Réputation (gagnée via les succès) :
+  de « Assistant de recherche » (n) jusqu'à quelque chose comme « L'Omniscient ». Les n doivent être des titres de personnes.
+TXT_PRESTIGE = { id: {n,q} } pour EXACTEMENT ces 44 nœuds de la Fondation Nobel (arbre de prestige ; effet indiqué pour t'inspirer, NE PAS l'écrire) :
+  fond (+10 % prod, racine), auto1 (prod hors-ligne 25 %/4 h), auto2 (50 %/12 h), auto3 (100 %/48 h), auto4 (100 %/7 jours), gold1 (fioles dorées plus fréquentes),
+  gold2 (effets dorés plus longs), gold3 (fioles restent plus longtemps), twin (fiole dorée jumelle), lucky (réaction en chaîne ×2), storm (pluie de fioles améliorée),
+  anomaly (débloque les anomalies quantiques), click1 (clics ×2), eureka1 (jauge Eurêka plus rapide et plus longue), click2 (clics ×3), ghost1 (1 clic auto/s),
+  ghost2 (5 clics auto/s), kit1 (commencer avec 10 pipettes et 5 stagiaires), kit2 (kit de départ plus gros), kit3 (énorme kit de départ), chal (débloque les protocoles
+  expérimentaux), cheap1/cheap2/cheap3 (bâtiments moins chers), upcheap1/upcheap2 (améliorations moins chères), petri1 (cycles Petri plus rapides), petri2 (mutations
+  plus fréquentes), petri3 (boîte de Petri plus grande), boost2..boost8 (production ×1,15 / ×1,2 / ×1,25 / ×1,5 / ×2 / ×3 / ×5), nobel1/nobel2/nobel3 (effet des Nobels
+  renforcé), rep1/rep2 (réputation renforcée), syn (synergies doublées), spec (stagiaires spécialisés doublés), fin (« La Fin ? » nœud ultime, ×10).
+TXT_CHALLENGES = { id: {n,q} } pour EXACTEMENT ces 10 protocoles (règle indiquée, le moteur l'affiche) : noclick « Mains liées » (cliquer ne produit rien),
+  budget « Budget serré » (bâtiments ×10 plus chers), noupgrade « Sans améliorations », minimal « Labo minimaliste » (3 types de bâtiments max), inflation « Inflation
+  galopante » (prix qui explosent), nogold « Ciel couvert » (aucune fiole dorée), speedrun « Course contre la montre » (objectif en 20 minutes), cap10 « Dix de chaque »
+  (10 exemplaires max par bâtiment), entropy « Entropie » (production ÷10), grand « Le Grand Protocole » (trois protocoles à la fois). Garde ces noms n (tu peux les
+  peaufiner légèrement) et écris un q savoureux (ton de protocole scientifique).
+TXT_PETRI = { id: {n,q} } pour EXACTEMENT ces 12 souches : levure (levure de boulanger), moisi (moisissure verte), lumi (bactérie luminescente), penic (pénicilline),
+  blob (blob gélatineux), champi (champignon psychédélique), cristal (cristaux vivants), mito (mitochondrie géante — « la centrale énergétique de la cellule »),
+  tardi (tardigrade), nano (nanoflore), schro (souche de Schrödinger), omega (souche Oméga, légendaire).
+TXT_GOLDEN = { chain, frenzy, clickfrenzy, surge, storm, singul, faille, reson } chacun {n,q} : effets des fioles dorées/anomalies : chain = gain instantané
+  (réaction en chaîne), frenzy = production ×7, clickfrenzy = clics ×777, surge = un type de bâtiment surchargé, storm = pluie de mini-fioles à attraper,
+  singul = clics ×7777 (anomalie), faille = faille temporelle (1 h de production d'un coup), reson = résonance (production ×77). n court et percutant (« Frénésie ! »).
+TXT_ERAS = [9 × {n,q}] : Garage, Université, MégaCorp, Atomique, Orbitale, Dimensionnelle, Stellaire, Cosmique, Infinie (n = « L'Ère … » ou similaire,
+  q = annonce dramatique et drôle quand on y entre).
+TXT_VESSELS = [6 × {n,q}] : Éprouvette, Erlenmeyer, Ballon à réaction, Cuve à plasma, Étoile en bouteille, Univers en bouteille.
+TXT_RANKS = [15 chaînes] : titres du joueur selon ses Nobels (0, 1, 3, 10, 25, 50, 100, 250, 500, 1000, 5000, 25000, 1e5, 1e6, 1e7) : de « Stagiaire non rémunéré » à divin.
+TXT_LABNAMES = [20 chaînes] : noms de labo drôles par défaut (« Laboratoires Clic-Clac », « Institut Molécule & Fils »…).
+TXT_PAPERS = [40 chaînes] : titres absurdes de publications scientifiques (affichés lors du prestige), peuvent contenir {labo}.
+TXT_OFFLINE = [12 chaînes] : phrases au retour du joueur, contiennent {duree} (« Pendant vos {duree} d'absence, les stagiaires ont… »).
+TXT_EUREKA = [12 chaînes] : exclamations courtes en majuscules quand la jauge Eurêka explose (« EURÊKA ! », « J'AI TROUVÉ ! »…).
+TXT_TIPS = [20 chaînes] : astuces de jeu exactes basées sur ces mécaniques : cliquer la fiole remplit la jauge Eurêka (clics ×10 temporaire) ; les fioles dorées
+  apparaissent toutes les quelques minutes et donnent des bonus ; acheter en lot ×10/×100 ; chaque bâtiment a des améliorations à 1, 5, 25, 50… exemplaires ;
+  les succès augmentent la Réputation, exploitée par la hiérarchie académique ; publier (prestige) rapporte des prix Nobel (+1 % de production chacun, et points
+  à dépenser dans la Fondation Nobel) ; la boîte de Petri se débloque avec le premier microscope, les souches mûres donnent des bonus et mutent quand deux sont voisines ;
+  la sauvegarde est automatique toutes les 30 s et via le bouton ; exporter la sauvegarde pour la garder ; production hors-ligne améliorable via la Fondation Nobel.
+Vérifie les comptes exacts par script et l'absence de doublons.
+
+RÈGLES TEXTE :
+- Tout en français impeccable (accents, cédilles, « guillemets », apostrophes). Humour absurde/scientifique, tout public, escalade
+  du réaliste vers le cosmique/métaphysique au fil de la progression. Jeux de mots bienvenus. Pas de marques réelles. Pas de répétitions.
+- Entrées {n, q} : n = nom court (1 à 5 mots, sans point final) ; q = phrase d'ambiance courte (≤ 110 caractères), peut être
+  une fausse citation « … » — Auteur fictif. NE JAMAIS écrire les effets chiffrés (×2, +1 %…) : le moteur les affiche lui-même.
+- Chaînes JS : utilise des guillemets doubles "…" (les apostrophes françaises passent alors sans échappement) ; échappe les " internes.
+- VALIDATION OBLIGATOIRE : node -e "const vm=require('vm');const c={};vm.createContext(c);vm.runInContext(require('fs').readFileSync('<fichier>','utf8')+';this.out={...}',c)" 
+  (adapte pour exposer tes constantes) et vérifie les comptes exacts demandés avec un petit script Node. Corrige jusqu'à ce que tout soit exact.

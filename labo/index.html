@@ -324,7 +324,7 @@ wObaD3cVfB36diyoLbYw4R/KntV6XVBb32Fg7YPHAhYXKoE9JxOMLDagmO6tD+w7YZ8T/3KFVnltpQjc
 oUlBrnEsvg7zYl+qeoLuSYql01n974dSgTsHrv7QAvqW1iHenaD0cI12fF0n7QO7a9FQWyqHvpUxUIcyw/sBdfBfH/QFs8YV
 qgktpKpjlv+82ycmdBxMWS4RmMcIlAk9j2et9HlmBP4/AAAA//8jLmTtAAAABklEQVQDANc6PgUVsmX6AAAAAElFTkSuQmCC">
 <meta name="theme-color" content="#141020">
-<meta name="version" content="18 octobre 2026 à 21 h 14">
+<meta name="version" content="18 octobre 2026 à 21 h 48">
 <title>Labo Infini</title>
 <style>
 /* Polices intégrées (pixelify-sans-latin-400-normal.woff2, pixelify-sans-latin-700-normal.woff2, vt323-latin-400-normal.woff2) — vérifier leur licence (OFL…) */
@@ -1187,7 +1187,7 @@ input[type=range]{width:150px;height:32px;accent-color:var(--cyan)}
 
 <script>
 "use strict";
-const BUILD_ID = "18 octobre 2026 à 21 h 14";
+const BUILD_ID = "18 octobre 2026 à 21 h 48";
 /* ==== 00_util.js ==== */
 /* ===================== UTILITAIRES ===================== */
 const U = {
@@ -6494,7 +6494,7 @@ function defaultState() {
     nobels: 0, nobelPts: 0, prestige: {}, chalDone: {}, challenge: null, chalStart: 0, chalTime: 0,
     eraMax: 0, ach: {}, flags: {}, journal: [], bestCps: 0, bestRun: 0, offlineTotal: 0,
     petri: { grid: Array(49).fill(null), disc: { levure: true, moisi: true }, harvests: 0, plants: 0, omega: 0, timer: 60, sel: 'levure', schro: false },
-    set: { format: 'long', sound: true, vol: 0.6, particles: true, news: true, flash: true, buyAmt: 1, sell: false, dev: false, god: false, speed: 1, tab: 'shop' },
+    set: { format: 'long', sound: true, vol: 0.6, music: true, mvol: 0.5, particles: true, news: true, flash: true, buyAmt: 1, sell: false, dev: false, god: false, speed: 1, tab: 'shop' },
   });
 }
 let S = defaultState();
@@ -6784,12 +6784,13 @@ function buyBuilding(id) {
   if (!canAfford(cost)) { SFX.play('error'); return false; }
   const before = S.bank;
   spend(cost);
-  if (!n(id)) S.lastNewT = S.runTime; // nouveau type de bâtiment dans cette partie : le labo avance
+  const wasNew = !n(id);
+  if (wasNew) S.lastNewT = S.runTime; // nouveau type de bâtiment dans cette partie : le labo avance
   S.b[id] = n(id) + amt;
   if (amt >= 100) secret('bulk');
   if (cost >= 1e6 && S.bank < cost * 0.01 && before >= cost && !godMode()) secret('broke');
   recalc(); updateEra(); checkUnlocks(); checkAch();
-  SFX.play('buy');
+  SFX.play(wasNew ? 'newb' : amt >= 10 ? 'buybulk' : 'buy');
   return true;
 }
 function sellBuilding(id) {
@@ -6957,7 +6958,7 @@ function buyNode(id) {
   if (!godMode()) S.nobelPts -= p.cost;
   S.prestige[id] = 1;
   if (PRESTIGE.every(q => S.prestige[q.id])) secret('alltree');
-  recalc(); checkUnlocks(); checkAch(); SFX.play('upgrade');
+  recalc(); checkUnlocks(); checkAch(); SFX.play('node');
   return true;
 }
 
@@ -6965,7 +6966,7 @@ function buyNode(id) {
 function startChallenge(id) {
   publish();
   S.challenge = id; S.chalStart = U.now(); S.chalTime = 0;
-  resetRun();
+  resetRun(); SFX.play('chalstart');
   saveGame();
 }
 function abandonChallenge() { S.challenge = null; recalc(); checkUnlocks(); UI.dirtyAll = true; }
@@ -6973,14 +6974,14 @@ function checkChallenge(dt) {
   const c = S.challenge; if (!c) return;
   S.chalTime += dt;
   if (c === 'speedrun' && S.chalTime > 20 * 60 && !godMode()) {
-    S.challenge = null; secret('tooslow'); recalc(); UI.dirtyAll = true;
+    S.challenge = null; secret('tooslow'); recalc(); UI.dirtyAll = true; SFX.play('chalfail');
     modal('Protocole échoué', '<p>Le chronomètre a sonné : 20 minutes écoulées. Le comité d’éthique vous regarde avec pitié.</p><p>Les restrictions sont levées, la partie continue normalement.</p>', null, true);
     return;
   }
   if (S.runEarned >= CMAP[c].goal) {
     S.chalDone[c] = true; S.challenge = null;
     recalc(); checkUnlocks(); checkAch(); UI.dirtyAll = true;
-    SFX.play('ach');
+    SFX.play('chalwin');
     journal('chal', 'Protocole réussi : <b>' + U.esc(CMAP[c].name) + '</b>');
     modal('Protocole réussi !', '<p class="big">' + U.esc(CMAP[c].name) + '</p><p>Récompense permanente : ' + CMAP[c].reward + '</p><p>Les restrictions sont levées, la partie continue normalement.</p>', null, true);
   }
@@ -7002,7 +7003,7 @@ function tick(dt) {
   // Buffs
   let changed = false;
   for (const b of S.buffs) { b.t -= dt; if (b.t <= 0) changed = true; }
-  if (changed) { S.buffs = S.buffs.filter(b => b.t > 0); recalc(); UI.dirtyBuffs = true; }
+  if (changed) { S.buffs = S.buffs.filter(b => b.t > 0); recalc(); UI.dirtyBuffs = true; if (G.ready) SFX.play('buffend'); }
   // Eurêka : décroissance
   G.eurekaIdle = (G.eurekaIdle || 0) + dt;
   if (G.eurekaIdle > 1.5 && S.eureka > 0) S.eureka = Math.max(0, S.eureka - 6 * dt);
@@ -7044,7 +7045,7 @@ function checkStall() {
   const msg = 'Le labo plafonne. <b>Publiez vos travaux</b> (onglet Nobel) : <b>+' + fmtNom(p, 'prix Nobel', 'prix Nobel') +
     '</b>, production <b>×' + dec(r, r < 10 ? 1 : 0) + '</b> pour toujours. Vous repartirez de zéro, mais bien plus vite.';
   toast(msg, 'ach', 'i_nobel', 'Conseil du comité Nobel', 10000);
-  journal('nobel', msg); markTab('nobel');
+  journal('nobel', msg); markTab('nobel'); SFX.play('advice');
 }
 
 /* ---------- Hors-ligne ---------- */
@@ -7193,7 +7194,7 @@ const GOLD = {
     }
     bigText(T.n, '#fee761', sub);
     journal('gold', '<b>' + U.esc(T.n) + '</b> — ' + U.esc(sub));
-    SFX.play('gold');
+    SFX.play('gold'); if (eff === 'frenzy' || eff === 'clickfrenzy' || eff === 'storm') SFX.play(eff);
     if (S.set.flash) flashScreen('#fee761');
   },
   anoEffect(cx, cy) {
@@ -7276,7 +7277,7 @@ function petriTick(silent) {
     if (!P.disc[st.id]) {
       P.disc[st.id] = true;
       if (G.ready) journal('petri', 'Nouvelle souche découverte : <b>' + U.esc(st.name) + '</b>');
-      if (!silent && G.ready) { toast('Nouvelle souche découverte : <b>' + U.esc(st.name) + '</b> !', 'petri', st.sprite); SFX.play('ach'); }
+      if (!silent && G.ready) { toast('Nouvelle souche découverte : <b>' + U.esc(st.name) + '</b> !', 'petri', st.sprite); SFX.play('mutation'); }
     }
   });
   P.schro = Math.random() < 0.5;
@@ -7302,7 +7303,7 @@ function petriPlant(i, id) {
   if (!canAfford(c)) { SFX.play('error'); toast('Pas assez de molécules pour cette culture.', 'warn'); return false; }
   spend(c);
   P.grid[i] = { s: id, a: 0 }; P.plants++;
-  SFX.play('petri'); checkAch(); UI.dirtyPetri = true;
+  SFX.play('plant'); checkAch(); UI.dirtyPetri = true;
   return true;
 }
 function petriHarvest(i) {
@@ -7316,7 +7317,7 @@ function petriHarvest(i) {
     earn(gain, false);
     P.harvests++;
     if (c.s === 'omega') P.omega++;
-    SFX.play('gold');
+    SFX.play('harvest');
   } else SFX.play('sell');
   P.grid[i] = null;
   recalc(); checkAch(); UI.dirtyPetri = true;
@@ -7330,7 +7331,7 @@ function petriAch(k) {
 /* ==== 25_audio.js ==== */
 /* ===================== SONS (synthèse 8-bit, aucun fichier) ===================== */
 const SFX = {
-  ctx: null, master: null, last: {},
+  ctx: null, master: null, last: {}, combo: 0, comboT: 0,
   init() {
     if (this.ctx) return;
     try {
@@ -7352,35 +7353,74 @@ const SFX = {
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.02);
   },
-  noise(dur, vol = 0.1, when = 0) {
+  noise(dur, vol = 0.1, when = 0, hp = 0) {
     const c = this.ctx, t = c.currentTime + when, len = Math.floor(c.sampleRate * dur);
     const buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
     const s = c.createBufferSource(), g = c.createGain(); s.buffer = buf; g.gain.value = vol;
-    s.connect(g); g.connect(this.master); s.start(t);
+    if (hp) { const f = this.ctx.createBiquadFilter(); f.type = hp > 0 ? 'highpass' : 'lowpass'; f.frequency.value = Math.abs(hp); s.connect(f); f.connect(g); } else s.connect(g);
+    g.connect(this.master); s.start(t);
+  },
+  arp(fs, step, dur, type, vol, when = 0) { fs.forEach((f, i) => this.tone(f, dur, type, vol, when + i * step)); },
+  // Clic sur le récipient : le son change avec l'ère, et monte quand on clique vite (combo)
+  click() {
+    const now = performance.now();
+    this.combo = now - this.comboT < 260 ? Math.min(14, this.combo + 1) : 0; this.comboT = now;
+    const k = Math.pow(2, this.combo / 24), e = S.era === 8 ? Math.floor(Math.random() * 8) : S.era;
+    switch (e) {
+      case 0: this.tone(U.rand(260, 330) * k, 0.07, 'sine', 0.12, 0, 420 * k); break; // bulle
+      case 1: this.tone(1700 * k, 0.025, 'square', 0.035); this.tone(850 * k, 0.04, 'triangle', 0.06, 0.01); break; // craie
+      case 2: this.tone(1319 * k, 0.05, 'sine', 0.08); this.tone(1760 * k, 0.07, 'sine', 0.05, 0.03); break; // caisse enregistreuse
+      case 3: this.noise(0.02, 0.08, 0, 3000); this.tone(U.rand(2000, 2600), 0.012, 'square', 0.03); break; // Geiger
+      case 4: this.tone(1500 * k, 0.09, 'square', 0.05, 0, -1150); break; // laser
+      case 5: this.tone(U.rand(300, 900) * k, 0.08, 'triangle', 0.08, 0, U.pick([-250, 400])); break; // distorsion
+      case 6: this.tone(U.pick([1047, 1175, 1319, 1568, 1760]) * k, 0.06, 'sine', 0.07); break; // étincelle
+      default: this.tone(880 * k, 0.1, 'sine', 0.06); this.tone(1319 * k, 0.12, 'sine', 0.04, 0.02); // carillon
+    }
   },
   play(name) {
     if (!S.set.sound || !this.ctx || this.ctx.state !== 'running') return;
     const now = performance.now();
-    const minGap = { click: 35, buy: 40, petri: 60, goldspawn: 500 }[name] || 0;
+    const minGap = { click: 35, buy: 40, petri: 60, plant: 60, harvest: 80, goldspawn: 500, boom: 1500, glitch: 2500, buffend: 400, kevin: 3000 }[name] || 0;
     if (minGap && now - (this.last[name] || 0) < minGap) return;
     this.last[name] = now;
     this.master.gain.value = 0.5 * S.set.vol;
     try {
       switch (name) {
-        case 'click': this.tone(U.rand(420, 560), 0.06, 'square', 0.07, 0, 260); break;
+        case 'click': this.click(); break;
         case 'buy': this.tone(523, 0.05, 'triangle', 0.18); this.tone(784, 0.07, 'triangle', 0.18, 0.05); break;
+        case 'buybulk': this.arp([523, 659, 784, 1047, 1319], 0.035, 0.07, 'triangle', 0.14); break;
+        case 'newb': // nouveau type de bâtiment : petite fanfare
+          this.arp([392, 523, 659, 784], 0.07, 0.12, 'square', 0.07); this.tone(1047, 0.45, 'triangle', 0.12, 0.28); this.tone(1319, 0.4, 'sine', 0.06, 0.32); break;
         case 'sell': this.tone(523, 0.06, 'triangle', 0.15); this.tone(330, 0.09, 'triangle', 0.15, 0.06); break;
-        case 'upgrade': [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.08, 'square', 0.07, i * 0.055)); break;
+        case 'upgrade': this.arp([523, 659, 784, 1047], 0.055, 0.08, 'square', 0.07); break;
+        case 'node': this.arp([262, 330, 392], 0, 0.6, 'triangle', 0.08); this.arp([523, 659, 784, 1047], 0.08, 0.2, 'sine', 0.07, 0.1); break;
         case 'error': this.tone(140, 0.12, 'sawtooth', 0.08, 0, -40); break;
         case 'goldspawn': this.tone(1568, 0.12, 'sine', 0.1); this.tone(2093, 0.18, 'sine', 0.08, 0.1); break;
-        case 'gold': [880, 1109, 1319, 1760, 2217].forEach((f, i) => this.tone(f, 0.12, 'sine', 0.12, i * 0.045)); break;
+        case 'gold': this.arp([880, 1109, 1319, 1760, 2217], 0.045, 0.12, 'sine', 0.12); break;
+        case 'frenzy': this.tone(220, 0.6, 'sawtooth', 0.05, 0.25, 660); this.arp([1760, 2217, 2637], 0.06, 0.15, 'square', 0.04, 0.3); break;
+        case 'clickfrenzy': for (let i = 0; i < 10; i++) this.tone(1200 + i * 120, 0.04, 'square', 0.035, 0.25 + i * 0.03); break;
+        case 'storm': for (let i = 0; i < 8; i++) this.tone(U.rand(1500, 3000), 0.08, 'sine', 0.05, 0.25 + i * 0.07); break;
         case 'anomaly': this.tone(220, 0.5, 'sawtooth', 0.06, 0, 900); this.tone(330, 0.5, 'square', 0.05, 0.05, -200); break;
-        case 'ach': [523, 659, 784].forEach((f, i) => this.tone(f, 0.1, 'square', 0.08, i * 0.08)); this.tone(1047, 0.35, 'square', 0.08, 0.24); break;
-        case 'eureka': this.tone(300, 0.45, 'sine', 0.15, 0, 1300); [1319, 1568, 2093].forEach((f, i) => this.tone(f, 0.15, 'square', 0.05, 0.3 + i * 0.07)); break;
-        case 'publish': [262, 330, 392, 523].forEach(f => this.tone(f, 1.2, 'triangle', 0.1)); this.noise(0.6, 0.06); break;
-        case 'era': [392, 523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.18, 'square', 0.07, i * 0.1)); [523, 659, 784].forEach(f => this.tone(f, 0.9, 'triangle', 0.08, 0.5)); break;
-        case 'petri': this.tone(300, 0.08, 'sine', 0.15, 0, 300); break;
+        case 'incident': // klaxon d'alarme du labo
+          for (let i = 0; i < 3; i++) { this.tone(660, 0.16, 'square', 0.06, i * 0.34); this.tone(494, 0.16, 'square', 0.06, i * 0.34 + 0.17); }
+          this.noise(0.25, 0.04, 0, -900); break;
+        case 'ach': this.arp([523, 659, 784], 0.08, 0.1, 'square', 0.08); this.tone(1047, 0.35, 'square', 0.08, 0.24); break;
+        case 'eureka': this.tone(300, 0.45, 'sine', 0.15, 0, 1300); this.arp([1319, 1568, 2093], 0.07, 0.15, 'square', 0.05, 0.3); break;
+        case 'publish': [262, 330, 392, 523].forEach(f => this.tone(f, 1.2, 'triangle', 0.1)); this.noise(0.6, 0.06); this.arp([1047, 1319, 1568, 2093], 0.12, 0.3, 'sine', 0.06, 0.5); break;
+        case 'era': this.arp([392, 523, 659, 784, 1047], 0.1, 0.18, 'square', 0.07); [523, 659, 784].forEach(f => this.tone(f, 0.9, 'triangle', 0.08, 0.5)); this.noise(0.8, 0.03, 0.5, 4000); break;
+        case 'petri': case 'plant': this.tone(300, 0.08, 'sine', 0.15, 0, 300); this.tone(180, 0.06, 'triangle', 0.08, 0.04); break;
+        case 'harvest': for (let i = 0; i < 4; i++) this.tone(U.rand(500, 900) + i * 150, 0.06, 'sine', 0.1, i * 0.05, 400); break; // bulles qui éclatent
+        case 'mutation': this.tone(200, 0.7, 'sine', 0.08, 0, 600); this.arp([988, 1245, 1480, 1976], 0.09, 0.2, 'triangle', 0.06, 0.2); break;
+        case 'chalstart': this.tone(98, 0.5, 'sawtooth', 0.08, 0, 30); this.arp([196, 233, 294], 0.15, 0.3, 'square', 0.06, 0.2); break;
+        case 'chalwin': this.arp([523, 523, 523, 659, 784], 0.11, 0.14, 'square', 0.08); this.tone(1047, 0.7, 'triangle', 0.12, 0.6); this.noise(0.5, 0.03, 0.6, 5000); break;
+        case 'chalfail': [392, 370, 349, 330].forEach((f, i) => this.tone(f, i === 3 ? 0.8 : 0.28, 'sawtooth', 0.07, i * 0.3, i === 3 ? -60 : 0)); break; // trombone triste
+        case 'advice': this.tone(1568, 0.5, 'sine', 0.07); this.tone(2093, 0.6, 'sine', 0.05, 0.12); this.tone(784, 0.8, 'triangle', 0.05, 0.05); break; // clochette du comité
+        case 'buffend': this.tone(880, 0.12, 'triangle', 0.06, 0, -400); break;
+        case 'welcome': this.arp([392, 494, 587, 784], 0.09, 0.2, 'triangle', 0.09); break;
+        case 'boom': this.tone(70, 0.9, 'sine', 0.12, 0, -40); this.noise(0.9, 0.035, 0, -500); break; // Big Bang au loin
+        case 'glitch': for (let i = 0; i < 5; i++) this.tone(U.rand(200, 3000), 0.025, 'square', 0.03, i * 0.03); break;
+        case 'kevin': this.tone(700, 0.08, 'triangle', 0.06, 0, -300); this.tone(500, 0.1, 'triangle', 0.05, 0.1, 200); break; // « oups ! »
         case 'save': this.tone(988, 0.06, 'square', 0.06); this.tone(1319, 0.1, 'square', 0.06, 0.06); break;
         case 'tab': this.tone(660, 0.03, 'square', 0.04); break;
       }
@@ -7450,10 +7490,227 @@ const INC = {
     box.innerHTML = '<div class="il">⚠ INCIDENT DE LABO</div><div class="in">' + U.esc(x.n || 'Incident') + '</div><div class="it">' + U.esc(x.t).replace(/\{labo\}/g, U.esc(S.labName)) + '</div><div class="ie">' + eff + '</div>';
     box.classList.remove('on'); void box.offsetWidth; box.classList.add('on');
     this.hideT = 12 + Math.max(0, (x.t || '').length - 80) * 0.08;
-    SFX.play('anomaly');
+    SFX.play('incident');
     UI.dirtyBuffs = true;
   },
 };
+
+/* ==== 27_musique.js ==== */
+/* ===================== MUSIQUE (une par ère, synthétisée en direct, aucun fichier) =====================
+   Séquenceur WebAudio avec planification en avance (les notes sont programmées ~0,3 s à l'avance sur l'horloge
+   audio : pas de décalage même si l'image ralentit). Chaque ère a son morceau, de plus en plus fou ; l'Infini
+   superpose une gamme de Shepard (qui monte sans fin) et des citations de toutes les autres ères.
+   Volume et marche/arrêt séparés des bruitages (Options). Coupée quand l'app passe en arrière-plan. */
+const MUSIC = {
+  bus: null, out: null, dly: null, cur: -1, step: 0, bar: 0, nextT: 0, preview: null, noise: null, timer: null, beatN: 0,
+  init() {
+    if (this.bus) return true;
+    SFX.init(); const c = SFX.ctx; if (!c) return false;
+    this.out = c.createGain(); this.out.gain.value = 0;
+    const comp = c.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 4;
+    this.out.connect(comp); comp.connect(c.destination);
+    this.bus = c.createGain(); this.bus.connect(this.out);
+    // écho (envoi) : délai pointé avec un filtre dans la boucle
+    this.dly = c.createDelay(1.5); const fb = c.createGain(), lp = c.createBiquadFilter();
+    fb.gain.value = 0.33; lp.type = 'lowpass'; lp.frequency.value = 2400;
+    this.dly.connect(lp); lp.connect(fb); fb.connect(this.dly); lp.connect(this.out);
+    const len = c.sampleRate; this.noise = c.createBuffer(1, len, c.sampleRate);
+    const d = this.noise.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    return true;
+  },
+  start() { if (!this.timer) this.timer = setInterval(() => { try { this.pump(); } catch (e) { } }, 50); },
+  target() { return this.preview != null ? this.preview : S.era; },
+  level() { return S.set.music ? 0.45 * S.set.mvol : 0; },
+  pump() {
+    const c = SFX.ctx;
+    if (!c || c.state !== 'running' || !this.init()) return;
+    const now = c.currentTime, on = S.set.music && S.set.mvol > 0 && !document.hidden && G.ready !== false;
+    if (!on) { if (this.cur !== -1) { this.out.gain.cancelScheduledValues(now); this.out.gain.setTargetAtTime(0, now, 0.15); this.cur = -1; this.lastLvl = null; } return; }
+    const tr = MTRACKS[this.target()] || MTRACKS[0];
+    if (this.cur !== this.target()) { // fondu enchaîné vers le morceau de la nouvelle ère
+      const first = this.cur === -1;
+      this.out.gain.cancelScheduledValues(now); this.out.gain.setTargetAtTime(0, now, 0.12);
+      this.cur = this.target(); this.step = 0; this.bar = 0; this.nextT = now + (first ? 0.15 : 0.7);
+      this.out.gain.setTargetAtTime(this.level(), this.nextT, 0.5);
+      this.dly.delayTime.setValueAtTime(Math.min(1.4, 60 / tr.bpm * 0.75), now);
+    } else if (this.lastLvl !== this.level()) this.out.gain.setTargetAtTime(this.level(), now, 0.2);
+    this.lastLvl = this.level();
+    if (this.nextT < now - 0.5) this.nextT = now + 0.05; // retour d'arrière-plan : on repart proprement
+    const sd = 60 / tr.bpm / 4, steps = tr.steps || 16;
+    while (this.nextT < now + 0.3) {
+      const swing = this.step % 2 ? (tr.swing || 0) * sd : 0;
+      const s = { t: this.nextT + swing, i: this.step, bar: this.bar, sd, tr, ch: this.chord(tr, this.bar) };
+      try { tr.play(s, this); } catch (e) { }
+      this.nextT += sd; this.step++;
+      if (this.step >= steps) { this.step = 0; this.bar++; }
+    }
+  },
+  // ---- outils musicaux ----
+  hz(m) { return 440 * Math.pow(2, (m - 69) / 12); },
+  r(a, b = 0, k = 0) { const x = Math.sin(a * 12.9898 + b * 78.233 + k * 37.719) * 43758.5453; return x - Math.floor(x); }, // hasard reproductible
+  chord(tr, bar) { // notes MIDI de l'accord de la mesure (triade ou septième construite sur la gamme)
+    const p = tr.prog[bar % tr.prog.length], sc = tr.scale, root = tr.root + (tr.mod ? tr.mod(bar) : 0);
+    if (Array.isArray(p)) return p.map(x => root + x);
+    const deg = k => { const o = Math.floor((p + k) / sc.length); return root + sc[(p + k) % sc.length] + 12 * o; };
+    return [deg(0), deg(2), deg(4), deg(6)];
+  },
+  scaleNote(tr, bar, k) { const sc = tr.scale, root = tr.root + (tr.mod ? tr.mod(bar) : 0), o = Math.floor(k / sc.length); return root + sc[((k % sc.length) + sc.length) % sc.length] + 12 * o; },
+  // mélodie : motifs de 2 mesures répétés en A A B A sur 8 mesures, notes de l'accord + notes de passage
+  melody(s, dens = 0.45, oct = 24) {
+    const tr = s.tr, ph = s.bar % 8, motif = ph === 4 || ph === 5 ? 1 : 0, half = ph % 2, seed = tr.seed + motif * 7 + half * 3;
+    if (this.r(seed, s.i) > dens) return null;
+    const k = Math.floor(this.r(seed, s.i, 1) * 5) - 1, ct = s.ch[(Math.abs(k) + (s.i >> 2)) % 3];
+    return ct + oct + (this.r(seed, s.i, 2) < 0.25 ? (k > 0 ? 2 : -1) : 0);
+  },
+  // ---- instruments ----
+  note(m, t, len, o = {}) {
+    const c = SFX.ctx, f = o.hz ? m : this.hz(m); // m = note MIDI, ou fréquence en Hz si o.hz
+    const g = c.createGain(), v = (o.v || 0.05), a = o.a || 0.006, rel = o.r || 0.08;
+    const oscs = (o.det ? [-o.det, o.det] : [0]).map(dt => { const x = c.createOscillator(); x.type = o.w || 'square'; x.frequency.setValueAtTime(f, t); x.detune.value = dt; if (o.slide) x.frequency.exponentialRampToValueAtTime(Math.max(20, f * o.slide), t + len); return x; });
+    if (o.vib) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = o.vibF || 5.5; lg.gain.value = f * o.vib; l.connect(lg); oscs.forEach(x => lg.connect(x.frequency)); l.start(t); l.stop(t + len + rel + 0.05); }
+    let node = g;
+    if (o.cut) { const fl = c.createBiquadFilter(); fl.type = o.ft || 'lowpass'; fl.frequency.setValueAtTime(o.cut, t); if (o.env) fl.frequency.exponentialRampToValueAtTime(Math.max(60, o.cut * o.env), t + len); fl.Q.value = o.q || 1; oscs.forEach(x => x.connect(fl)); fl.connect(g); }
+    else oscs.forEach(x => x.connect(g));
+    const peak = v / oscs.length;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a);
+    if (o.sus) g.gain.setValueAtTime(peak, t + Math.max(a, len - rel)); else g.gain.exponentialRampToValueAtTime(peak * 0.35, t + Math.max(a + 0.01, len * 0.6));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len + rel);
+    g.connect(this.bus); if (o.send) { const sg = c.createGain(); sg.gain.value = o.send; g.connect(sg); sg.connect(this.dly); }
+    oscs.forEach(x => { x.start(t); x.stop(t + len + rel + 0.05); });
+    return node;
+  },
+  nz(t, len, v, type, f, q = 1, send = 0) {
+    const c = SFX.ctx, s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = this.noise; s.playbackRate.value = 1; fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    s.connect(fl); fl.connect(g); g.connect(this.bus); if (send) { const sg = c.createGain(); sg.gain.value = send; g.connect(sg); sg.connect(this.dly); }
+    s.start(t, Math.random() * 0.5); s.stop(t + len + 0.02);
+  },
+  kick(t, v = 0.5, f = 140) { this.note(f, t, 0.16, { hz: 1, w: 'sine', v, a: 0.002, r: 0.06, slide: 0.3 }); },
+  snare(t, v = 0.18, len = 0.14) { this.nz(t, len, v, 'bandpass', 1800, 0.7); this.note(190, t, 0.06, { hz: 1, w: 'triangle', v: v * 0.5, a: 0.002, r: 0.03 }); },
+  hat(t, v = 0.05, open = false) { this.nz(t, open ? 0.18 : 0.04, v, 'highpass', 7000, 0.8); },
+  tick(t, v = 0.05, f = 1800) { this.note(f, t, 0.02, { hz: 1, w: 'square', v, a: 0.001, r: 0.02 }); },
+  tom(t, v = 0.25, f = 120) { this.note(f, t, 0.22, { hz: 1, w: 'sine', v, a: 0.002, r: 0.08, slide: 0.55 }); },
+  // gamme de Shepard : chaque note est une pile d'octaves pondérée en cloche -> elle semble monter sans fin
+  shepard(t, k, len, v = 0.05) {
+    for (let o = 0; o < 8; o++) {
+      const f = 32.7 * Math.pow(2, o + (k % 12) / 12), x = Math.log2(f / 440), w = Math.exp(-x * x / 1.6);
+      if (w > 0.03) this.note(f, t, len, { hz: 1, w: 'sine', v: v * w, a: 0.03, r: 0.12, sus: true });
+    }
+  },
+};
+
+// Gammes (demi-tons depuis la tonique)
+const SC_MAJ = [0, 2, 4, 5, 7, 9, 11], SC_MIN = [0, 2, 3, 5, 7, 8, 10], SC_HMIN = [0, 2, 3, 5, 7, 8, 11], SC_PHR = [0, 1, 3, 5, 7, 8, 10],
+  SC_DOR = [0, 2, 3, 5, 7, 9, 10], SC_WT = [0, 2, 4, 6, 8, 10], SC_LYD = [0, 2, 4, 6, 7, 9, 11];
+const MTRACKS = [
+  { // 0 — Le Garage : lo-fi bricolé, doux et chaloupé
+    name: 'Bricolage lo-fi', bpm: 82, swing: 0.16, root: 60, scale: SC_MAJ, prog: [0, 5, 3, 4], seed: 11,
+    play(s, M) {
+      const t = s.t, i = s.i;
+      if (i === 0 || i === 10) M.kick(t, 0.32, 110);
+      if (i === 4 || i === 12) M.nz(t, 0.08, 0.06, 'bandpass', 2600, 1.5);
+      if (i % 2 === 0) M.hat(t, 0.018);
+      if (i === 0 || i === 7 || i === 8) M.note(s.ch[0] - 24 + (i === 7 ? 7 : 0), t, s.sd * 3, { w: 'triangle', v: 0.16, r: 0.12 });
+      if (i === 0) s.ch.slice(0, 4).forEach(n => M.note(n, t, s.sd * 14, { w: 'sine', v: 0.03, a: 0.08, r: 0.4, sus: true }));
+      const m = M.melody(s, 0.3, 12); if (m != null && i % 2 === 0) M.note(m, t, s.sd * 1.6, { w: 'triangle', v: 0.05, r: 0.15, send: 0.25 });
+    },
+  },
+  { // 1 — L'Université : baroque de cours magistral (clavecin en arpèges)
+    name: 'Fugue pour amphithéâtre', bpm: 100, root: 62, scale: SC_HMIN, prog: [0, 3, 4, 0, 5, 1, 4, 4], seed: 23,
+    play(s, M) {
+      const t = s.t, i = s.i, ch = s.ch, arp = [0, 1, 2, 1, 3, 1, 2, 1];
+      M.note(ch[arp[i % 8] % 3] + (arp[i % 8] === 3 ? 12 : 0) + 12, t, s.sd * 0.9, { w: 'square', v: 0.08, a: 0.002, r: 0.05, cut: 3200 });
+      if (i % 4 === 0) M.note(ch[0] - 12 - (i === 8 ? 5 : 0), t, s.sd * 1.8, { w: 'square', v: 0.11, a: 0.002, r: 0.05, cut: 900 });
+      if (i % 4 === 0) M.tick(t, 0.02, 2200);
+      const m = M.melody(s, 0.35, 24); if (m != null && i % 2 === 0 && s.bar % 4 > 1) M.note(m, t, s.sd * 1.8, { w: 'triangle', v: 0.08, r: 0.1, vib: 0.006 });
+    },
+  },
+  { // 2 — La MégaCorp : funk d'ascenseur corporatif
+    name: 'Synergie d’ascenseur', bpm: 108, swing: 0.1, root: 65, scale: SC_MAJ, prog: [[0, 4, 7, 11], [-3, 0, 4, 7], [2, 5, 9, 12], [-5, -1, 2, 5]], seed: 37,
+    play(s, M) {
+      const t = s.t, i = s.i, ch = s.ch, bass = [0, null, 12, null, null, 0, null, 7, 0, null, 12, 10, null, 7, null, 5];
+      if (i === 0 || i === 6 || i === 8) M.kick(t, 0.38);
+      if (i === 4 || i === 12) M.snare(t, 0.12);
+      if (i % 2 === 0) M.hat(t, 0.025, i === 14);
+      if (bass[i] != null) M.note(ch[0] - 24 + bass[i], t, s.sd * 0.9, { w: 'sawtooth', v: 0.09, a: 0.003, r: 0.05, cut: 1400, env: 0.25, q: 6 });
+      if (i === 2 || i === 7 || i === 10) ch.forEach(n => M.note(n, t, s.sd * 1.2, { w: 'sine', v: 0.025, a: 0.004, r: 0.15 }));
+      const m = M.melody(s, 0.3, 12); if (m != null && i % 2 === 0) M.note(m, t, s.sd * 1.5, { w: 'triangle', v: 0.045, r: 0.12, send: 0.2 });
+    },
+  },
+  { // 3 — L'Ère atomique : tension, compteur Geiger
+    name: 'Demi-vie', bpm: 124, root: 52, scale: SC_PHR, prog: [0, 1, 0, 6], seed: 41,
+    play(s, M) {
+      const t = s.t, i = s.i, ch = s.ch;
+      if (i % 4 === 0) M.kick(t, 0.42);
+      if (i === 4 || i === 12) M.snare(t, 0.14);
+      if (M.r(s.bar, i, 9) < 0.35) M.nz(t, 0.012, 0.05, 'highpass', 5000); // grésillements Geiger
+      if (i % 2 === 0) M.note(ch[0] - 12, t, s.sd * 0.8, { w: 'sawtooth', v: 0.06, a: 0.003, r: 0.04, cut: 700, env: 0.5 });
+      M.note(ch[i % 3] + 12 + (i % 8 === 7 ? 12 : 0), t, s.sd * 0.5, { w: 'square', v: 0.022, a: 0.002, r: 0.03 });
+      if (s.bar % 4 === 3 && (i === 0 || i === 8)) M.note(ch[0] + 24, t, s.sd * 6, { w: 'square', v: 0.03, vib: 0.02, vibF: 7, r: 0.1 }); // sirène
+    },
+  },
+  { // 4 — L'Ère orbitale : dérive spatiale, nappes et cloches
+    name: 'Apesanteur', bpm: 92, root: 57, scale: SC_DOR, prog: [0, 3, 5, 4], seed: 53,
+    play(s, M) {
+      const t = s.t, i = s.i, ch = s.ch;
+      if (i === 0) { ch.forEach(n => M.note(n, t, s.sd * 15, { w: 'sawtooth', det: 9, v: 0.035, a: 0.6, r: 0.8, cut: 1100, sus: true })); M.note(ch[0] - 24, t, s.sd * 15, { w: 'sine', v: 0.12, a: 0.1, r: 0.5, sus: true }); M.kick(t, 0.3, 90); }
+      if (i === 8) M.kick(t, 0.2, 90);
+      if (i % 3 === 0) M.note(ch[(i / 3) % 4 | 0] + 24, t, s.sd * 2, { w: 'sine', v: 0.03, a: 0.003, r: 0.4, send: 0.45 });
+      if (M.r(s.bar, i, 4) < 0.08) M.note(M.scaleNote(s.tr, s.bar, 21 + (i % 5)), t, 0.05, { w: 'sine', v: 0.03, r: 0.6, send: 0.6 }); // étincelles
+    },
+  },
+  { // 5 — L'Ère dimensionnelle : 7/8 tordu, gamme par tons, pépins
+    name: 'Géométrie non euclidienne', bpm: 132, steps: 14, root: 60, scale: SC_WT, prog: [0, 1, 2, 4, 3, 1], mod: b => (b % 12 < 6 ? 0 : 2), seed: 67,
+    play(s, M) {
+      const t = s.t, i = s.i, ch = s.ch;
+      if (i === 0 || i === 6 || i === 10) M.kick(t, 0.42);
+      if (i === 4 || i === 12) M.snare(t, 0.13);
+      if (i % 2 === 1) M.hat(t, 0.025);
+      if (i % 2 === 0) M.note(ch[(i >> 1) % 3] - 12, t, s.sd * 0.9, { w: 'square', v: 0.04, a: 0.002, r: 0.04, cut: 1600 });
+      const m = M.melody(s, 0.4, 12); if (m != null) M.note(m, t, s.sd * 1.2, { w: 'triangle', v: 0.045, vib: 0.03, vibF: 9, r: 0.1, send: 0.3, slide: M.r(s.bar, i, 3) < 0.2 ? 1.5 : 0 });
+      if (M.r(s.bar, i, 8) < 0.06) M.nz(t, 0.15, 0.05, 'bandpass', 600 + 3000 * M.r(s.bar, i), 8); // pépin dimensionnel
+    },
+  },
+  { // 6 — L'Ère stellaire : synthwave épique
+    name: 'Forge des étoiles', bpm: 118, root: 59, scale: SC_MIN, prog: [0, 5, 2, 6], seed: 79,
+    play(s, M) {
+      const t = s.t, i = s.i, ch = s.ch;
+      if (i % 4 === 0) M.kick(t, 0.5);
+      if (i === 4 || i === 12) M.snare(t, 0.2, 0.3);
+      M.hat(t, i % 2 ? 0.02 : 0.035);
+      if (i % 2 === 0) M.note(ch[0] - 24 + (i % 4 === 2 ? 12 : 0), t, s.sd * 0.9, { w: 'sawtooth', v: 0.07, a: 0.003, r: 0.04, cut: 900, env: 0.6 });
+      if (i === 0 || i === 6 || i === 12) ch.slice(0, 3).forEach(n => M.note(n, t, s.sd * 2.5, { w: 'sawtooth', det: 12, v: 0.04, a: 0.005, r: 0.2, cut: 2600 }));
+      const m = M.melody(s, 0.32, 24); if (m != null && i % 2 === 0) M.note(m, t, s.sd * 2, { w: 'sawtooth', det: 6, v: 0.035, r: 0.15, cut: 3500, send: 0.3 });
+      if (s.bar % 8 === 7 && i >= 12) M.tom(t, 0.3, 200 - (i - 12) * 30);
+    },
+  },
+  { // 7 — L'Ère cosmique : hyperespace, arpèges fous, monte d'un demi-ton toutes les 8 mesures
+    name: 'Hyperespace', bpm: 150, root: 54, scale: SC_MIN, prog: [0, 6, 5, 4], mod: b => (b >> 3) % 6, seed: 97,
+    play(s, M) {
+      const t = s.t, i = s.i, ch = s.ch, br = [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0];
+      if (br[i]) M.kick(t, 0.45);
+      if (i === 4 || i === 12 || (i === 14 && s.bar % 2)) M.snare(t, 0.15);
+      M.hat(t, 0.02);
+      M.note(ch[i % 4] + 12 * ((i >> 2) % 3), t, s.sd * 0.6, { w: 'square', v: 0.022, a: 0.002, r: 0.03, send: 0.2 });
+      if (i % 2 === 0) M.note(ch[0] - 24, t, s.sd * 0.9, { w: 'sawtooth', v: 0.06, cut: 1200, env: 0.4, r: 0.04 });
+      if (i === 0) ch.slice(0, 3).forEach(n => M.note(n + 12, t, s.sd * 15, { w: 'sine', det: 6, v: 0.03, a: 0.3, r: 0.5, sus: true, vib: 0.004 })); // chœur
+    },
+  },
+  { // 8 — L'Infini : tout en même temps. Gamme de Shepard sans fin + citations des huit autres ères
+    name: 'Tout, partout, en même temps', bpm: 160, root: 60, scale: SC_LYD, prog: [0, 1, 4, 5], seed: 101,
+    play(s, M) {
+      const t = s.t, i = s.i;
+      if (i % 4 === 0) { M.shepard(t, M.beatN++, s.sd * 4, 0.06); M.kick(t, 0.4); }
+      if (i === 4 || i === 12) M.snare(t, 0.14, 0.2);
+      // chaque 4 mesures, une autre ère est citée (rythmique et basses) par-dessus
+      const q = MTRACKS[(s.bar >> 2) % 8];
+      const qs = { t, i: i % (q.steps || 16), bar: s.bar, sd: s.sd, tr: q, ch: M.chord(q, s.bar).map(n => n + ((s.bar >> 2) % 3) * 2) };
+      try { q.play(qs, M); } catch (e) { }
+      if (M.r(s.bar, i, 13) < 0.05) M.note(M.scaleNote(s.tr, s.bar, 14 + (i % 7)), t, 0.1, { w: 'sine', v: 0.04, r: 0.8, send: 0.7, slide: 2 });
+    },
+  },
+];
 
 /* ==== 30_ui.js ==== */
 /* ===================== INTERFACE ===================== */
@@ -8079,7 +8336,9 @@ function renderOpts() {
     '<div class="sect">Laboratoire</div><div class="opt"><span>Nom du labo : <b>' + U.esc(S.labName) + '</b></span><button class="btn" id="oRename">Renommer</button></div>' +
     '<div class="sect">Affichage &amp; son</div>' +
     '<div class="opt"><span>Format des nombres</span><span class="row">' + [['long', '1,5 million'], ['short', '1,5 M'], ['sci', '1,5e6']].map(([k, t]) => '<button class="btn ' + (st.format === k ? 'on' : '') + '" data-fmt="' + k + '">' + t + '</button>').join('') + '</span></div>' +
-    tog('sound', 'Sons') + '<div class="opt"><span>Volume</span><input type="range" min="0" max="1" step="0.05" value="' + st.vol + '" id="oVol"></div>' +
+    tog('music', 'Musique <span class="sub">(« ' + U.esc((MTRACKS[MUSIC.target()] || MTRACKS[0]).name) + ' »)</span>') + '<div class="opt"><span>Volume de la musique</span><input type="range" min="0" max="1" step="0.05" value="' + st.mvol + '" id="oMvol"></div>' +
+    tog('sound', 'Bruitages') + '<div class="opt"><span>Volume des bruitages</span><input type="range" min="0" max="1" step="0.05" value="' + st.vol + '" id="oVol"></div>' +
+    '<div class="sub">Pas de son ? Vérifie que l’iPhone n’est pas en mode silencieux.</div>' +
     tog('particles', 'Particules') + tog('flash', 'Flashs lumineux') + tog('news', 'Fil d’actualités') +
     '<div class="sect"><img src="' + GFX.url('i_dev', 0, 2) + '" style="width:24px;height:24px" alt="">Développeur</div><div id="devZone"></div>' +
     '<div class="sect">À propos</div><div class="sub">Labo Infini — un jeu incrémental de laboratoire complètement dépassé. Polices Pixelify Sans et VT323 (SIL Open Font License).' + (typeof BUILD_ID !== 'undefined' ? ' <b>Version du ' + U.esc(BUILD_ID) + '</b>.' : '') + ' Astuce : ' + U.esc(U.pick(TX(() => TXT_TIPS, null) || ['Cliquez !'])) + '</div>';
@@ -8091,7 +8350,8 @@ function renderOpts() {
   U.$('#oReset').onclick = askReset;
   U.$('#oRename').onclick = askRename;
   U.$('#oVol').oninput = e => { st.vol = +e.target.value; SFX.play('click'); };
-  p.querySelectorAll('[data-tog]').forEach(b => b.onclick = () => { st[b.dataset.tog] = !st[b.dataset.tog]; applySettings(); renderOpts(); });
+  U.$('#oMvol').oninput = e => { st.mvol = +e.target.value; SFX.unlock(); };
+  p.querySelectorAll('[data-tog]').forEach(b => b.onclick = () => { st[b.dataset.tog] = !st[b.dataset.tog]; SFX.unlock(); applySettings(); renderOpts(); });
   p.querySelectorAll('[data-fmt]').forEach(b => b.onclick = () => { st.format = b.dataset.fmt; applySettings(); renderOpts(); UI.dirtyAll = true; });
   renderDev();
   updateLastSave();
@@ -8183,6 +8443,7 @@ function renderDev() {
     'Frénésie': () => addBuff({ key: 'frenzy', name: GOLDEN_TXT.frenzy.n, cps: 7, t: 77, icon: 'g_golden' }),
     'Eurêka': () => triggerEureka(),
     'Incident': () => INC.fire(),
+    'Musique : ère suivante': () => { MUSIC.preview = MUSIC.preview == null ? (S.era + 1) % 9 : MUSIC.preview + 1; if (MUSIC.preview > 8) MUSIC.preview = null; toast('Musique : « ' + MTRACKS[MUSIC.target()].name + ' »' + (MUSIC.preview == null ? ' (ère actuelle)' : ' (aperçu, ère ' + (MUSIC.preview + 1) + ')'), 'save'); },
     '+10 Nobel': () => { S.nobels += 10; S.nobelPts += 10; recalc(); }, '+1000 Nobel': () => { S.nobels += 1000; S.nobelPts += 1000; recalc(); }, '+1e6 Nobel': () => { S.nobels += 1e6; S.nobelPts += 1e6; recalc(); },
     '+10 de chaque bâtiment': () => { B_IDS.forEach(id => S.b[id] = n(id) + 10); recalc(); updateEra(); checkUnlocks(); },
     'Ère suivante': () => { const e = Math.min(8, S.era + 1); const id = B_IDS[ERA_REQ[e]]; S.b[id] = Math.max(1, n(id)); recalc(); updateEra(); checkUnlocks(); },
@@ -8314,6 +8575,7 @@ function uiUpdate(dt) {
   }
 }
 function offlineModal(r) {
+  SFX.play('welcome');
   const lines = TX(() => TXT_OFFLINE, null) || ['Pendant vos {duree} d’absence, le labo a continué de tourner.'];
   const t = U.pick(lines).replace(/\{duree\}/g, fmtDuree(r.sec));
   modal('Bon retour au labo !', '<p>' + U.esc(t) + '</p><p class="big">+' + fmtMol(r.gain) + '</p><p class="center sub">produites pendant votre absence (' + fmtPct(r.pct) + ' de la production' + (r.eff < r.sec ? ', limitée à ' + fmtTime(r.eff) : '') + ')</p>' +
@@ -8803,7 +9065,7 @@ const CHAOS = {
     // Fabrique de Big Bang : explosions cosmiques au loin
     if (n('bigbang') > 0) {
       this.bangT -= this.dt;
-      if (this.bangT <= 0) { this.bangT = U.rand(1.5, 4) / Math.min(3, 1 + Math.log10(n('bigbang') + 1)); const hue = U.rand(0, 360); this.bangs.push({ x: U.rand(6, W - 6), y: U.rand(6, top - 20), r: 0, cols: Array.from({ length: 18 }, (_, i) => GFX.rbw(hue + i * 12)) }); }
+      if (this.bangT <= 0) { this.bangT = U.rand(1.5, 4) / Math.min(3, 1 + Math.log10(n('bigbang') + 1)); const hue = U.rand(0, 360); SFX.play('boom'); this.bangs.push({ x: U.rand(6, W - 6), y: U.rand(6, top - 20), r: 0, cols: Array.from({ length: 18 }, (_, i) => GFX.rbw(hue + i * 12)) }); }
       this.bangs = this.bangs.filter(b => {
         b.r += this.dt * 36;
         const k = 18;
@@ -8870,7 +9132,7 @@ const CHAOS = {
     }
     // Kévin traverse parfois l'écran en courant avec un truc absurde
     this.kevinT -= this.dt;
-    if (this.kevinT <= 0 && !this.kevin && n('stagiaire') > 0) { this.kevinT = U.rand(25, 60); this.kevin = { x: -16, item: U.pick(['p_mol', 'g_mini', 'p_star', 'b_bunsen', 'b_trounoir', 'f_15', 'f_04', 'b_portail', 'i_dev']) }; }
+    if (this.kevinT <= 0 && !this.kevin && n('stagiaire') > 0) { this.kevinT = U.rand(25, 60); SFX.play('kevin'); this.kevin = { x: -16, item: U.pick(['p_mol', 'g_mini', 'p_star', 'b_bunsen', 'b_trounoir', 'f_15', 'f_04', 'b_portail', 'i_dev']) }; }
     if (this.kevin && GFX.has('b_stagiaire')) {
       const kv = this.kevin; kv.x += this.dt * 80;
       const y = top - 17 + (Math.floor(t * 5) % 2);
@@ -8894,7 +9156,7 @@ const CHAOS = {
     // Glitch de réalité (ère infinie)
     if (S.era >= 8) {
       this.glitchT -= this.dt;
-      if (this.glitchT <= 0) { this.glitchT = U.rand(3, 9); this.glitch = 0.18; }
+      if (this.glitchT <= 0) { this.glitchT = U.rand(3, 9); this.glitch = 0.18; SFX.play('glitch'); }
       if (this.glitch > 0) {
         this.glitch -= this.dt;
         const y = Math.floor(U.rand(0, sc.H - 8)), h = Math.floor(U.rand(2, 8)), off = Math.floor(U.rand(-6, 6));
@@ -9051,6 +9313,7 @@ function boot() {
   // boutons morts sur iPhone — voir le skill jeux-web-github, references/ios-webapp.md)
   document.addEventListener('focusout', () => setTimeout(() => { if (window.scrollY || window.scrollX) window.scrollTo(0, 0); }, 120));
   ['touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, () => SFX.unlock(), { capture: true, passive: true }));
+  MUSIC.start();
   document.addEventListener('visibilitychange', () => { if (!document.hidden) SFX.unlock(); });
   setInterval(() => saveGame(false), 30000);
   [300, 1200, 3000].forEach(ms => setTimeout(() => { fixStandaloneHeight(); SCENE.resize(); LABV.resize(); }, ms));

@@ -1,0 +1,4 @@
+# fichiers de travail (jamais publiés)
+_dev/**/dist/
+_dev/**/preview/
+node_modules/

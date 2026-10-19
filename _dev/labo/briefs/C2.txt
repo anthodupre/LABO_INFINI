@@ -1,0 +1,41 @@
+Tu contribues au jeu incrémental « LABO INFINI » (style Cookie Clicker, thème laboratoire qui devient complètement over-the-top, tout en français, pixel art soigné).
+Répertoire du projet : /home/user/games/_dev/labo. LIS D'ABORD /home/user/games/_dev/labo/SPEC.md (règles globales, liste des 20 bâtiments et ères) et /home/user/games/_dev/labo/src/js/01_palette.js (palette).
+Tu écris UN SEUL fichier (indiqué ci-dessous). Ne touche à aucun autre fichier. Ne déclare au niveau global QUE les constantes demandées.
+Pas de dépendances, pas de réseau. Travaille avec soin : la qualité finale compte plus que la vitesse.
+Ta réponse finale (texte) : un court résumé (fichier, nombre d'éléments, points d'attention). Pas de dump du fichier.
+FICHIER : /home/user/games/_dev/labo/src/js/11_txt_achievements.js
+Déclare EXACTEMENT une constante : TXT_ACH (noms des succès ; la condition chiffrée est affichée par le moteur, ne pas l'écrire).
+TXT_ACH = {
+  earned: [29 × {n,q}],   // molécules produites dans la partie : 1, 1e3, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e18, 1e21, 1e24, 1e27, 1e30, 1e33, 1e36, 1e39, 1e42, 1e45, 1e48, 1e51, 1e54, 1e57, 1e60
+  cps: [22 × {n,q}],      // production par seconde : 1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e12, 1e14, 1e16, 1e18, 1e20, 1e22, 1e24, 1e27, 1e30, 1e33, 1e36
+  clicks: [8 × {n,q}],    // nombre de clics : 1, 100, 1000, 5000, 10000, 25000, 50000, 100000
+  handmade: [13 × {n,q}], // molécules produites en cliquant : 1e3, 1e5, 1e7, 1e9, 1e11, 1e13, 1e15, 1e17, 1e19, 1e21, 1e24, 1e27, 1e30
+  totalBuildings: [6 × {n,q}], // bâtiments possédés au total : 100, 500, 1000, 2000, 4000, 8000
+  upgrades: [6 × {n,q}],  // améliorations achetées : 20, 50, 100, 200, 300, 400
+  golden: [6 × {n,q}],    // fioles dorées cliquées : 1, 7, 27, 77, 777, 7777
+  prestige: [8 × {n,q}],  // [0] première publication scientifique (prestige) ; [1..7] prix Nobel cumulés : 1, 10, 100, 1000, 1e4, 1e5, 1e6
+  eureka: [3 × {n,q}],    // « Eurêka » déclenchés (jauge de clics remplie) : 1, 100, 1000
+  petri: [6 × {n,q}],     // [0] première culture plantée, [1] 10 récoltes, [2] 100 récoltes, [3] 6 souches découvertes, [4] les 12 souches, [5] récolter la Souche Oméga
+  challenges: [11 × {n,q}], // un par protocole expérimental dans cet ordre : Mains liées, Budget serré, Sans améliorations, Labo minimaliste, Inflation galopante, Ciel couvert, Course contre la montre, Dix de chaque, Entropie, Le Grand Protocole ; [10] = tous terminés
+  eras: [9 × {n,q}],      // atteindre l'ère 1..9 : Garage, Université, MégaCorp, Atomique, Orbitale, Dimensionnelle, Stellaire, Cosmique, Infinie
+  building: { <id>: [8 × {n,q}] pour chacun des 20 ids (pipette, stagiaire, bunsen, microscope, centrifugeuse, robot, clonage, fusion, accelerateur, quantique, orbitale, nanobots, portail, chrono, forge, trounoir, simulateur, cerveau, bigbang, infini) }, // posséder 1, 50, 100, 150, 200, 300, 400, 500 exemplaires
+  secret: { <clé>: {n, d, q} }  // succès secrets : d = description de la condition en français (affichée une fois débloqué)
+}
+Clés secret EXACTES (20) et conditions : sell1 (vendre un bâtiment), sell100 (vendre 100 bâtiments au total), burger (découvrir le code secret des
+développeurs), logo (cliquer 10 fois sur le logo du jeu dans les options), rename (renommer son laboratoire), speed (cliquer 12 fois en une seconde),
+idle (ne pas cliquer sur la fiole pendant 30 minutes, jeu ouvert), insomnia (cumuler 24 heures de jeu), holiday (revenir après plus de 7 jours d'absence),
+bulk (acheter 100 bâtiments d'un coup), export (exporter sa sauvegarde), reflex (cliquer une fiole dorée moins d'une seconde après son apparition),
+miss (laisser disparaître 10 fioles dorées), collector (posséder au moins un exemplaire de chacun des 20 bâtiments), fullpetri (remplir toutes les cases
+de la boîte de Petri), emptypub (publier sans gagner le moindre Nobel), alltree (acheter tous les nœuds de la Fondation Nobel), anomaly (cliquer une
+anomalie quantique), tooslow (échouer au protocole « Course contre la montre »), broke (se retrouver avec moins d'une molécule juste après un achat d'au moins un million).
+Noms des succès de bâtiment : jeux de mots sur le bâtiment, escalade avec le nombre. Les succès de molécules/production suivent l'escalade cosmique.
+Comptes à vérifier par script (exacts) et aucun nom en double dans tout TXT_ACH.
+
+RÈGLES TEXTE :
+- Tout en français impeccable (accents, cédilles, « guillemets », apostrophes). Humour absurde/scientifique, tout public, escalade
+  du réaliste vers le cosmique/métaphysique au fil de la progression. Jeux de mots bienvenus. Pas de marques réelles. Pas de répétitions.
+- Entrées {n, q} : n = nom court (1 à 5 mots, sans point final) ; q = phrase d'ambiance courte (≤ 110 caractères), peut être
+  une fausse citation « … » — Auteur fictif. NE JAMAIS écrire les effets chiffrés (×2, +1 %…) : le moteur les affiche lui-même.
+- Chaînes JS : utilise des guillemets doubles "…" (les apostrophes françaises passent alors sans échappement) ; échappe les " internes.
+- VALIDATION OBLIGATOIRE : node -e "const vm=require('vm');const c={};vm.createContext(c);vm.runInContext(require('fs').readFileSync('<fichier>','utf8')+';this.out={...}',c)" 
+  (adapte pour exposer tes constantes) et vérifie les comptes exacts demandés avec un petit script Node. Corrige jusqu'à ce que tout soit exact.

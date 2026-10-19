@@ -1,0 +1,25 @@
+Tu contribues au jeu incrémental « LABO INFINI » (style Cookie Clicker, thème laboratoire qui devient complètement over-the-top, tout en français, pixel art soigné).
+Répertoire du projet : /home/user/games/_dev/labo. LIS D'ABORD /home/user/games/_dev/labo/SPEC.md (règles globales, liste des 20 bâtiments et ères) et /home/user/games/_dev/labo/src/js/01_palette.js (palette).
+Tu écris UN SEUL fichier (indiqué ci-dessous). Ne touche à aucun autre fichier. Ne déclare au niveau global QUE les constantes demandées.
+Pas de dépendances, pas de réseau. Travaille avec soin : la qualité finale compte plus que la vitesse.
+Ta réponse finale (texte) : un court résumé (fichier, nombre d'éléments, points d'attention). Pas de dump du fichier.
+FICHIER : /home/user/games/_dev/labo/src/js/13_txt_news.js
+Déclare EXACTEMENT une constante : TXT_NEWS = [ { e: 1, t: "…" }, { e: 4, x: 6, b: "fusion", t: "…" }, ... ] — le fil d'actualités défilant (comme le
+bandeau de news de Cookie Clicker) : brèves de journal absurdes et drôles sur le labo et le monde qui réagit à sa démesure.
+- e = ère minimale (1..9) à partir de laquelle la brève peut apparaître ; x = ère maximale (optionnel) ; b = id de bâtiment qui doit être possédé (optionnel).
+- t = texte (≤ 150 caractères), style dépêche : « INSOLITE — … », « Un stagiaire affirme… », « Selon un sondage… », « La Bourse… », « Météo : … ».
+- Placeholders autorisés : {labo} (nom du labo du joueur), {nb:<id>} (nombre possédé du bâtiment id, ex {nb:stagiaire}), {mol} (molécules actuelles formatées).
+- Ères : 1 Garage, 2 Université, 3 MégaCorp, 4 Atomique, 5 Orbitale, 6 Dimensionnelle, 7 Stellaire, 8 Cosmique, 9 Infinie. Le monde réagit de plus en plus
+  (voisins inquiets → gouvernement → ONU → extraterrestres → autres univers → le concept même de réalité qui porte plainte).
+- AU MOINS 270 brèves : ~30 génériques (e:1), ~22 par ère pour chaque ère 1..9 (avec x pour les brèves qui n'ont plus de sens plus tard), et au moins 3 par
+  bâtiment avec b (ids : pipette, stagiaire, bunsen, microscope, centrifugeuse, robot, clonage, fusion, accelerateur, quantique, orbitale, nanobots, portail, chrono, forge, trounoir, simulateur, cerveau, bigbang, infini). Variété des formats, recurring gags (le stagiaire Kévin, la voisine Mme Duchemin, le comité d'éthique dépassé…).
+Vérifie par script : nombre total, répartition par ère, chaque bâtiment ≥ 3, placeholders valides, aucun doublon.
+
+RÈGLES TEXTE :
+- Tout en français impeccable (accents, cédilles, « guillemets », apostrophes). Humour absurde/scientifique, tout public, escalade
+  du réaliste vers le cosmique/métaphysique au fil de la progression. Jeux de mots bienvenus. Pas de marques réelles. Pas de répétitions.
+- Entrées {n, q} : n = nom court (1 à 5 mots, sans point final) ; q = phrase d'ambiance courte (≤ 110 caractères), peut être
+  une fausse citation « … » — Auteur fictif. NE JAMAIS écrire les effets chiffrés (×2, +1 %…) : le moteur les affiche lui-même.
+- Chaînes JS : utilise des guillemets doubles "…" (les apostrophes françaises passent alors sans échappement) ; échappe les " internes.
+- VALIDATION OBLIGATOIRE : node -e "const vm=require('vm');const c={};vm.createContext(c);vm.runInContext(require('fs').readFileSync('<fichier>','utf8')+';this.out={...}',c)" 
+  (adapte pour exposer tes constantes) et vérifie les comptes exacts demandés avec un petit script Node. Corrige jusqu'à ce que tout soit exact.

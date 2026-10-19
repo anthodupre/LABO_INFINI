@@ -1,0 +1,47 @@
+<div id="boot">LABO INFINI<small>Préparation des réactifs…</small></div>
+<div id="app">
+  <header id="top">
+    <button id="labName"><span class="ln">Mon labo</span><span class="rk">Stagiaire</span></button>
+    <span id="godBadge">MODE DIEU</span>
+    <button id="btnSave" class="ibtn" aria-label="Sauvegarder"><img alt=""></button>
+    <button id="btnOpts" class="ibtn" aria-label="Options"><img alt=""></button>
+  </header>
+  <div id="ticker"><div id="tickerInner"></div></div>
+  <main id="main">
+    <section id="paneFlask">
+      <canvas id="scene"></canvas>
+      <div id="hud"><div class="box"><div id="molCount">0</div><div id="molLabel">molécules</div><div id="cpsLine">par seconde : 0</div></div></div>
+      <div id="buffs"></div>
+      <div id="chalBanner"></div>
+      <div id="incident"></div>
+      <div id="eurekaWrap"><span>EURÊKA</span><div id="eurekaBar"><div id="eurekaFill"></div></div></div>
+    </section>
+    <section id="paneMid">
+      <nav class="tabs" id="tabsMid"></nav>
+      <div class="pages" id="pagesMid"></div>
+    </section>
+    <section id="paneSide">
+      <nav class="tabs" id="tabsSide"></nav>
+      <div class="pages" id="pagesSide">
+        <div class="page" id="page-shop">
+          <div class="shopbar" id="shopbar"></div>
+          <div class="sect" id="upsHead"><span style="flex:1">Améliorations</span><button class="btn" id="buyAll" style="font-size:17px;padding:2px 10px">Tout acheter</button></div>
+          <div id="upsGrid"></div>
+          <div class="updet" id="upDet"></div>
+          <div class="sect">Bâtiments</div>
+          <div id="bList"></div>
+        </div>
+        <div class="page" id="page-lab"><div id="labWrap"><canvas id="labview"></canvas><div id="labLabels"></div></div><div class="labempty" id="labEmpty">Votre labo est vide… Achetez des bâtiments dans la boutique !</div></div>
+        <div class="page" id="page-petri"></div>
+        <div class="page" id="page-ach"></div>
+        <div class="page" id="page-nobel"></div>
+        <div class="page" id="page-stats"></div>
+        <div class="page" id="page-opts"></div>
+      </div>
+    </section>
+  </main>
+  <div id="fx"><div id="flash"></div><div id="bigText"><div class="t"></div><div class="s"></div></div></div>
+  <div id="toasts"></div>
+  <div id="modal" class="hidden"><div class="mbox"><div class="mtitle"></div><div class="mbody"></div><div class="mbtns"></div></div></div>
+</div>
+<div id="tip"></div>
