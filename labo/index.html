@@ -324,10 +324,10 @@ wObaD3cVfB36diyoLbYw4R/KntV6XVBb32Fg7YPHAhYXKoE9JxOMLDagmO6tD+w7YZ8T/3KFVnltpQjc
 oUlBrnEsvg7zYl+qeoLuSYql01n974dSgTsHrv7QAvqW1iHenaD0cI12fF0n7QO7a9FQWyqHvpUxUIcyw/sBdfBfH/QFs8YV
 qgktpKpjlv+82ycmdBxMWS4RmMcIlAk9j2et9HlmBP4/AAAA//8jLmTtAAAABklEQVQDANc6PgUVsmX6AAAAAElFTkSuQmCC">
 <meta name="theme-color" content="#141020">
-<meta name="version" content="18 octobre 2026 à 19 h 32">
+<meta name="version" content="18 octobre 2026 à 20 h 50">
 <title>Labo Infini</title>
 <style>
-/* Polices : Pixelify Sans & VT323 — SIL Open Font License 1.1 */
+/* Polices intégrées (pixelify-sans-latin-400-normal.woff2, pixelify-sans-latin-700-normal.woff2, vt323-latin-400-normal.woff2) — vérifier leur licence (OFL…) */
 @font-face{font-family:"Pixelify Sans";font-style:normal;font-weight:400;font-display:swap;src:url("data:font/woff2;base64,\
 d09GMgABAAAAAB4MABAAAAAAXZAAAB2qAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGoEMG65EHIU6BmA/U1RBVC4AhGoRCArm\
 XNB5C4NgAAE2AiQDhzIEIAWERgeGNgwHG7FPBdy54DyAXPAtAFGUaVYbRekknVHw/+VAGyNU6hC/TWMruyzG5QrNte7uNNpu\
@@ -1187,7 +1187,7 @@ input[type=range]{width:150px;height:32px;accent-color:var(--cyan)}
 
 <script>
 "use strict";
-const BUILD_ID = "18 octobre 2026 à 19 h 32";
+const BUILD_ID = "18 octobre 2026 à 20 h 50";
 /* ==== 00_util.js ==== */
 /* ===================== UTILITAIRES ===================== */
 const U = {
@@ -5635,7 +5635,7 @@ const TXT_TIPS = [
   "Chaque succès débloqué augmente votre Réputation.",
   "La hiérarchie académique transforme votre Réputation en bonus de production : collectionnez les succès !",
   "Publier vos travaux (le prestige) recommence la partie, mais vous rapporte des prix Nobel.",
-  "Chaque prix Nobel augmente votre production de 1 %, pour toujours.",
+  "Les 10 premiers prix Nobel augmentent chacun votre production de 10 %, les suivants de 1 % : publiez quand le labo plafonne.",
   "Les prix Nobel sont aussi des points à dépenser dans la Fondation Nobel, l'arbre de prestige.",
   "La boîte de Petri se débloque avec votre premier microscope.",
   "Dans la boîte de Petri, les souches mûres donnent des bonus. Récoltez-les pour empocher des molécules.",
@@ -6197,8 +6197,12 @@ const B_IDS = ['pipette', 'stagiaire', 'bunsen', 'microscope', 'centrifugeuse', 
 const B_FALLBACK = ['Pipette automatique', 'Stagiaire', 'Bec Bunsen', 'Microscope', 'Centrifugeuse', 'Bras robotique', 'Cuve de clonage',
   'Réacteur à fusion', 'Accélérateur de particules', 'Ordinateur quantique', 'Station orbitale', 'Essaim de nanobots', 'Portail dimensionnel',
   'Chronolabo', 'Forge stellaire', 'Trou noir domestiqué', "Simulateur d'univers", 'Cerveau galactique', 'Fabrique de Big Bang', 'Le Labo Infini'];
-const B_COST = [15, 100, 1100, 12000, 130000, 1.4e6, 2e7, 3.3e8, 5.1e9, 6e10, 9e11, 1.5e13, 2.5e14, 4e15, 7e16, 1.2e18, 7e19, 1.2e22, 2e24, 5e26];
-const B_CPS = [0.1, 1, 8, 47, 260, 1400, 7800, 44000, 260000, 1.5e6, 8.5e6, 5e7, 3e8, 1.8e9, 1.1e10, 6.5e10, 4e11, 2.5e12, 1.6e13, 1e14];
+// Courbe « progression constante » (rééquilibrée après « stuck au réacteur à fusion depuis plus d'une heure ») :
+// le temps de rentabilité (coût ÷ production) grandit d'environ ×1,45 par bâtiment jusqu'au Portail, au lieu de ×2,5,
+// pour qu'un nouveau bâtiment ou une nouvelle ère arrive toutes les ~5-25 min ; ensuite la pente redevient raide
+// et c'est la publication (prix Nobel) qui fait avancer. Vérifié avec labo/tools/sim_rythme.js et sim_parties.js.
+const B_COST = [15, 100, 1100, 12000, 130000, 1.4e6, 2e7, 2.8e8, 3.9e9, 5.5e10, 7.5e11, 1e13, 1.4e14, 4e15, 7e16, 1.2e18, 7e19, 1.2e22, 2e24, 5e26];
+const B_CPS = [0.1, 1, 8, 47, 360, 2700, 27000, 250000, 2.4e6, 2.3e7, 2.2e8, 2e9, 1.1e10, 8e10, 4.4e11, 2.4e12, 1.75e13, 1.2e14, 6.7e14, 5e15];
 // [couleur du mur, couleur du sol, accent] pour les rangées de la vue du labo
 const B_THEME = [
   ['#2a2f4a', '#3a4466', '#8b9bb4'], ['#3b3346', '#5a4a52', '#ead4aa'], ['#3a2626', '#5a3a2a', '#f77622'], ['#232c45', '#36405e', '#8b9bb4'],
@@ -6476,7 +6480,7 @@ const store = {
 
 function defaultRun() {
   return {
-    bank: 0, runEarned: 0, handmade: 0, clicks: 0, b: {}, up: {}, buffs: [], eureka: 0, runTime: 0, era: 0,
+    bank: 0, runEarned: 0, handmade: 0, clicks: 0, b: {}, up: {}, buffs: [], eureka: 0, runTime: 0, era: 0, lastNewT: 0, nudgeAt: null, nudgeN: 0,
     goldT: U.rand(150, 300), anoT: U.rand(1200, 2400), storm: 0,
   };
 }
@@ -6689,8 +6693,7 @@ function recalc() {
   const achN = achCount();
   const rep = achN * 0.04 * (1 + (pn('rep1') ? 0.1 : 0) + (pn('rep2') ? 0.2 : 0));
   let rm = 1; repFs.forEach(f => rm *= 1 + rep * f); gm *= rm; if (rm > 1) M.push(['Hiérarchie académique', rm]);
-  const nobelEff = 0.01 * (pn('nobel1') ? 1.25 : 1) * (pn('nobel2') ? 1.5 : 1) * (pn('nobel3') ? 2 : 1);
-  const nm = 1 + nobelBonusN() * nobelEff; gm *= nm; if (nm > 1) M.push(['Prix Nobel', nm]);
+  const nm = 1 + nobelBonusN() * nobelEff(); gm *= nm; if (nm > 1) M.push(['Prix Nobel', nm]);
   let fm = 1;
   [['fond', 1.1], ['boost2', 1.15], ['boost3', 1.2], ['boost4', 1.25], ['boost5', 1.5], ['boost6', 2], ['boost7', 3], ['boost8', 5], ['fin', 10]].forEach(([id, m]) => { if (pn(id)) fm *= m; });
   gm *= fm; if (fm > 1) M.push(['Fondation Nobel', fm]);
@@ -6779,6 +6782,7 @@ function buyBuilding(id) {
   if (!canAfford(cost)) { SFX.play('error'); return false; }
   const before = S.bank;
   spend(cost);
+  if (!n(id)) S.lastNewT = S.runTime; // nouveau type de bâtiment dans cette partie : le labo avance
   S.b[id] = n(id) + amt;
   if (amt >= 100) secret('bulk');
   if (cost >= 1e6 && S.bank < cost * 0.01 && before >= cost && !godMode()) secret('broke');
@@ -6904,7 +6908,17 @@ function checkAch() {
 /* ---------- Prestige : publication & Nobel ---------- */
 function nobelsFor(all) { return Math.floor(Math.cbrt(all / NOBEL_BASE) + 1e-9); }
 // au-delà de 1000 Nobels, le bonus de production croît en racine carrée (évite l'emballement)
-function nobelBonusN() { return S.nobels <= 1000 ? S.nobels : 1000 * Math.sqrt(S.nobels / 1000); }
+// Bonus des prix Nobel (en « points de % » avant le multiplicateur nobelEff) : les 10 premiers valent +10 % chacun
+// (la 1re publication doit se sentir), puis +1 % chacun jusqu'à 100, puis racine carrée (évite l'emballement).
+function nobelBonusN() { const N = S.nobels; return (N <= 100 ? N : 100 * Math.sqrt(N / 100)) + 9 * Math.min(N, 10); }
+function nobelEff() { return 0.01 * (pn('nobel1') ? 1.25 : 1) * (pn('nobel2') ? 1.5 : 1) * (pn('nobel3') ? 2 : 1); }
+// Multiplicateur de production qu'apporterait une publication maintenant (effet des prix Nobel seulement)
+function publishGainRatio() {
+  const p = pendingNobels(); if (p <= 0) return 1;
+  const N0 = S.nobels, cur = 1 + nobelBonusN() * nobelEff();
+  S.nobels = N0 + p; const nxt = 1 + nobelBonusN() * nobelEff(); S.nobels = N0;
+  return nxt / cur;
+}
 function pendingNobels() { return Math.max(0, nobelsFor(S.allEarned) - S.nobels); }
 function nextNobelAt() { const t = nobelsFor(S.allEarned) + 1; return Math.pow(t, 3) * NOBEL_BASE; }
 function resetRun() {
@@ -6971,7 +6985,7 @@ function checkChallenge(dt) {
 }
 
 /* ---------- Boucle logique ---------- */
-let achTimer = 0, unlockTimer = 0;
+let achTimer = 0, unlockTimer = 0, stallTimer = 0;
 function tick(dt) {
   // dt en secondes (déjà multiplié par la vitesse DEV)
   S.runTime += dt; S.playTime += dt; G.idleT = (G.idleT || 0) + dt;
@@ -7000,7 +7014,8 @@ function tick(dt) {
   // Protocoles
   checkChallenge(dt);
   // Contrôles périodiques
-  achTimer += dt; unlockTimer += dt;
+  achTimer += dt; unlockTimer += dt; stallTimer += dt;
+  if (stallTimer > 5) { stallTimer = 0; checkStall(); }
   if (unlockTimer > 0.5) { unlockTimer = 0; checkUnlocks(); }
   if (achTimer > 1) {
     achTimer = 0; checkAch();
@@ -7011,13 +7026,32 @@ function tick(dt) {
   }
 }
 
+/* ---------- Progression constante : conseiller de publier quand le labo stagne ---------- */
+// Stagnation = aucun nouveau type de bâtiment depuis 20 min dans cette partie, et le prochain n'est pas à moins de
+// 10 min. On conseille de publier seulement si ça multiplierait la production d'au moins ×1,5 (×1,3 pour la toute
+// 1re publication). Rappel au plus toutes les 45 min ET si les Nobels disponibles ont doublé (gardé dans la sauvegarde :
+// une relance de l'app ne répète pas le conseil).
+function checkStall() {
+  if (!G.ready || S.challenge || S.runTime - (S.lastNewT || 0) < 1200) return;
+  const p = pendingNobels();
+  if (S.nudgeAt != null && (S.runTime - S.nudgeAt < 2700 || p < 2 * (S.nudgeN || 1))) return;
+  const next = B_IDS.find(id => !n(id) && bLimit(id) > 0);
+  if (next && (bCost(next) - S.bank) / Math.max(G.cps, 1e-9) < 600) return;
+  const r = publishGainRatio(); if (r < (S.nobels ? 1.5 : 1.3)) return;
+  S.nudgeAt = S.runTime; S.nudgeN = p;
+  const msg = 'Le labo plafonne. <b>Publiez vos travaux</b> (onglet Nobel) : <b>+' + fmtNom(p, 'prix Nobel', 'prix Nobel') +
+    '</b>, production <b>×' + dec(r, r < 10 ? 1 : 0) + '</b> pour toujours. Vous repartirez de zéro, mais bien plus vite.';
+  toast(msg, 'ach', 'i_nobel', 'Conseil du comité Nobel', 10000);
+  journal('nobel', msg); markTab('nobel');
+}
+
 /* ---------- Hors-ligne ---------- */
 function offlineParams() {
   if (pn('auto4')) return [1, 7 * 86400];
   if (pn('auto3')) return [1, 48 * 3600];
   if (pn('auto2')) return [0.6, 16 * 3600];
   if (pn('auto1')) return [0.3, 8 * 3600];
-  return [0.15, 3 * 3600];
+  return [0.25, 4 * 3600];
 }
 function applyOffline(sec) {
   if (sec < 5) return null;
@@ -7443,11 +7477,11 @@ function journal(kind, html) {
 function journalHtml() {
   const J = S.journal || [];
   if (!J.length) return '<div class="sub">Rien à signaler… pour l\u2019instant.</div>';
-  const lbl = { inc: '⚠ Incident', gold: '★ Fiole', ach: '🏆 Succès', era: '✦ Ère', petri: '✿ Petri', chal: '✔ Protocole' };
+  const lbl = { inc: '⚠ Incident', gold: '★ Fiole', ach: '🏆 Succès', era: '✦ Ère', petri: '✿ Petri', chal: '✔ Protocole', nobel: '🏅 Conseil' };
   return J.map(e => '<div class="jr"><span class="jk jk-' + e.k + '">' + (lbl[e.k] || '•') + '</span> <span class="sub">il y a ' + fmtTime((U.now() - e.t) / 1000) + '</span><div>' + e.h + '</div></div>').join('');
 }
 /* ---------- Notifications ---------- */
-function toast(html, kind = '', icon = null, title = null) {
+function toast(html, kind = '', icon = null, title = null, ms = 0) {
   const box = U.$('#toasts'); if (!box) return;
   const t = U.el('div', 'toast ' + kind);
   t.innerHTML = (icon ? '<img src="' + GFX.url(icon, 0, 3) + '" alt="">' : '') + '<div>' + (title ? '<div class="tt">' + title + '</div>' : '') + '<div>' + html + '</div></div>';
@@ -7455,7 +7489,7 @@ function toast(html, kind = '', icon = null, title = null) {
   while (box.children.length > 3) box.removeChild(box.firstChild);
   let done = false;
   const kill = () => { if (done) return; done = true; t.classList.add('out'); setTimeout(() => t.remove(), 300); };
-  setTimeout(kill, kind === 'ach' ? 6500 : 5000);
+  setTimeout(kill, ms || (kind === 'ach' ? 6500 : 5000));
 }
 function achToast(a) {
   toast('<b>' + U.esc(a.name) + '</b>', 'ach', a.icon, 'Succès débloqué');
@@ -7819,16 +7853,17 @@ function showAchDet() {
 function rankName() { let r = 0; RANK_REQ.forEach((v, i) => { if (S.nobels >= v) r = i; }); return RANKS[r] || RANKS[0]; }
 function renderNobel() {
   const p = U.$('#page-nobel');
-  const pend = pendingNobels(), nobelEff = 0.01 * (pn('nobel1') ? 1.25 : 1) * (pn('nobel2') ? 1.5 : 1) * (pn('nobel3') ? 2 : 1);
+  const pend = pendingNobels(), gainR = publishGainRatio();
   const cur = nobelsFor(S.allEarned), prevT = Math.pow(cur, 3) * NOBEL_BASE, nextT = nextNobelAt();
   const prog = U.clamp((S.allEarned - prevT) / Math.max(1, nextT - prevT), 0, 1);
   let html = '<div class="ptitle"><img src="' + GFX.url('i_nobel', 0, 2) + '" alt="">Prix Nobel</div>' +
     '<div class="card gold"><div class="row" style="justify-content:space-between"><div><div class="sub">Prix Nobel cumulés</div><div class="big">' + fmt(S.nobels) + '</div></div>' +
     '<div style="text-align:right"><div class="sub">Points à dépenser</div><div class="big" style="color:var(--cyan)">' + fmt(S.nobelPts) + '</div></div></div>' +
-    '<div>Bonus de production : <b>+' + fmtPct(nobelBonusN() * nobelEff) + '</b> · Titre : <b>' + U.esc(rankName()) + '</b></div></div>' +
+    '<div>Bonus de production : <b>+' + fmtPct(nobelBonusN() * nobelEff()) + '</b> · Titre : <b>' + U.esc(rankName()) + '</b></div></div>' +
     '<div class="card"><div class="sect" style="margin-top:0"><img src="' + GFX.url('i_book', 0, 2) + '" style="width:24px;height:24px" alt="">Publier vos travaux</div>' +
     '<div>Publier <b>remet votre partie à zéro</b> (molécules, bâtiments, améliorations, cultures) en échange de prix Nobel, calculés sur toutes les molécules produites depuis le début.</div>' +
-    '<div style="margin:6px 0">Si vous publiez maintenant : <b style="font-size:24px" id="nobPend">+' + fmt(pend) + '</b> prix Nobel</div>' +
+    '<div style="margin:6px 0">Si vous publiez maintenant : <b style="font-size:24px" id="nobPend">+' + fmt(pend) + '</b> prix Nobel' +
+    (gainR >= 1.01 ? ' <span class="sub">(production <b>×' + dec(gainR, gainR < 10 ? 1 : 0) + '</b> pour toujours)</span>' : '') + '</div>' +
     '<div class="sub" id="nobNext">Prochain Nobel : encore ' + fmtMol(Math.max(0, nextT - S.allEarned)) + '</div><div class="pbar"><i id="nobBar" style="width:' + (prog * 100).toFixed(1) + '%;background:var(--amber)"></i></div>' +
     '<div class="row" style="margin-top:8px"><button class="btn gold big" id="pubBtn">Publier</button>' + (S.challenge ? '<span class="sub">(un protocole est en cours)</span>' : '') + '</div></div>';
   if (S.challenge) {
