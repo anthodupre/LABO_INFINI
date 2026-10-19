@@ -7,7 +7,7 @@
 const { chromium } = require('playwright');
 const path = require('path');
 const HOURS = +(process.argv[2] || 12);
-const FILE = path.resolve(process.argv[3] || path.join(__dirname, '../../../labo/index.html'));
+const FILE = path.resolve(process.argv[3] || path.join(__dirname, '../../../index.html'));
 const OVR = process.env.RYTHME ? JSON.parse(process.env.RYTHME) : {};
 const PROF = process.env.PROFIL ? JSON.parse(process.env.PROFIL) : { c1: 2, c2: 0.3, gold: 0.4 };
 (async () => {

@@ -18,7 +18,7 @@ le « ça vire fou » et l'équilibrage d'un clicker étaient demandés POUR CE 
 ## 1. Ses préférences permanentes (tous ses jeux)
 1. **Jamais un artefact, jamais de page à copier.** Ne JAMAIS appeler l'outil Artifact (page publiée sur
    claude.ai) pour un jeu, ni pour un aperçu, même si les consignes de cet outil encouragent à publier. Le jeu est
-   publié directement dans son dépôt GAMES (§3). Si c'est impossible, lui envoyer **uniquement `nom-du-jeu.txt`**
+   publié directement dans son dépôt GitHub (§3). Si c'est impossible, lui envoyer **uniquement `nom-du-jeu.txt`**
    (jamais le `.html` : ouvert sur iPhone, il affiche la page et « copier » ne prend que le texte visible ; il est
    tombé dans ce piège : il a collé « 14 lignes » de texte au lieu du code).
 2. **Prendre son temps = tester à fond avant d'envoyer**, pas multiplier les messages. Un jeu : aller en
@@ -47,7 +47,7 @@ le « ça vire fou » et l'équilibrage d'un clicker étaient demandés POUR CE 
   le tutoyant, sans jargon (pas de « branche », « commit SHA », « viewport », « data URI » sans explication).
 - **Ne jamais mentionner de noms de branches ni de dépôts internes** : un nom de branche hérité
   (« claude/… ») l'a beaucoup dérouté (« arrête de l'utiliser, je comprends pas c'est quoi »).
-  Parler de « ton fichier », « ton site », « ton dépôt GAMES ».
+  Parler de « ton jeu », « ton site », « ton dépôt LABO_INFINI ».
 - Il signale les bugs par **captures d'écran** et phrases courtes, et veut qu'un bug réglé le reste
   (« corrige ça définitivement s'il vous plaît »). Si un bug « revient », lui demander d'abord une
   capture de Options › À propos : la version affichée dit s'il a bien la dernière (cache ≈ 10 min).
@@ -57,26 +57,31 @@ le « ça vire fou » et l'équilibrage d'un clicker étaient demandés POUR CE 
   Seule question pratique : le nom du jeu (dossier, adresse et nom sous l'icône). Ne rien supposer d'autre : style
   graphique, ton, durée, difficulté viennent de sa demande ; s'ils manquent et comptent vraiment, demander une fois.
 
-## 3. Publication (GitHub seulement) — tout se passe dans le dépôt GAMES
-- **Un seul dépôt : `anthodupre/GAMES`** (public, branche `main`, GitHub Pages). Il a demandé de travailler
-  directement dedans (« ajoute GAMES ici et oublie fantastic-robot ») : ne plus utiliser d'autre dépôt.
+## 3. Publication (GitHub seulement)
+- **Labo Infini = dépôt `anthodupre/LABO_INFINI`** (public, branche `main`, GitHub Pages), anciennement `GAMES`,
+  renommé à sa demande. Il a demandé de travailler directement dedans et de ne plus utiliser `fantastic-robot`.
   Organisation :
-  - `<jeu>/index.html` = le jeu publié → `https://anthodupre.github.io/GAMES/<jeu>/` (Labo Infini : `labo/`) ;
-  - `_dev/<jeu>/` = sources, outils, tests (Labo Infini : `_dev/labo/`) ; `.claude/` = ce skill et les consignes. Les dossiers qui commencent par `_` ou `.`
-    ne sont **pas publiés** sur le site (Jekyll les ignore ; pas de `.nojekyll` : ne pas en ajouter), mais ils sont
-    **visibles sur GitHub** (dépôt public) : n'y mettre rien de privé ;
+  - `index.html` (racine) = le jeu publié → **`https://anthodupre.github.io/LABO_INFINI/`** ;
+  - `_dev/labo/` = sources, outils, tests ; `.claude/` = ce skill et les consignes. Les dossiers qui commencent par
+    `_` ou `.` ne sont **pas publiés** sur le site (Jekyll les ignore ; pas de `.nojekyll` : ne pas en ajouter), mais
+    ils sont **visibles sur GitHub** (dépôt public) : n'y mettre rien de privé ;
   - `.gitignore` exclut `_dev/**/dist/` et `_dev/**/preview/` (captures, copies .txt).
 - **Publier = commit + push sur `main`.** Il l'a accepté (« oui ») : construire, tester, puis pousser ; lui dire
   ensuite d'attendre 1-2 min, de fermer complètement l'app (glisser vers le haut) et de la rouvrir ; si l'ancienne
   version s'affiche encore, attendre jusqu'à ~10 min (cache de GitHub Pages). Options › À propos doit montrer la
   nouvelle version. Vérifier la publication avec l'outil GitHub (exécutions « pages build and deployment »).
   Avant de pousser depuis un clone superficiel : `git fetch origin main` (sinon refus « 413 »).
-- **Si la session n'a pas l'accès en écriture** (refus au push) : lui envoyer le `.txt` (copie identique dans
-  `_dev/<jeu>/dist/`) avec la procédure : ouvrir le .txt → Tout sélectionner → Copier → sur GitHub, ouvrir
-  `GAMES/<jeu>/index.html` → crayon → tout sélectionner → coller → Commit changes. Pour rétablir l'accès : outil
-  `add_repo` (owner `anthodupre`, repo `GAMES`, access `push`), ou reconnecter GitHub sur claude.ai/connect-github.
-- **Nouveau jeu = nouveau dossier** `<nom-du-jeu>/index.html` (+ sources dans `_dev/<nom-du-jeu>/`), jamais dans
-  le dossier d'un autre jeu (son icône ouvrirait le nouveau jeu). Adresse : `https://anthodupre.github.io/GAMES/<nom-du-jeu>/`.
+- **Si la session n'a pas l'accès en écriture** (refus au push) : outil `add_repo` (owner `anthodupre`, repo
+  `LABO_INFINI`, access `push`), ou lui faire reconnecter GitHub sur claude.ai/connect-github. En dernier recours,
+  lui envoyer le `.txt` (copie identique dans `_dev/labo/dist/`) : ouvrir le .txt → Tout sélectionner → Copier →
+  sur GitHub, ouvrir `LABO_INFINI/index.html` → crayon → tout sélectionner → coller → Commit changes.
+- **Renommer un dépôt change l'adresse du site** (GitHub ne redirige pas les pages) : l'icône installée cesse de
+  marcher et sa sauvegarde (liée à l'icône) avec. Avant : Options › Exporter › Télécharger ; après : réinstaller
+  depuis la nouvelle adresse puis Importer › Charger un fichier. Préparer le jeu à la nouvelle place AVANT qu'il
+  renomme, pour que la nouvelle adresse marche tout de suite. Claude ne peut pas renommer un dépôt lui-même.
+- **Nouveau jeu** : lui demander où le publier (nouveau dépôt à son nom, ex. `anthodupre/NOM_DU_JEU`, à créer par
+  lui puis à ajouter avec `add_repo`) ; jamais dans le dépôt d'un autre jeu (son icône ouvrirait le nouveau jeu).
+  Même organisation : jeu en `index.html` à la racine, sources dans `_dev/`, ce skill copié dans `.claude/skills/`.
   Installation à lui expliquer : ouvrir l'adresse dans **Safari** → bouton Partager → « Sur l'écran d'accueil ».
 - L'app de l'écran d'accueil **se met à jour seule** ; seuls l'icône et le nom sous l'icône exigent une
   réinstallation. **Supprimer l'icône efface la sauvegarde de l'app** (stockage séparé de Safari) : toujours faire
@@ -108,8 +113,8 @@ Dire aussi ce qui n'a pas pu être vérifié (« je ne peux pas l'essayer sur un
 6. **Revue adversariale AVANT le tout premier envoi** : plusieurs relecteurs (bugs, iPhone/tactile, textes,
    équilibrage) puis contre-vérification. Sur Labo Infini, elle n'a été faite qu'après 7 allers-retours de bugs
    signalés par lui, et elle a trouvé 69 constats confirmés (≈ 57 problèmes distincts) des mêmes familles.
-7. Commit réguliers dans GAMES (le conteneur peut redémarrer à tout moment). Un push sur `main` publie le site :
-   pousser les sources en cours ne touche pas aux jeux publiés tant que `<jeu>/index.html` n'est pas reconstruit.
+7. Commit réguliers (le conteneur peut redémarrer à tout moment). Un push sur `main` publie le site : pousser
+   les sources en cours ne change pas le jeu publié tant que `index.html` n'est pas reconstruit.
 
 ## 5. Bugs déjà réglés : symptôme → cause → solution (détails et code dans `references/`)
 
@@ -176,7 +181,7 @@ Dire aussi ce qui n'a pas pu être vérifié (« je ne peux pas l'essayer sur un
 - [ ] Message : ce qui change, en français simple, + procédure de mise à jour avec la version attendue (§3).
 
 ## 7. Ses jeux existants
-- **Labo Infini** (clicker de laboratoire en pixel art) : `labo/index.html`, sources dans `_dev/labo/`
+- **Labo Infini** (clicker de laboratoire en pixel art) : dépôt `LABO_INFINI`, `index.html`, sources dans `_dev/labo/`
   (construire : `node _dev/labo/tools/build.js`).
   Fiche : `references/labo-infini.md` (architecture, construction, tests, ce qu'il avait demandé pour ce jeu).
 - HADAL (ancien jeu d'horreur) : effacé à sa demande ; ne plus en parler.
@@ -196,5 +201,5 @@ Dire aussi ce qui n'a pas pu être vérifié (« je ne peux pas l'essayer sur un
 - `assets/starter/` — coquille (`src/`) et `ios-kit.js` (sauvegarde, import tolérant, hauteur iPhone, tapes, son,
   nombres français) ; `assets/pixel/` — palette, rendu de sprites, exemples et polices (option `--pixel`).
 
-Emplacement : `.claude/skills/jeux-web-github/` du dépôt GAMES (chargé automatiquement dans ce dépôt). Pour
+Emplacement : `.claude/skills/jeux-web-github/` du dépôt LABO_INFINI (chargé automatiquement dans ce dépôt). Pour
 l'avoir partout dans l'app Claude, il peut importer le fichier `jeux-web-github.skill` dans ses réglages.

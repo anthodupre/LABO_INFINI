@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const path = require('path'), fs = require('fs');
 const out = process.argv[2] || path.join(__dirname, '../preview/smoke');
 fs.mkdirSync(out, { recursive: true });
-const url = 'file://' + path.join(__dirname, '../../../labo/index.html');
+const url = 'file://' + path.join(__dirname, '../../../index.html');
 (async () => {
   const browser = await chromium.launch();
   const errors = [];

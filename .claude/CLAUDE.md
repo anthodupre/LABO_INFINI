@@ -1,9 +1,9 @@
-# Dépôt GAMES — les jeux de l'utilisateur (GitHub Pages)
+# Dépôt LABO_INFINI — le jeu Labo Infini (GitHub Pages)
 
-Lire et suivre le skill `.claude/skills/jeux-web-github/` (ses préférences, la publication, tous les bugs déjà
-réglés sur iPhone) avant toute modification d'un jeu.
+Lire et suivre le skill `.claude/skills/jeux-web-github/` (préférences de l'utilisateur, publication, tous les bugs
+déjà réglés sur iPhone) avant toute modification.
 
-- `<jeu>/index.html` = jeu publié sur https://anthodupre.github.io/GAMES/<jeu>/ (un push sur `main` publie).
-- `_dev/<jeu>/` = sources et outils (non publiés sur le site, mais visibles : le dépôt est public).
-- Labo Infini : `node _dev/labo/tools/build.js` reconstruit `labo/index.html` ; tests dans `_dev/labo/tools/`.
+- `index.html` = jeu publié sur https://anthodupre.github.io/LABO_INFINI/ (un push sur `main` publie).
+- `_dev/labo/` = sources et outils (non publiés sur le site, mais visibles : le dépôt est public).
+- Reconstruire : `node _dev/labo/tools/build.js` ; tests : `NODE_PATH=$(npm root -g) node _dev/labo/tools/e2e.js`.
 - Répondre en français simple, sans jargon ni noms de branches.

@@ -35,8 +35,8 @@ groupe, reconstruire et retester après chaque groupe.
   `tap`) ; `env(safe-area-inset-*)` vaut 0 dans Chromium (le remplacer dans la page pour simuler).
 
 ## Git et livraison
-- Commit + push dans GAMES après chaque étape (le conteneur peut redémarrer à tout moment) ; `main` = site publié.
+- Commit + push dans le dépôt du jeu après chaque étape (le conteneur peut redémarrer à tout moment) ; `main` = site publié.
 - Ne jamais parler de noms de branches à l'utilisateur.
 - Construire, tester, puis envoyer le `.txt` (jamais le .html, jamais l'outil Artifact) avec l'outil d'envoi de
   fichiers et un message court en français (modèle dans SKILL.md §2).
-- Pousser dans son dépôt de site (`anthodupre/GAMES`) seulement avec son accord explicite (voir SKILL.md §2).
+- Pousser dans le dépôt d'un jeu (ex. `anthodupre/LABO_INFINI`) : accord déjà donné pour Labo Infini (voir SKILL.md §2).

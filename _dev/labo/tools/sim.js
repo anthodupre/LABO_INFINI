@@ -9,7 +9,7 @@ const HOURS = +(process.argv[2] || 10), RUNS = +(process.argv[3] || 1);
   const browser = await chromium.launch();
   const page = await browser.newPage();
   page.on('pageerror', e => console.log('pageerror', e.message));
-  await page.goto('file://' + path.join(__dirname, '../../../labo/index.html'));
+  await page.goto('file://' + path.join(__dirname, '../../../index.html'));
   await page.waitForTimeout(1500);
   const res = await page.evaluate(([HOURS, RUNS]) => {
     closeModal(); G.ready = false; S.set.sound = false;

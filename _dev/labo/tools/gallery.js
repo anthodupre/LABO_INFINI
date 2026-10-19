@@ -9,7 +9,7 @@ const out = path.join(__dirname, '../preview/gallery'); fs.mkdirSync(out, { recu
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   const errs = []; page.on('pageerror', e => errs.push(e.message));
-  await page.goto('file://' + path.join(__dirname, '../../../labo/index.html')); await page.waitForTimeout(1500);
+  await page.goto('file://' + path.join(__dirname, '../../../index.html')); await page.waitForTimeout(1500);
   for (let e = 0; e < 9; e++) {
     await page.evaluate(e => {
       closeModal(); INC.timer = 1e9; S.goldT = 1e9; S.storm = 0; GOLD.clearAll(); S.buffs = [];

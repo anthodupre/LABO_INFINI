@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Rythme de progression pour plusieurs profils de joueurs : quand chaque bâtiment est acheté pour la 1re fois,
 // quand arrive chaque ère, et la PLUS LONGUE attente sans nouveauté (nouveau bâtiment ou nouvelle ère).
-// Usage : NODE_PATH=$(npm root -g) node _dev/labo/tools/sim_rythme.js [heures=4] [fichier=labo/index.html]
+// Usage : NODE_PATH=$(npm root -g) node _dev/labo/tools/sim_rythme.js [heures=4] [fichier=index.html]
 'use strict';
 const { chromium } = require('playwright');
 const path = require('path');
 const HOURS = +(process.argv[2] || 4);
-const FILE = path.resolve(process.argv[3] || path.join(__dirname, '../../../labo/index.html'));
+const FILE = path.resolve(process.argv[3] || path.join(__dirname, '../../../index.html'));
 // essais d'équilibrage sans reconstruire : RYTHME='{"cpsF":1.3,"from":4,"offline":[0.25,4]}' (facultatif)
 const OVR = process.env.RYTHME ? JSON.parse(process.env.RYTHME) : null;
 const ONLY = process.env.PROFILS ? process.env.PROFILS.split(',') : null;

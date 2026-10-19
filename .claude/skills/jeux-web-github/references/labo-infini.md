@@ -8,19 +8,19 @@ prestige : prix Nobel. Rang du joueur selon les Nobels (0 : stagiaire non rémun
 3 : jeune chercheur ; 10 : chercheur confirmé ; 25 : directeur de recherche ; 50 : professeur émérite…). Le 1er Nobel
 demande 5e11 molécules cumulées dans la partie, puis « Publier ».
 
-## Où sont les fichiers (dépôt GAMES)
-- **Publié** : `labo/index.html` → `anthodupre.github.io/GAMES/labo/`. Sauvegarde : `laboInfini.save.v1`
+## Où sont les fichiers (dépôt LABO_INFINI, anciennement GAMES)
+- **Publié** : `index.html` (racine) → `anthodupre.github.io/LABO_INFINI/` (avant le renommage : `…/GAMES/labo/`). Sauvegarde : `laboInfini.save.v1`
   (+ `.backup.v1`, `.corrupt.v1`), export `LABO1:`.
 - **Sources** : `_dev/labo/` (`SPEC.md`, `src/`, `fonts/`, `icons/`, `tools/`, `briefs/` = consignes des sous-agents),
   non publiées sur le site. Les mentions de Koder dans `_dev/labo/SPEC.md` sont périmées (il n'utilise plus Koder).
 
 ## Construire et tester (depuis la racine du dépôt)
-- `node _dev/labo/tools/build.js` → `labo/index.html` (et une copie .txt dans `_dev/labo/dist/`, non suivie) ;
+- `node _dev/labo/tools/build.js` → `index.html` (et une copie .txt dans `_dev/labo/dist/`, non suivie) ;
   il appelle `scripts/build.js` du skill (polices et icône intégrées, JS assemblé vérifié, version du jour).
-- Les tests lisent `labo/index.html` : reconstruire AVANT de tester.
+- Les tests lisent `index.html` : reconstruire AVANT de tester.
   `NODE_PATH=$(npm root -g) node _dev/labo/tools/e2e.js` (36 vérifications), `smoke.js`, `gallery.js` (une capture
   par ère), `sim_rythme.js` / `sim_parties.js` (rythme de progression), puis
-  `node .claude/skills/jeux-web-github/scripts/iphone_taps.js labo/index.html "#btnSave" "#btnOpts" --prep="closeModal()" --swipe=.page`.
+  `node .claude/skills/jeux-web-github/scripts/iphone_taps.js index.html "#btnSave" "#btnOpts" --prep="closeModal()" --swipe=.page`.
 
 ## Architecture (`_dev/labo/src/js/`, concaténés par ordre alphabétique)
 - `00_util` (formatage FR des nombres, couleurs, aléatoire déterministe), `01_palette` (palette + registre SPRITES)

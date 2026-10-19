@@ -166,7 +166,7 @@ Sons synthétisés en WebAudio (aucun fichier), limiter la cadence des sons rép
   2-3 propositions. Le déposer dans `icons/apple-touch-icon.png` du projet : `build.js` l'intègre.
 - Intégrée en data URI (`apple-touch-icon` + `icon`), c'est la source principale, propre à chaque jeu. iOS ne
   cherche `/apple-touch-icon.png` qu'à la racine du DOMAINE (`anthodupre.github.io/`), et seulement si la page ne
-  déclare aucune icône : ses jeux étant dans le dépôt `GAMES` (`…/GAMES/<jeu>/`), ce fichier ne servirait pas.
+  déclare aucune icône : ses jeux étant des sites de projet (`…/LABO_INFINI/`), ce fichier ne servirait pas.
   (Une ancienne réponse lui a conseillé de mettre le PNG « à la racine du dépôt » : c'était inutile.) Si un jour
   l'icône intégrée n'apparaît pas, solution de secours : déposer le PNG dans le dossier du jeu et pointer
   `<link rel="apple-touch-icon" href="apple-touch-icon.png">` (adresse relative).

@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const path = require('path'), fs = require('fs');
 const SHOTS = process.argv.includes('--shots');
 const out = path.join(__dirname, '../preview/e2e'); fs.mkdirSync(out, { recursive: true });
-const url = 'file://' + path.join(__dirname, '../../../labo/index.html');
+const url = 'file://' + path.join(__dirname, '../../../index.html');
 let fails = 0, passes = 0;
 const ok = (cond, msg) => { if (cond) passes++; else { fails++; console.log('ÉCHEC : ' + msg); } };
 (async () => {
