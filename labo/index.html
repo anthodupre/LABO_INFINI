@@ -324,7 +324,7 @@ wObaD3cVfB36diyoLbYw4R/KntV6XVBb32Fg7YPHAhYXKoE9JxOMLDagmO6tD+w7YZ8T/3KFVnltpQjc
 oUlBrnEsvg7zYl+qeoLuSYql01n974dSgTsHrv7QAvqW1iHenaD0cI12fF0n7QO7a9FQWyqHvpUxUIcyw/sBdfBfH/QFs8YV
 qgktpKpjlv+82ycmdBxMWS4RmMcIlAk9j2et9HlmBP4/AAAA//8jLmTtAAAABklEQVQDANc6PgUVsmX6AAAAAElFTkSuQmCC">
 <meta name="theme-color" content="#141020">
-<meta name="version" content="18 octobre 2026 à 20 h 50">
+<meta name="version" content="18 octobre 2026 à 21 h 14">
 <title>Labo Infini</title>
 <style>
 /* Polices intégrées (pixelify-sans-latin-400-normal.woff2, pixelify-sans-latin-700-normal.woff2, vt323-latin-400-normal.woff2) — vérifier leur licence (OFL…) */
@@ -1187,7 +1187,7 @@ input[type=range]{width:150px;height:32px;accent-color:var(--cyan)}
 
 <script>
 "use strict";
-const BUILD_ID = "18 octobre 2026 à 20 h 50";
+const BUILD_ID = "18 octobre 2026 à 21 h 14";
 /* ==== 00_util.js ==== */
 /* ===================== UTILITAIRES ===================== */
 const U = {
@@ -1235,11 +1235,13 @@ function dec(n, d) { // nombre décimal à la française, zéros inutiles retir�
   if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
   return s.replace('.', ',');
 }
-// fmt(n, d) : d = décimales pour les petits nombres ; mode court forcé si short=true
-function fmt(n, d = 0, short = false) {
+// fmt(n, d) : d = décimales pour les petits nombres ; mode court forcé si short=true ; fixed=true garde les zéros
+// de fin (« 1,500 milliard ») pour que la largeur ne saute pas à chaque image (compteur principal)
+function fmt(n, d = 0, short = false, fixed = false) {
   if (n !== n) return '?';
   if (!isFinite(n)) return '∞';
-  if (n < 0) return '-' + fmt(-n, d, short);
+  if (n < 0) return '-' + fmt(-n, d, short, fixed);
+  const dx = fixed ? (v, k) => v.toFixed(k).replace('.', ',') : dec;
   if (n < 1000) {
     if (d > 0 && n < 100 && n !== Math.floor(n)) return dec(n, n < 10 ? d : Math.min(d, 1));
     return String(Math.floor(n + 1e-9));
@@ -1251,16 +1253,16 @@ function fmt(n, d = 0, short = false) {
   if (mode === 'sci' || e >= 102) {
     let m = n / Math.pow(10, e);
     if (+m.toFixed(3) >= 10) { m /= 10; e++; }
-    return dec(m, 3) + 'e' + e;
+    return dx(m, 3) + 'e' + e;
   }
   let i = Math.floor(e / 3);
   let m = n / Math.pow(10, i * 3);
   const digits = mode === 'short' ? (m < 10 ? 2 : m < 100 ? 1 : 0) : 3;
   if (+m.toFixed(digits) >= 1000) { i++; m /= 1000; }
-  if (i >= NUM_LONG.length) return fmt(1e102, d, short);
-  if (mode === 'short') return dec(m, m < 10 ? 2 : m < 100 ? 1 : 0) + ' ' + NUM_SHORT[i];
+  if (i >= NUM_LONG.length) return fmt(1e102, d, short, fixed);
+  if (mode === 'short') return dx(m, m < 10 ? 2 : m < 100 ? 1 : 0) + ' ' + NUM_SHORT[i];
   const word = NUM_LONG[i];
-  return dec(m, 3) + ' ' + (+m.toFixed(3) >= 2 ? word + 's' : word); // 1,9999 s'affiche « 2 » : donc « 2 millions »
+  return dx(m, 3) + ' ' + (+m.toFixed(3) >= 2 ? word + 's' : word); // 1,9999 s'affiche « 2 » : donc « 2 millions »
 }
 const fmtS = (n, d = 0) => fmt(n, d, true);
 function fmtPct(x) { // 0.15 -> "15 %"
@@ -8204,8 +8206,14 @@ function updateHeader() {
 }
 let lastHud = '';
 function updateHud() {
-  let mc = godMode() ? '∞' : fmt(S.bank);
-  if (mc.length > 17 && U.$('#paneFlask').clientWidth < 420) mc = fmtS(S.bank);
+  // Décimales fixes + choix long/court selon l'ORDRE DE GRANDEUR (pas selon la longueur du moment) : avant, les
+  // zéros de fin apparaissaient et disparaissaient et l'affichage alternait « 123,456 milliards » / « 123 Md » à
+  // chaque image (clignotement signalé par le joueur).
+  let mc = godMode() ? '∞' : fmt(S.bank, 0, false, true);
+  if (!godMode() && S.bank >= 1e6 && U.$('#paneFlask').clientWidth < 420) {
+    const base = Math.pow(10, Math.floor(Math.floor(Math.log10(S.bank) + 1e-12) / 3) * 3);
+    if (fmt(base * 999.4, 0, false, true).length > 17) mc = fmt(S.bank, 0, true, true);
+  }
   if (mc !== lastHud) { U.$('#molCount').textContent = mc; lastHud = mc; U.$('#molLabel').textContent = S.bank >= 2 || godMode() ? 'molécules' : 'molécule'; }
   const cl = U.$('#cpsLine');
   const t = 'par seconde : ' + fmt(G.cps, 1);
