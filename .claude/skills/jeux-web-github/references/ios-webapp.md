@@ -94,7 +94,7 @@ utilise `onclick` : avec une action au pointerup, le `click` qui suit tombe sur 
 
 ## 4. Sauvegarde, export, import
 
-- **Clé de sauvegarde et préfixe d'export propres à chaque jeu** (`kitConfig('hadal', 'HADAL1')`) : tous ses jeux
+- **Clé de sauvegarde et préfixe d'export propres à chaque jeu** (`kitConfig('monJeu2', 'JEU2')`) : tous ses jeux
   sont sur `anthodupre.github.io` (même domaine = même localStorage) ; deux jeux avec la même clé s'écraseraient.
 - `localStorage` peut être indisponible ou plein : magasin mémoire de secours + **test au démarrage**
   (`probe()`) → message « exportez régulièrement » si indisponible ; avertir une fois si une sauvegarde auto échoue.

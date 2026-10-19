@@ -13,7 +13,7 @@
 // anthodupre.github.io et partagent le MÊME localStorage. Deux jeux avec la même clé s'écraseraient leurs parties.
 // Labo Infini utilise 'laboInfini.*' et le préfixe d'export 'LABO1'.
 const KIT = { cfg: { saveKey: 'monJeu.save.v1', backupKey: 'monJeu.backup.v1', corruptKey: 'monJeu.corrupt.v1', prefix: 'JEU1' } };
-function kitConfig(id, prefix) { // kitConfig('hadal', 'HADAL1') -> clés 'hadal.save.v1', 'hadal.backup.v1'…
+function kitConfig(id, prefix) { // kitConfig('monJeu2', 'JEU2') -> clés 'monJeu2.save.v1', 'monJeu2.backup.v1'…
   Object.assign(KIT.cfg, { saveKey: id + '.save.v1', backupKey: id + '.backup.v1', corruptKey: id + '.corrupt.v1', prefix });
 }
 

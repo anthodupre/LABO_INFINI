@@ -1,6 +1,6 @@
 ---
 name: jeux-web-github
-description: Préférences de l'utilisateur et correctifs déjà éprouvés pour TOUT jeu ou petite app web qu'il demande, quel que soit le genre ou le style (arcade, plateforme, puzzle, quiz, cartes, aventure, clicker…), livré en un seul fichier HTML publié sur son GitHub Pages et joué sur iPhone depuis l'écran d'accueil. Contient comment lui livrer le code (texte .txt, jamais d'artefact), ses exigences (prendre son temps et tester, bouton de sauvegarde, bouton DEV + code BURGER = mode Dieu), comment lui parler, où il publie, une coquille de départ testée, et tous les bugs déjà réglés avec leur solution (bande vide en bas, boutons qui ne répondent plus, achats fantômes, messages illisibles, sauvegarde et import, fichier illisible, Script error…). Utiliser dès qu'il demande un jeu ou une app web, veut modifier un de ses jeux (Labo Infini, HADAL…), parle de son site GitHub ou signale un bug sur iPhone, même s'il ne mentionne ni GitHub ni iPhone.
+description: Préférences de l'utilisateur et correctifs déjà éprouvés pour TOUT jeu ou petite app web qu'il demande, quel que soit le genre ou le style (arcade, plateforme, puzzle, quiz, cartes, aventure, clicker…), livré en un seul fichier HTML publié sur son GitHub Pages et joué sur iPhone depuis l'écran d'accueil. Contient comment lui livrer le code (texte .txt, jamais d'artefact), ses exigences (prendre son temps et tester, bouton de sauvegarde, bouton DEV + code BURGER = mode Dieu), comment lui parler, où il publie, une coquille de départ testée, et tous les bugs déjà réglés avec leur solution (bande vide en bas, boutons qui ne répondent plus, achats fantômes, messages illisibles, sauvegarde et import, fichier illisible, Script error…). Utiliser dès qu'il demande un jeu ou une app web, veut modifier un de ses jeux (Labo Infini…), parle de son site GitHub ou signale un bug sur iPhone, même s'il ne mentionne ni GitHub ni iPhone.
 ---
 
 # Jeux web de l'utilisateur : ses préférences et les bugs déjà réglés
@@ -35,7 +35,7 @@ le « ça vire fou » et l'équilibrage d'un clicker étaient demandés POUR CE 
 6. **GitHub seulement** : il publie sur GitHub Pages et joue depuis l'écran d'accueil de son iPhone (§3). **Il
    n'utilise plus Koder** (l'app iOS de ses premiers jeux) : ne plus la proposer ni en parler ; les mentions de
    Koder dans les anciens fichiers (`labo/SPEC.md`, historique git, conseils WKWebView ou `file://`) sont périmées.
-7. **Langue du jeu** : celle de sa demande ; il écrit en français, donc français par défaut (HADAL était en anglais).
+7. **Langue du jeu** : celle de sa demande ; il écrit en français, donc français par défaut.
 8. **Du son partout** : il a demandé « de la musique à chaque stage » et « plus d'effets sonores, un peu vide ».
    Prévoir dès le départ une musique par étape (niveau, ère, monde…) et un bruitage pour chaque action et chaque
    événement, synthétisés en WebAudio (aucun fichier). Musique et bruitages réglables SÉPARÉMENT dans les Options.
@@ -62,8 +62,7 @@ le « ça vire fou » et l'équilibrage d'un clicker étaient demandés POUR CE 
   directement dedans (« ajoute GAMES ici et oublie fantastic-robot ») : ne plus utiliser d'autre dépôt.
   Organisation :
   - `<jeu>/index.html` = le jeu publié → `https://anthodupre.github.io/GAMES/<jeu>/` (Labo Infini : `labo/`) ;
-  - `_dev/<jeu>/` = sources, outils, tests (Labo Infini : `_dev/labo/` ; HADAL, ancien jeu non publié :
-    `_dev/hadal/hadal.html`) ; `.claude/` = ce skill et les consignes. Les dossiers qui commencent par `_` ou `.`
+  - `_dev/<jeu>/` = sources, outils, tests (Labo Infini : `_dev/labo/`) ; `.claude/` = ce skill et les consignes. Les dossiers qui commencent par `_` ou `.`
     ne sont **pas publiés** sur le site (Jekyll les ignore ; pas de `.nojekyll` : ne pas en ajouter), mais ils sont
     **visibles sur GitHub** (dépôt public) : n'y mettre rien de privé ;
   - `.gitignore` exclut `_dev/**/dist/` et `_dev/**/preview/` (captures, copies .txt).
@@ -180,10 +179,7 @@ Dire aussi ce qui n'a pas pu être vérifié (« je ne peux pas l'essayer sur un
 - **Labo Infini** (clicker de laboratoire en pixel art) : `labo/index.html`, sources dans `_dev/labo/`
   (construire : `node _dev/labo/tools/build.js`).
   Fiche : `references/labo-infini.md` (architecture, construction, tests, ce qu'il avait demandé pour ce jeu).
-- **HADAL** (horreur textuelle des abysses, pixel art, en anglais) : `_dev/hadal/hadal.html` (pas publié), de
-  l'époque Koder. Il a déjà BURGER (« no damage, no drowning, no madness ») et des points de sauvegarde cachés
-  (« PRESSURE LOCK »), mais charge sa police par Internet, utilise `inset` et n'a ni icône ni méta d'app. Si on y
-  retouche : le passer par `build.js` et la coquille, et lui demander une fois s'il le veut en français.
+- HADAL (ancien jeu d'horreur) : effacé à sa demande ; ne plus en parler.
 
 ## Fichiers du skill (`<skill>` = ce dossier)
 - `references/ios-webapp.md` — correctifs iPhone / GitHub Pages / sauvegarde avec le code éprouvé.
