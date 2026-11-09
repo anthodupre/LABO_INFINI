@@ -1,0 +1,15 @@
+REVUE ADVERSARIALE — jeu « Noëlombre » (jeu web 3D Three.js, un seul fichier HTML, joué sur iPhone depuis l'écran d'accueil)
+
+Sources : /home/user/LABO_INFINI/_dev/noelombre/src/js/*.js (concaténés dans l'ordre alphabétique dans UN seul <script>
+"use strict"), src/style.css, src/body.html. NE PAS lire 01_three.js (Three.js r170 généré). 02_kit.js et 08_coquille.js
+= coquille éprouvée (sauvegarde, Options, DEV/BURGER) : à lire pour comprendre, pas à critiquer sauf bug d'intégration.
+Le jeu : 11_outils → 30_jeu (objet JEU). Construire : `node _dev/noelombre/tools/build.js` (depuis /home/user/LABO_INFINI)
+→ index.html. Tests : `NODE_PATH=$(npm root -g) node _dev/noelombre/tools/e2e.js` (Chromium headless avec SwiftShader :
+lent, ~1-3 images/s, d'où des attentes longues). Consignes iPhone déjà apprises : lire
+/home/user/LABO_INFINI/.claude/skills/jeux-web-github/SKILL.md (§5) et references/ui-tactile.md.
+
+TA MISSION (dimension indiquée plus bas) : trouver de VRAIS problèmes, chacun avec une preuve (ligne de code + scénario
+concret, et si possible un petit script de reproduction dans /home/user/LABO_INFINI/_dev/noelombre/preview/). Pas de
+remarques de style. Classe par gravité. Pour chaque constat : fichier:ligne, symptôme pour le joueur, cause, correctif
+proposé (code précis). Ne modifie AUCUN fichier de src/ ni index.html (tu peux créer des scripts dans preview/).
+Pas de git commit. Rapport final en français, concis (max ~60 lignes).

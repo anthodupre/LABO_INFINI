@@ -1,6 +1,6 @@
 ---
 name: jeux-web-github
-description: Préférences de l'utilisateur et correctifs déjà éprouvés pour TOUT jeu ou petite app web qu'il demande, quel que soit le genre ou le style (arcade, plateforme, puzzle, quiz, cartes, aventure, clicker…), livré en un seul fichier HTML publié sur son GitHub Pages et joué sur iPhone depuis l'écran d'accueil. Contient comment lui livrer le code (texte .txt, jamais d'artefact), ses exigences (prendre son temps et tester, bouton de sauvegarde, bouton DEV + code BURGER = mode Dieu), comment lui parler, où il publie, une coquille de départ testée, et tous les bugs déjà réglés avec leur solution (bande vide en bas, boutons qui ne répondent plus, achats fantômes, messages illisibles, sauvegarde et import, fichier illisible, Script error…). Utiliser dès qu'il demande un jeu ou une app web, veut modifier un de ses jeux (Labo Infini…), parle de son site GitHub ou signale un bug sur iPhone, même s'il ne mentionne ni GitHub ni iPhone.
+description: Préférences de l'utilisateur et correctifs déjà éprouvés pour TOUT jeu ou petite app web qu'il demande, quel que soit le genre ou le style (arcade, plateforme, puzzle, quiz, cartes, aventure, clicker…), livré en un seul fichier HTML publié sur son GitHub Pages et joué sur iPhone depuis l'écran d'accueil. Contient comment lui livrer le code (texte .txt, jamais d'artefact), ses exigences (prendre son temps et tester, bouton de sauvegarde, bouton DEV + code BURGER = mode Dieu), comment lui parler, où il publie, une coquille de départ testée, et tous les bugs déjà réglés avec leur solution (bande vide en bas, boutons qui ne répondent plus, achats fantômes, messages illisibles, sauvegarde et import, fichier illisible, Script error…). Utiliser dès qu'il demande un jeu ou une app web, veut modifier un de ses jeux (Noëlombre, Labo Infini…), parle de son site GitHub ou signale un bug sur iPhone, même s'il ne mentionne ni GitHub ni iPhone.
 ---
 
 # Jeux web de l'utilisateur : ses préférences et les bugs déjà réglés
@@ -58,7 +58,8 @@ le « ça vire fou » et l'équilibrage d'un clicker étaient demandés POUR CE 
   graphique, ton, durée, difficulté viennent de sa demande ; s'ils manquent et comptent vraiment, demander une fois.
 
 ## 3. Publication (GitHub seulement)
-- **Labo Infini = dépôt `anthodupre/LABO_INFINI`** (public, branche `main`, GitHub Pages), anciennement `GAMES`,
+- **Dépôt `anthodupre/LABO_INFINI`** : publie **Noëlombre** depuis novembre 2026 (il a demandé de remplacer Labo
+  Infini par ce nouveau jeu, au même endroit). Historique : Labo Infini = dépôt `anthodupre/LABO_INFINI` (public, branche `main`, GitHub Pages), anciennement `GAMES`,
   renommé à sa demande. Il a demandé de travailler directement dedans et de ne plus utiliser `fantastic-robot`.
   Organisation :
   - `index.html` (racine) = le jeu publié → **`https://anthodupre.github.io/LABO_INFINI/`** ;
@@ -184,6 +185,10 @@ Dire aussi ce qui n'a pas pu être vérifié (« je ne peux pas l'essayer sur un
 - **Labo Infini** (clicker de laboratoire en pixel art) : dépôt `LABO_INFINI`, `index.html`, sources dans `_dev/labo/`
   (construire : `node _dev/labo/tools/build.js`).
   Fiche : `references/labo-infini.md` (architecture, construction, tests, ce qu'il avait demandé pour ce jeu).
+  **Remplacé sur le site** en novembre 2026 par Noëlombre (à sa demande) ; sources gardées dans `_dev/labo/`.
+- **Noëlombre** (exploration 3D d'une ville de Noël nocturne infinie, Three.js) : publié dans `index.html` du dépôt
+  `LABO_INFINI`, sources dans `_dev/noelombre/`. Fiche : `references/noelombre.md` (3D sur iPhone : moteur intégré,
+  qualité auto, tests lents en SwiftShader, pièges rencontrés).
 - HADAL (ancien jeu d'horreur) : effacé à sa demande ; ne plus en parler.
 
 ## Fichiers du skill (`<skill>` = ce dossier)

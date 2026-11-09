@@ -91,6 +91,9 @@ const JEU = (() => {
     const cv = document.createElement('canvas'); cv.id = 'cv3d'; zone.insertBefore(cv, zone.firstChild);
     try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false, powerPreference: 'high-performance', stencil: false }); }
     catch (e) { zone.insertAdjacentHTML('beforeend', '<div class="pasgl">Ton appareil ne peut pas afficher la 3D (WebGL). Essaie avec Safari à jour.</div>'); return false; }
+    // iPhone : le contexte 3D peut être perdu (app longtemps en arrière-plan, mémoire) : on sauvegarde et on recharge
+    cv.addEventListener('webglcontextlost', e => { e.preventDefault(); try { save(false); } catch (er) { } }, false);
+    cv.addEventListener('webglcontextrestored', () => { try { save(false); } catch (er) { } location.reload(); }, false);
     renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.95;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.info.autoReset = false;
     scene = new THREE.Scene();
