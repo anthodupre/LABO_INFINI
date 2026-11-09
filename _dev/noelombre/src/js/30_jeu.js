@@ -40,6 +40,7 @@ let JEU_apresAchat = () => { }, JEU_voyager = () => { };
 const JEU = (() => {
   let renderer = null, scene = null, cam = null, composer = null, bloom = null, Q = 1, R = 2, prete = false, t = 0;
   const parcelles = new Map(); // clé -> { P, obj, d }
+  const LPOS = { x: 0.3, y: -0.34 }; // place de la lanterne dans la main (selon la largeur de l'écran)
   let lumPool = [], lanterne = null, lanterneL = null, lumProches = [], tLum = 0, tSpawn = 0, eclatT = 99, eclatFlash = 0;
   const bonbonsPris = new Map(); // clé parcelle:id -> instant (repoussent après 8 min)
   const libres = []; // bonbons lâchés (spectres, pluie dorée)
@@ -54,7 +55,8 @@ const JEU = (() => {
     const mem = navigator.deviceMemory || 4, coeurs = navigator.hardwareConcurrency || 4;
     return mem >= 8 && coeurs >= 8 ? 2 : 1;
   }
-  function Qeff() { const r = j().reg.qualite; return r === 'auto' || r == null ? qualiteAuto() : clamp(+r, 0, 3); }
+  let QP_FORCE = null;
+  function Qeff() { const r = j().reg.qualite; return r === 'auto' || r == null ? (QP_FORCE != null ? QP_FORCE : qualiteAuto()) : clamp(+r, 0, 3); }
   const QP = [ // pixelRatio max, rayon (parcelles), lampes, ombres, bloom
     { pr: 1.0, R: 1, nl: 2 }, { pr: 1.35, R: 2, nl: 4 }, { pr: 1.75, R: 2, nl: 6 }, { pr: 2.5, R: 3, nl: 8 }];
 
@@ -111,7 +113,8 @@ const JEU = (() => {
   function creerComposer() {
     if (composer) { try { composer.renderTarget1.dispose(); composer.renderTarget2.dispose(); bloom.dispose(); } catch (e) { } }
     const size = renderer.getDrawingBufferSize(new THREE.Vector2());
-    const rt = new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: Q >= 2 ? 4 : 0 });
+    const ext = renderer.extensions, hf = ext.has('EXT_color_buffer_half_float') || ext.has('EXT_color_buffer_float');
+    const rt = new THREE.WebGLRenderTarget(size.x, size.y, { type: hf ? THREE.HalfFloatType : THREE.UnsignedByteType, samples: Q >= 2 && hf ? 4 : 0 });
     composer = new THREE.EffectComposer(renderer, rt);
     composer.addPass(new THREE.RenderPass(scene, cam));
     bloom = new THREE.UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), 0.75, 0.42, 0.86);
@@ -122,6 +125,7 @@ const JEU = (() => {
     if (!renderer) return;
     const cv = renderer.domElement, r = cv.parentNode.getBoundingClientRect(), w = Math.max(1, r.width), h = Math.max(1, r.height);
     renderer.setSize(w, h, false); cam.aspect = w / h; cam.fov = w > h ? 64 : 74; cam.updateProjectionMatrix();
+    { const tv = Math.tan(cam.fov * Math.PI / 360), th = tv * cam.aspect; LPOS.x = Math.min(0.3, 0.6 * th * 0.62); LPOS.y = -0.6 * tv * 0.5; }
     if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); }
     const hb = h * renderer.getPixelRatio(), ech = hb / (2 * Math.tan(cam.fov * Math.PI / 360));
     if (CIEL.matNeige) CIEL.matNeige.uniforms.uEchelle.value = ech;
@@ -500,7 +504,9 @@ const JEU = (() => {
     const g = new THREE.Group(), mat = new THREE.MeshBasicMaterial({ color: 0x06070c, fog: false });
     const b = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 1.4), mat); g.add(b);
     const pat = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.08, 4, 16, Math.PI), mat); pat.rotation.z = Math.PI; pat.position.y = -0.4; g.add(pat);
-    for (let i = 0; i < 4; i++) { const r = new THREE.Group(); const c2 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 0.5), mat); r.add(c2); const tete = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.8, 0.3), mat); tete.position.set(0.9, 0.5, 0); r.add(tete); for (const s2 of [-0.12, 0.12]) { const bois = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.7, 4), mat); bois.position.set(0.95, 1.1, s2); bois.rotation.z = -0.4; r.add(bois); } r.position.set(3 + i * 2.1, 0.3, (i % 2) * 0.8 - 0.4); g.add(r); }
+    for (let i = 0; i < 4; i++) { const r = new THREE.Group(); const c2 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 0.5), mat); r.add(c2);
+      const tete = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.8, 0.3), mat); tete.position.set(0.9, 0.5, 0); r.add(tete); for (const s2 of [-0.12, 0.12]) {
+       const bois = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.7, 4), mat); bois.position.set(0.95, 1.1, s2); bois.rotation.z = -0.4; r.add(bois); } r.position.set(3 + i * 2.1, 0.3, (i % 2) * 0.8 - 0.4); g.add(r); }
     const nez = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 4), new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 0.6, 0.4), toneMapped: false, fog: false })); nez.position.set(3 + 3 * 2.1 + 1.1, 0.75, 0.4); g.add(nez);
     g.scale.setScalar(1.6); scene.add(g);
     ev.traineau = { g, k: 0, a0: Math.atan2(CIEL.dirLune.z, CIEL.dirLune.x) - 0.8 };
@@ -532,12 +538,25 @@ const JEU = (() => {
 
   function intro() {
     const I = TXT.intro;
-    modal(I.titre, '<div class="grand">' + esc(I.sous) + '</div><div>' + esc(I.histoire) + '</div><div class="sect">Comment jouer</div><div class="log">• Pouce gauche : marcher (au bout = courir). Glisse ailleurs pour regarder.<br>• ⤒ sauter · ✦ Éclat : chasse les spectres.<br>• Le 🔥 baisse dans le noir : reste près des lumières.<br>• Ramasse les 🎁 et livre-les aux portes à couronne verte.<br>• Allume les lanternes-relais : elles sauvegardent ta partie.<br>• 🛠️ Atelier · 📜 Quêtes · 📖 Album · touche la mini-carte pour la carte.</div>',
-      [['Entrer dans la nuit', () => { j().intro = true; save(false); try { AUDIO.musique('bourg'); } catch (e) { } }]]);
+    modal(I.titre, '<div class="grand">' + esc(I.sous) + '</div><div>' + esc(I.histoire) + '</div><div class="sect">Comment jouer</div>' +
+      '<div class="log">• Pouce gauche : marcher (au bout = courir). Glisse ailleurs pour regarder.<br>• ⤒ sauter · ✦ Éclat : chasse les spectres.<br>• Le 🔥 baisse dans le noir : reste près des lumières.' +
+      '<br>• Ramasse les 🎁 et livre-les aux portes à couronne verte.<br>• Allume les lanternes-relais : elles sauvegardent ta partie.<br>• 🛠️ Atelier · 📜 Quêtes · 📖 Album · touche la mini-carte pour la carte.</div>',[['Entrer dans la nuit', () => { j().intro = true; save(false); try { AUDIO.musique('bourg'); } catch (e) { } }]]);
   }
 
   // ======================= objet JEU (contrat de la coquille) =======================
-  let tObj = null, tQ = 0;
+  let tObj = null, tQ = 0, modalVu = false;
+  // si l'appareil peine (moins de 24 images/s en moyenne), on baisse la qualité automatiquement (mode Auto seulement)
+  const perf = { n: 0, t0: 0, fait: false };
+  function surveillerFluidite() {
+    if (perf.fait || !prete || MODAL_OPEN || document.hidden) { perf.t0 = 0; perf.n = 0; return; }
+    const now = performance.now(); if (!perf.t0) { perf.t0 = now; perf.n = 0; return; }
+    perf.n++;
+    if (now - perf.t0 > 6000) {
+      const fps = perf.n * 1000 / (now - perf.t0); perf.t0 = 0; perf.n = 0;
+      if (j().reg.qualite === 'auto' && fps < 24 && Q > 0) { perf.bas = Q - 1; j().reg.qualite = 'auto'; QP_FORCE = Q - 1; appliquerQualite(false); creerComposer(); redimensionner(); toast('Graphismes réduits pour que ce soit plus fluide (Options › Graphismes).', ''); }
+      else if (fps >= 24) perf.fait = true;
+    }
+  }
   return {
     titre: 'Noëlombre', id: 'noelombre', prefixe: 'NOEL1',
     modeDieu: 'jamais froid, aucun spectre ne te touche, bonbons infinis, voyages gratuits',
@@ -546,7 +565,9 @@ const JEU = (() => {
     dev: () => [
       ['+1 000 bonbons', () => gagner(1000)],
       ['Vitesse ×3 : ' + (G_DEV.vite ? 'oui' : 'non'), () => { G_DEV.vite = !G_DEV.vite; }],
-      ['Aller au repère inconnu le plus proche', () => { const C = MONDE.C, cx = Math.floor(JOUEUR.x / C), cz = Math.floor(JOUEUR.z / C); for (let r = 1; r < 30; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) { if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue; const x = cx + dx, z = cz + dz; if (MONDE.repere(x, z) && !j().reperes[MONDE.cle(x, z)]) { JOUEUR.x = x * C + C / 2; JOUEUR.z = z * C + 4; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z) + 1; dernierCh = null; closeModal(); return; } } }],
+      ['Aller au repère inconnu le plus proche', () => { const C = MONDE.C, cx = Math.floor(JOUEUR.x / C), cz = Math.floor(JOUEUR.z / C); for (let r = 1; r < 30; r++)
+         for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) { if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue; const x = cx + dx, z = cz + dz; if (MONDE.repere(x, z)
+         && !j().reperes[MONDE.cle(x, z)]) { JOUEUR.x = x * C + C / 2; JOUEUR.z = z * C + 4; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z) + 1; dernierCh = null; closeModal(); return; } } }],
       ['Toutes les améliorations au max', () => { for (const k in AMEL) j().niv[k] = AMEL[k].max; majLanterne(); }],
       ['Donner une curiosité', () => { const c = TXT.curiosites.find(c => !j().curiosites[c.id]); if (c) { const P = { rep: c.repere }; prendreSpot({ P, k: 'dev' + Math.random() }); } }],
       ['Tempête de neige', () => { ev.prochTempete = 0; }], ['Aurore', () => lancerAurore(120)], ['Traîneau de minuit', () => { ev.prochMinuit = 0; }],
@@ -606,7 +627,8 @@ const JEU = (() => {
     rendu() {
       if (!renderer || !composer) return;
       const s = j();
-      if (MODAL_OPEN) { try { AUDIO.maj(0.016, { marche: 0, enPause: true }); } catch (e) { } }
+      if (MODAL_OPEN) { if (!modalVu) { modalVu = true; CTRL.relacher(); } try { AUDIO.maj(0.016, { marche: 0, enPause: true }); } catch (e) { } } else modalVu = false;
+      surveillerFluidite();
       JOUEUR.cameraVers(cam);
       MAT.U.uCentre.value.set(JOUEUR.x, JOUEUR.z); MAT.U.uTemps.value = t;
       // la bulle : brouillard qui s'éclaircit avec la Lanterne et en hauteur, s'épaissit pendant la tempête
@@ -620,7 +642,7 @@ const JEU = (() => {
       // lanterne à la main : balancement + flamme vivante + éclat
       if (lanterne) {
         const v = Math.min(1, JOUEUR.vitesse / 5);
-        lanterne.position.set(0.3 + Math.sin(JOUEUR.bob * 0.5) * 0.015 * v, -0.34 + Math.abs(Math.cos(JOUEUR.bob * 0.5)) * 0.02 * v, -0.62);
+        lanterne.position.set(LPOS.x + Math.sin(JOUEUR.bob * 0.5) * 0.015 * v, LPOS.y + Math.abs(Math.cos(JOUEUR.bob * 0.5)) * 0.02 * v, -0.62);
         lanterne.rotation.z = Math.sin(t * 1.3) * 0.04 + Math.sin(JOUEUR.bob * 0.5) * 0.08 * v;
         const fl = 0.85 + Math.sin(t * 17) * 0.06 + Math.sin(t * 7.3) * 0.08; lanterne.userData.flamme.scale.set(fl, 1.6 * fl, fl);
         lanterneL.intensity = (1.6 + s.niv.lanterne * 0.4) * fl * (1 + eclatFlash * 6);

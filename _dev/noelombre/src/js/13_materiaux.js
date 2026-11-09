@@ -94,7 +94,7 @@ const MAT = (() => {
     M.pierre = std(T.pierre, { neige: 1, seuil: 0.5, cle: 'pi' });
     M.metal = std(T.metal, { r: 0.45, m: 0.85, neige: 0.8, seuil: 0.6, cle: 'me', env: 1 });
     M.ecorce = std(T.ecorce, { neige: 1, seuil: 0.45, cle: 'ec' });
-    M.aiguilles = std(T.aiguilles, { neige: 1, seuil: 0.25, cle: 'ai', r: 0.95, ns: 1.2 });
+    M.aiguilles = std(T.aiguilles, { neige: 1, seuil: 0.6, cle: 'ai', r: 0.95, ns: 1.2 });
     M.citrouille = std(T.citrouille, { r: 0.55, neige: 0.6, seuil: 0.7, cle: 'ci' });
     M.tissu = std(T.raye, { r: 0.9, neige: 1, seuil: 0.45, cle: 'ti', double: true });
     M.porte = std({ map: T.porte, nrm: null }, { r: 0.8, cle: 'po' });

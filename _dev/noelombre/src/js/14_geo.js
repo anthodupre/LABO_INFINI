@@ -24,12 +24,19 @@ const GEO = (() => {
       case 'glacon': g = new THREE.CylinderGeometry(0, 1, 1, 5, 1, true); break;
       case 'sphere': g = new THREE.SphereGeometry(1, 12, 8); break;
       case 'sphereB': g = new THREE.SphereGeometry(1, 8, 6); break;
-      case 'ico': g = new THREE.OctahedronGeometry(1, 0); break;
+      case 'ico': g = new THREE.IcosahedronGeometry(1, 0); break;
       case 'plan': g = new THREE.PlaneGeometry(1, 1); break;
       case 'plan9': g = new THREE.PlaneGeometry(1, 1, 4, 4); break;
       case 'tore': g = new THREE.TorusGeometry(1, 0.32, 6, 16); break;
       case 'couronne': g = new THREE.TorusGeometry(1, 0.26, 7, 18); break;
       case 'toreFin': g = new THREE.TorusGeometry(1, 0.06, 4, 24); break;
+      case 'etage': { // étage de sapin : cône aux pointes déchiquetées (branches) + dessous en pente douce
+        const haut = new THREE.CylinderGeometry(0, 1, 1, 28, 4, true), bas = new THREE.CylinderGeometry(1, 0.15, 0.22, 28, 1, true);
+        bas.translate(0, -0.61, 0);
+        const jag = (g, yBord) => { const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, x); const k = clamp(1 - Math.abs(y - yBord) / 0.6, 0, 1); const dent = 0.72 + 0.38 * Math.pow(Math.abs(Math.sin(a * 7 + Math.sin(a * 3) * 1.3)), 0.6); const f = lerp(1, dent, k); p.setXYZ(i, x * f, y - k * k * (1 - dent) * 0.5, z * f); } g.computeVertexNormals(); };
+        jag(haut, -0.5); jag(bas, -0.5);
+        g = THREE.mergeGeometries([haut.toNonIndexed(), bas.toNonIndexed()]); g.deleteAttribute('uv'); break;
+      }
       case 'pignon': { // prisme triangulaire : toit à deux pentes, faîte le long de z
         const s = new THREE.Shape(); s.moveTo(-0.5, 0); s.lineTo(0.5, 0); s.lineTo(0, 1); s.lineTo(-0.5, 0);
         g = new THREE.ExtrudeGeometry(s, { depth: 1, bevelEnabled: false, steps: 3 }); g.translate(0, 0, -0.5); break;
@@ -215,13 +222,13 @@ const GEO = (() => {
 
   // ---- SAPIN TORDU (guirlandes optionnelles) ----
   G.sapin = function (L, w, rng, hh, pal, illum) {
-    const H = hh, nC = 4 + Math.floor(rng() * 2), cr = (rng() - 0.5) * 0.6, cz = (rng() - 0.5) * 0.6;
+    const H = hh, nC = 5 + Math.floor(rng() * 3), cr = (rng() - 0.5) * 0.6, cz = (rng() - 0.5) * 0.6;
     const def = v => { const t = clamp(v.y / H, 0, 1); v.x += cr * t * t * H * 0.25; v.z += cz * t * t * H * 0.25; };
     L.get('ecorce').add(G.base('cyl8'), { m: G.mat(0, H * 0.15, 0, H * 0.035, H * 0.3, H * 0.035), c: [0.8, 0.75, 0.7], uvm: 'monde', s: 1, def, w });
     const vert = [0.55 + rng() * 0.2, 0.75 + rng() * 0.2, 0.6 + rng() * 0.2];
     for (let i = 0; i < nC; i++) {
-      const t = i / nC, r = H * 0.32 * (1 - t * 0.72), y0 = H * (0.16 + t * 0.66), hc = H * 0.34 * (1 - t * 0.35);
-      L.get('aiguilles').add(G.base('cone12'), { m: G.mat((rng() - 0.5) * 0.15, y0 + hc / 2, (rng() - 0.5) * 0.15, r, hc, r, 0, rng() * 6), c: vert, uvm: 'monde', s: 0.9, def, w });
+      const t = i / nC, r = H * 0.34 * (1 - t * 0.78), y0 = H * (0.14 + t * 0.7), hc = H * 0.3 * (1 - t * 0.4);
+      L.get('aiguilles').add(G.base('etage'), { m: G.mat((rng() - 0.5) * 0.15, y0 + hc / 2, (rng() - 0.5) * 0.15, r, hc, r, (rng() - 0.5) * 0.12, rng() * 6, (rng() - 0.5) * 0.12), c: vert, uvm: 'monde', s: 0.9, def, w });
     }
     if (illum) { // guirlande en spirale autour du sapin
       const n = Math.floor(H * 9), ico = G.base('ico');
