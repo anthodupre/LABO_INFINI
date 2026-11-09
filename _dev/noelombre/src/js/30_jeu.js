@@ -148,7 +148,7 @@ const JEU = (() => {
     fl.scale.set(1, 1.6, 1); g.add(fl); g.userData.flamme = fl;
     const verre = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.2, 0.11), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.2, 0.75, 0.35), transparent: true, opacity: 0.25, depthWrite: false, toneMapped: false }));
     g.add(verre);
-    g.position.set(0.3, -0.34, -0.62); g.scale.setScalar(0.8); cam.add(g);
+    g.position.set(0.3, -0.34, -0.62); g.scale.setScalar(0.62); cam.add(g);
     lanterne = g;
     lanterneL = new THREE.PointLight(0xffb070, 2, 12, 1.6); lanterneL.position.set(0.3, -0.1, -0.9); cam.add(lanterneL);
   }
