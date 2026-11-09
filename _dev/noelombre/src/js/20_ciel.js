@@ -102,7 +102,7 @@ const CIEL = (() => {
   K.maj = function (t, cam, joueur, ev) {
     UA.uTemps.value = t; K.matNeige.uniforms.uTemps.value = t; K.matNeige.uniforms.uCam.value.copy(cam);
     K.dome.position.copy(cam);
-    UA.uAurore.value += ((ev.aurore ? 1 : 0) - UA.uAurore.value) * 0.01;
+    UA.uAurore.value += ((ev.aurore || (S && S.jeu && S.jeu.fini) ? 1 : 0) - UA.uAurore.value) * 0.01;
     UA.uTempete.value += ((ev.tempete ? 1 : 0) - UA.uTempete.value) * 0.004;
     K.matNeige.uniforms.uDens.value = 0.45 + UA.uTempete.value * 0.55;
     K.matNeige.uniforms.uVent.value.set(0.6 + UA.uTempete.value * 5, 0.2 + UA.uTempete.value * 2);

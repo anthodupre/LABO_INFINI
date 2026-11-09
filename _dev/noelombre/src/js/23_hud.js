@@ -102,12 +102,12 @@ const HUD = (() => {
   H.ouvrirCarte = function () {
     if (MODAL_OPEN) return;
     const j = S.jeu, Cs = MONDE.C, J = JOUEUR;
-    const lits = Object.keys(j.relais).map(k => { const [x, z] = k.split(',').map(Number); return { k, x: x * Cs, z: z * Cs, d: Math.hypot(x * Cs - J.x, z * Cs - J.z) }; }).filter(r => r.d > 30).sort((a, b) => a.d - b.d).slice(0, 6);
+    const lits = Object.keys(j.relais).map(k => { const [x, z] = k.split(',').map(Number); return { k, x: x * Cs, z: z * Cs, d: Math.hypot(x * Cs - J.x, z * Cs - J.z) }; }).filter(r => r.d > 30).sort((a, b) => a.d - b.d).filter((r, i) => i < 5 || r.k === '0,0' || r.k === j.dernierRelais).slice(0, 8);
     const dir = (r) => { const a = Math.atan2(r.x - J.x, -(r.z - J.z)); return ['N', 'N-E', 'E', 'S-E', 'S', 'S-O', 'O', 'N-O'][Math.round(((a + Math.PI * 2) % (Math.PI * 2)) / (Math.PI / 4)) % 8]; };
     const prix = JEU_prixVoyage();
     modal('Carte', '<canvas id="grandeCarte"></canvas><div class="log">★ repère · ● lanterne allumée · ● porte qui attend un cadeau. Tu ne vois que ce que tu as exploré.</div>' +
       (lits.length ? '<div class="sect">Voyager vers une lanterne allumée (' + (god() ? 'gratuit' : prix + ' 🍬') + ')</div>' : '<div class="sect">Allume des lanternes-relais pour pouvoir y voyager.</div>'),
-      [...lits.map(r => ['Lanterne à ' + Math.round(r.d) + ' m (' + dir(r) + ')', () => JEU_voyager(r.k)]), ['Fermer']]);
+      [...lits.map(r => [(r.k === '0,0' ? 'Départ' : 'Lanterne') + ' à ' + fmt(Math.round(r.d)) + ' m (' + dir(r) + ')', () => JEU_voyager(r.k)]), ['Fermer']]);
     const cv = $$('grandeCarte'), dpr = Math.min(2, devicePixelRatio || 1), Wc = cv.getBoundingClientRect().width;
     cv.width = Wc * dpr; cv.height = Wc * dpr; const c = cv.getContext('2d'), W = cv.width, R = W / 2, ech = R / 330;
     c.fillStyle = '#0b0e1c'; c.fillRect(0, 0, W, W);
@@ -145,7 +145,7 @@ const HUD = (() => {
   H.ouvrirQuetes = function () {
     const j = S.jeu;
     let h = '<div>Rang : <b>' + esc(JEU_rang()) + '</b> · ' + j.stats.livraisons + ' cadeaux livrés</div><div class="sect">Vœux de la ville</div>';
-    for (const q of j.quetes) h += '<div class="quete"><div>' + esc(JEU_texteQuete(q)) + '</div><div class="barreQ"><i style="width:' + Math.round(100 * Math.min(1, q.prog / q.n)) + '%"></i></div><div class="log">' + Math.min(q.prog, q.n) + ' / ' + q.n + ' · récompense ' + q.rec + ' 🍬</div></div>';
+    for (const q of j.quetes) h += '<div class="quete"><div>' + esc(JEU_texteQuete(q)) + '</div><div class="barreQ"><i style="width:' + Math.round(100 * Math.min(1, q.prog / q.n)) + '%"></i></div><div class="log">' + fmt(Math.min(q.prog, q.n)) + ' / ' + fmt(q.n) + ' · récompense ' + q.rec + ' 🍬</div></div>';
     h += '<div class="sect">Succès (' + Object.keys(j.succes).length + '/' + SUCCES.length + ')</div>';
     for (const s of SUCCES) h += '<div class="log">' + (j.succes[s.id] ? '✔ <b>' + esc(s.nom) + '</b>' : '○ ' + esc(s.nom)) + ' — ' + esc(s.desc) + '</div>';
     modal('Quêtes', h, [['Fermer']]);
@@ -178,13 +178,13 @@ function ui_acheter(k) {
 }
 // ---- améliorations : effets chiffrés (écrits par le code, jamais dans les textes) ----
 const AMEL = {
-  lanterne: { max: 8, base: 30, k: 1.55, effet: n => 'Bulle : ' + Math.round(100 + n * 9) + ' %.' },
-  bottes: { max: 6, base: 25, k: 1.6, effet: n => 'Vitesse : ' + (4.3 + n * 0.5).toFixed(1).replace('.', ',') + ' m/s.' },
-  echarpe: { max: 6, base: 35, k: 1.6, effet: n => 'Froid : −' + (n * 11) + ' %.' },
-  sac: { max: 6, base: 40, k: 1.65, effet: n => 'Capacité : ' + (2 + n) + ' cadeaux.' },
-  aimant: { max: 6, base: 20, k: 1.6, effet: n => 'Portée : ' + (1.4 + n * 0.9).toFixed(1).replace('.', ',') + ' m.' },
-  ressorts: { max: 5, base: 45, k: 1.7, effet: n => n >= 3 ? 'Double saut débloqué !' : 'Double saut au niveau 3.' },
-  boussole: { max: 3, base: 60, k: 2.2, effet: n => ['Pas encore de boussole.', 'Flèche vers le repère inconnu le plus proche.', 'Repères inconnus aussi sur la mini-carte.', 'Montre aussi les cadeaux et les portes qui attendent.'][n] },
-  eclat: { max: 6, base: 50, k: 1.6, effet: n => 'Portée ' + (7 + n * 1.2).toFixed(1).replace('.', ',') + ' m, recharge ' + (14 - n * 1.4).toFixed(1).replace('.', ',') + ' s.' },
+  lanterne: { max: 10, base: 30, k: 1.8, effet: n => 'Bulle : ' + Math.round(100 + n * 9) + ' %.' },
+  bottes: { max: 8, base: 25, k: 1.75, effet: n => 'Vitesse : ' + (4.3 + n * 0.5).toFixed(1).replace('.', ',') + ' m/s.' },
+  echarpe: { max: 8, base: 35, k: 1.75, effet: n => 'Froid : −' + (n * 9) + ' %.' },
+  sac: { max: 6, base: 40, k: 1.85, effet: n => 'Capacité : ' + (2 + n) + ' cadeaux.' },
+  aimant: { max: 8, base: 20, k: 1.75, effet: n => 'Portée : ' + (1.4 + n * 0.9).toFixed(1).replace('.', ',') + ' m.' },
+  ressorts: { max: 5, base: 45, k: 1.9, effet: n => n >= 3 ? 'Double saut débloqué !' : 'Double saut au niveau 3.' },
+  boussole: { max: 3, base: 60, k: 2.5, effet: n => ['Pas encore de boussole.', 'Flèche vers le repère inconnu le plus proche.', 'Repères inconnus aussi sur la mini-carte.', 'Montre aussi les cadeaux et les portes qui attendent.'][n] },
+  eclat: { max: 8, base: 50, k: 1.75, effet: n => 'Portée ' + (7 + n * 1.2).toFixed(1).replace('.', ',') + ' m, recharge ' + (14 - n * 1.3).toFixed(1).replace('.', ',') + ' s.' },
 };
 function amelPrix(k) { const a = AMEL[k]; return Math.round(a.base * Math.pow(a.k, S.jeu.niv[k])); }

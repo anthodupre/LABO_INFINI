@@ -80,7 +80,8 @@ const JEU = (() => {
     for (const k in s.niv) s.niv[k] = clamp(Math.floor(+s.niv[k] || 0), 0, AMEL[k] ? AMEL[k].max : 0);
     for (const k in s.stats) if (!Number.isFinite(s.stats[k])) s.stats[k] = 0;
     if (!Array.isArray(s.quetes)) s.quetes = [];
-    s.quetes = s.quetes.filter(q => q && TXT.quetes.some(g => g.type === q.type) && Number.isFinite(q.n) && Number.isFinite(q.prog));
+    s.quetes = s.quetes.filter(q => q && TXT.quetes.some(g => g.type === q.type) && Number.isFinite(q.n) && Number.isFinite(q.prog) && q.prog < q.n && Number.isFinite(q.rec) && (q.type !== 'quartier' || TXT.quartiers[q.lieu]) && !(q.type === 'curiosite' && Object.keys(s.curiosites).length >= TXT.curiosites.length));
+    for (const k of ['cadeauxPris', 'livrees']) for (const c in s[k]) if (!Array.isArray(s[k][c])) delete s[k][c];
     s.bonbons = Math.max(0, Math.min(1e12, s.bonbons)); s.chaleur = clamp(s.chaleur, 1, 100); s.sac = clamp(Math.floor(s.sac), 0, 2 + s.niv.sac);
     if (!s.relais['0,0']) s.relais['0,0'] = 1;
     if (typeof s.dernierRelais !== 'string' || !s.relais[s.dernierRelais]) s.dernierRelais = '0,0';
@@ -230,7 +231,8 @@ const JEU = (() => {
     if (eclatFlash > 0) o.lueurs.push({ x: JOUEUR.x, y: JOUEUR.y + 1.3, z: JOUEUR.z, c: [3 * eclatFlash, 3 * eclatFlash, 3.5 * eclatFlash], s: 9 * (1.4 - eclatFlash) + 2 });
     return o;
   }
-  function gagner(n) { const s = j(); s.bonbons = Math.min(1e12, s.bonbons + n); }
+  let DT_R = 1 / 60, voeuT = -999;
+  function gagner(n) { if (!Number.isFinite(n)) return; const s = j(); s.bonbons = Math.min(1e12, s.bonbons + n); }
   function ramasser(o) {
     const J = JOUEUR, s = j(), mag = 1.4 + s.niv.aimant * 0.9;
     for (const b of o.bonbons) {
@@ -240,11 +242,12 @@ const JEU = (() => {
         const v = b.or ? 12 : 1; gagner(v); s.stats.ramasses += 1;
         combo = t - comboT < 1.2 ? combo + 1 : 0; comboT = t; snd('bonbon', { combo: Math.min(10, combo) });
         progresQuete('bonbons', 1); if (b.or) toast('Bonbon doré : +12 !', 'save');
-      } else if (d < mag && !b.libre) { // aimant : le bonbon vient à toi (on le marque comme libre pour l'animer)
+      } else if (d < mag) { // aimant : le bonbon vient à toi (on le marque comme libre pour l'animer)
+        if (b.libre) { b.vole = true; continue; }
         bonbonsPris.set(b.cle, t); libres.push({ x: b.x, y: b.y, z: b.z, or: b.or, ph: b.ph, libre: true, vole: true });
       }
     }
-    for (const b of libres) { if (!b.vole) continue; const dx = J.x - b.x, dy = J.y + 0.9 - b.y, dz = J.z - b.z, d = Math.hypot(dx, dy, dz); const v = Math.min(d, 0.3 + 8 * (1 / 60)); b.x += dx / d * v; b.y += dy / d * v; b.z += dz / d * v; }
+    for (const b of libres) { if (!b.vole) continue; const dx = J.x - b.x, dy = J.y + 0.9 - b.y, dz = J.z - b.z, d = Math.hypot(dx, dy, dz); const v = Math.min(d, (6 + 12) * DT_R); b.x += dx / d * v; b.y += dy / d * v; b.z += dz / d * v; }
     for (const c of o.cadeaux) {
       if (Math.hypot(c.x - J.x, c.z - J.z) < 1.3 && Math.abs(c.y - J.y) < 2) {
         if (s.sac >= JEU_capacite()) { if (t - dernMsgSac > 6) { dernMsgSac = t; toast('Ton sac est plein (' + s.sac + '/' + JEU_capacite() + ') : livre d’abord un cadeau, ou agrandis ton Sac à l’Atelier.', 'warn'); } continue; }
@@ -297,13 +300,14 @@ const JEU = (() => {
   }
   function voeu() {
     const s = j();
+    if (t - voeuT < 40) { toast('Le puits se repose… reviens tantôt.', ''); return; }
     if (!god() && s.bonbons < 10) { snd('refus'); toast('Il faut 10 bonbons pour un vœu.', 'warn'); return; }
-    if (!god()) s.bonbons -= 10; s.stats.voeux++; snd('boite_a_musique');
+    if (!god()) s.bonbons -= 10; voeuT = t; s.stats.voeux++; snd('boite_a_musique');
     const r = Math.random();
-    if (r < 0.42) { gagner(28); toast('Le puits rend ton vœu… avec intérêts : +28 bonbons.', 'save'); }
+    if (r < 0.42) { const g2 = 8 + Math.floor(Math.random() * 8); gagner(g2); toast('Le puits rend ton vœu… presque entier : +' + g2 + ' bonbons.', 'save'); }
     else if (r < 0.6 && s.sac < JEU_capacite()) { s.sac++; snd('cadeau'); toast('Un cadeau remonte du puits, tout sec ! Trouve-lui une porte.', 'save'); }
     else if (r < 0.74) { lancerAurore(120); toast('Le puits soupire… et le ciel se met à danser.', 'save'); }
-    else if (r < 0.86) { pluieDoree(6); toast('Une pluie de bonbons dorés !', 'save'); }
+    else if (r < 0.86) { pluieDoree(2); toast('Une pluie de bonbons dorés !', 'save'); }
     else if (r < 0.93) { s.chaleur = 100; toast('Une chaleur de soupe aux pois te remplit. Froid oublié.', 'save'); }
     else toast('« Merci, ton vœu est bien noté », répond l’écho, très poli.', '');
   }
@@ -318,7 +322,7 @@ const JEU = (() => {
   const TYPESQ = ['bonbons', 'livrer', 'lanternes', 'spectres', 'distance', 'repere', 'quartier', 'curiosite'];
   function nouvelleQuete() {
     const s = j(), k = Math.min(12, Math.floor(s.quetesFaites / 3)), pris = s.quetes.map(q => q.type);
-    const dispo = TYPESQ.filter(x => pris.indexOf(x) < 0); const type = dispo[Math.floor(Math.random() * dispo.length)];
+    const dispo = TYPESQ.filter(x => pris.indexOf(x) < 0 && !(x === 'curiosite' && Object.keys(s.curiosites).length >= TXT.curiosites.length)); const type = dispo[Math.floor(Math.random() * dispo.length)];
     const q = { type, prog: 0, var: Math.random() < 0.5 };
     if (type === 'bonbons') q.n = 25 + 10 * k; else if (type === 'livrer') q.n = Math.min(5, 1 + Math.floor(k / 2)); else if (type === 'lanternes') q.n = Math.min(4, 1 + Math.floor(k / 3));
     else if (type === 'spectres') q.n = Math.min(8, 2 + Math.floor(k / 2)); else if (type === 'distance') q.n = Math.min(1500, 300 + 100 * k); else q.n = 1;
@@ -335,7 +339,7 @@ const JEU = (() => {
       if (q.prog >= q.n) {
         gagner(q.rec); s.quetesFaites++; snd('quete');
         HUD.banniere('Vœu exaucé !', JEU_texteQuete(q) + ' · +' + q.rec + ' 🍬', 4500);
-        setTimeout(() => { const i = s.quetes.indexOf(q); if (i >= 0) { s.quetes.splice(i, 1); nouvelleQuete(); } }, 1500);
+        setTimeout(() => { if (j() !== s) return; const i = s.quetes.indexOf(q); if (i >= 0) { s.quetes.splice(i, 1); nouvelleQuete(); } }, 1500);
       }
     }
   }
@@ -393,7 +397,7 @@ const JEU = (() => {
     return { proche, carte };
   }
   function eclat() {
-    const s = j(), cd = 14 - s.niv.eclat * 1.4;
+    const s = j(), cd = 14 - s.niv.eclat * 1.3;
     if (eclatT < cd && !god()) { snd('refus'); return; }
     eclatT = 0; eclatFlash = 1; snd('eclat'); HUD.flash('rgba(255,255,240,.55)', 700);
     const R2 = 7 + s.niv.eclat * 1.2; let n = 0;
@@ -447,7 +451,7 @@ const JEU = (() => {
   function majFroid(dt) {
     const s = j(); let gain = 0, feu = 0;
     for (const l of lumProches) { if (l.chaleur <= 0) continue; const R0 = l.r * 0.55; const d = Math.hypot(l.x - JOUEUR.x, l.z - JOUEUR.z); if (d < R0) gain = Math.max(gain, l.chaleur * (1 - d / R0) * 12); if (l.feu || l.relais) feu = Math.max(feu, 1 - d / (l.r * 0.6)); }
-    const perte = (0.95 * (1 - s.niv.echarpe * 0.11) * (1 - s.niv.lanterne * 0.04)) * (ev.tempete ? 1.8 : 1) * (JOUEUR.vitesse > 6 ? 0.85 : 1);
+    const perte = (0.95 * (1 - s.niv.echarpe * 0.09) * (1 - s.niv.lanterne * 0.04)) * (ev.tempete ? 1.8 : 1) * (JOUEUR.vitesse > 6 ? 0.85 : 1);
     if (!god()) s.chaleur = clamp(s.chaleur - perte * dt + gain * dt, 0, 100); else s.chaleur = 100;
     if (s.chaleur <= 0 && !evanoui) evanouir();
     return feu;
@@ -483,7 +487,7 @@ const JEU = (() => {
     ev.prochTempete -= dt; ev.prochFilante -= dt; ev.prochMinuit -= dt;
     if (!ev.tempete && ev.prochTempete <= 0) { ev.tempete = true; ev.tempeteFin = t + 60 + Math.random() * 40; toast('Une tempête de neige se lève ! Reste près des lumières.', 'warn'); }
     if (ev.tempete && t > ev.tempeteFin) { ev.tempete = false; ev.prochTempete = 480 + Math.random() * 420; toast('La tempête se calme.', ''); }
-    if (ev.aurore && t > ev.auroreFin && !s.fini) ev.aurore = false;
+    if (ev.aurore && t > ev.auroreFin) ev.aurore = false;
     if (ev.prochFilante <= 0) { ev.prochFilante = 35 + Math.random() * 70; CIEL.filante(t); }
     // l'heure ronde (vraie heure) : la tour de l'horloge sonne
     const d = new Date(), h = d.getHours();
@@ -503,7 +507,7 @@ const JEU = (() => {
     }
   }
   function lancerTraineau() {
-    if (!scene) return;
+    if (!scene || ev.traineau) return;
     const g = new THREE.Group(), mat = new THREE.MeshBasicMaterial({ color: 0x06070c, fog: false });
     const b = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 1.4), mat); g.add(b);
     const pat = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.08, 4, 16, Math.PI), mat); pat.rotation.z = Math.PI; pat.position.y = -0.4; g.add(pat);
@@ -605,7 +609,8 @@ const JEU = (() => {
     redimensionner() { redimensionner(); },
     tick(dt) {
       if (!renderer) return;
-      dt = Math.min(dt, 0.1); t += dt;
+      dt = Math.min(dt, 0.1); t += dt; DT_R = dt;
+      if (Math.random() < 0.01) for (const [k, v] of bonbonsPris) if (t - v > 480) bonbonsPris.delete(k);
       const s = j(); s.stats.temps += dt;
       const inp = CTRL.lire(); inp.saut = CTRL.sautDemande; CTRL.sautDemande = false;
       if (evanoui) { inp.mx = inp.mz = 0; inp.saut = false; }
@@ -656,7 +661,7 @@ const JEU = (() => {
       renderer.info.reset(); composer.render();
       // interface
       const q0 = s.quetes[0];
-      HUD.maj({ action: actionCourante && !MODAL_OPEN ? actionCourante.txt : null, eclatPret: clamp(eclatT / (14 - s.niv.eclat * 1.4), 0, 1), quete: q0 ? '📜 ' + JEU_texteQuete(q0) + ' (' + fmt(Math.min(q0.prog, q0.n)) + '/' + fmt(q0.n) + ')' : '',
+      HUD.maj({ action: actionCourante && !MODAL_OPEN ? actionCourante.txt : null, eclatPret: clamp(eclatT / (14 - s.niv.eclat * 1.3), 0, 1), quete: q0 ? '📜 ' + JEU_texteQuete(q0) + ' (' + fmt(Math.min(q0.prog, q0.n)) + '/' + fmt(q0.n) + ')' : '',
         fleche: boussole(), carteCadeaux: tObj && (s.niv.boussole >= 3 ? tObj.cadeaux : tObj.carteCadeaux), cartePortes: tObj && tObj.cartePortes, carteSpectres: this._spx ? this._spx.carte : [] });
       const C = MONDE.C, q = MONDE.quartier(Math.floor(JOUEUR.x / C), Math.floor(JOUEUR.z / C));
       const st = TXT.quartiers[q].nom + ' · ' + JEU_rang(); const el = $('#statut'); if (el.textContent !== st) el.textContent = st;
