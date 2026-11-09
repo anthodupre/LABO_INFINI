@@ -71,8 +71,8 @@ const TEX = (() => {
     T.pave = peindre(N, (u, v) => {
       const [e, id] = vor(u * 8, v * 8, 8, 21), bump = pfbm(u * 24, v * 24, 24, 22, 3);
       const joint = sstep(0.02, 0.14, e), neige = 1 - sstep(0.0, 0.1, e - bump * 0.05);
-      const base = 0.32 + id * 0.22 + bump * 0.12;
-      const r = lerp(base * 0.95, 0.85, neige * 0.85), g = lerp(base, 0.88, neige * 0.85), b = lerp(base * 1.08, 0.95, neige * 0.85);
+      const base = 0.17 + id * 0.16 + bump * 0.08;
+      const r = lerp(base * 0.92, 0.8, neige * 0.8), g = lerp(base, 0.84, neige * 0.8), b = lerp(base * 1.12, 0.92, neige * 0.8);
       return [r, g, b, joint * 1.2 + bump * 0.3];
     }, 3.5);
     // --- plâtre : taches, coulures, fissures

@@ -19,13 +19,16 @@ const GEO = (() => {
       case 'cyl12': g = new THREE.CylinderGeometry(1, 1, 1, 12, 4); break;
       case 'cyl16': g = new THREE.CylinderGeometry(1, 1, 1, 16, 2); break;
       case 'cone4': g = new THREE.CylinderGeometry(0, 1, 1, 4, 6); g.rotateY(Math.PI / 4); break;
-      case 'cone8': g = new THREE.CylinderGeometry(0, 1, 1, 8, 8); break;
-      case 'cone12': g = new THREE.CylinderGeometry(0.0, 1, 1, 12, 10); break;
-      case 'sphere': g = new THREE.SphereGeometry(1, 14, 10); break;
+      case 'cone8': g = new THREE.CylinderGeometry(0, 1, 1, 8, 4); break;
+      case 'cone12': g = new THREE.CylinderGeometry(0.0, 1, 1, 12, 5); break;
+      case 'glacon': g = new THREE.CylinderGeometry(0, 1, 1, 5, 1, true); break;
+      case 'sphere': g = new THREE.SphereGeometry(1, 12, 8); break;
       case 'sphereB': g = new THREE.SphereGeometry(1, 8, 6); break;
-      case 'ico': g = new THREE.IcosahedronGeometry(1, 0); break;
+      case 'ico': g = new THREE.OctahedronGeometry(1, 0); break;
       case 'plan': g = new THREE.PlaneGeometry(1, 1); break;
+      case 'plan9': g = new THREE.PlaneGeometry(1, 1, 4, 4); break;
       case 'tore': g = new THREE.TorusGeometry(1, 0.32, 6, 16); break;
+      case 'couronne': g = new THREE.TorusGeometry(1, 0.26, 7, 18); break;
       case 'toreFin': g = new THREE.TorusGeometry(1, 0.06, 4, 24); break;
       case 'pignon': { // prisme triangulaire : toit à deux pentes, faîte le long de z
         const s = new THREE.Shape(); s.moveTo(-0.5, 0); s.lineTo(0.5, 0); s.lineTo(0, 1); s.lineTo(-0.5, 0);
@@ -33,7 +36,7 @@ const GEO = (() => {
       }
       case 'boucle': { // volute en spirale (haut des lampadaires, grilles)
         const pts = []; for (let i = 0; i <= 40; i++) { const t = i / 40, a = t * Math.PI * 3.2, r = 0.5 * (1 - t * 0.8); pts.push(new THREE.Vector3(Math.sin(a) * r, Math.cos(a) * r * 0.9 + 0.5 - (1 - t) * 0.1, 0)); }
-        g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.04, 5, false); break;
+        g = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 22, 0.04, 4, false); break;
       }
       case 'crochet': { // sucre d'orge / poteau à crochet
         const pts = []; for (let i = 0; i <= 24; i++) { const t = i / 24; if (t < 0.6) pts.push(new THREE.Vector3(0, t / 0.6, 0)); else { const a = (t - 0.6) / 0.4 * Math.PI; pts.push(new THREE.Vector3(0.18 - Math.cos(a) * 0.18, 1 + Math.sin(a) * 0.18, 0)); } }
@@ -95,7 +98,7 @@ const GEO = (() => {
   // ---- guirlande : ampoules le long d'un segment, avec un léger creux (chaînette) ----
   G.guirlande = function (L, a, b, o) {
     const n = Math.max(2, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) / (o.pas || 0.45)));
-    const ico = G.base('ico'), cols = o.couleurs, r = o.r || 0.055;
+    const ico = G.base('ico'), cols = o.couleurs, r = o.r || 0.065;
     for (let i = 0; i <= n; i++) {
       const t = i / n, sag = Math.sin(t * Math.PI) * (o.creux || 0.18);
       const x = lerp(a[0], b[0], t), y = lerp(a[1], b[1], t) - sag, z = lerp(a[2], b[2], t);
@@ -142,8 +145,8 @@ const GEO = (() => {
           L.get('fenetre').add(G.base('plan'), { m: G.mat(px, fy, pz, fw, fh, 1, 0, ry), c: col, uvr: fenAtlas[type], def, w });
           // cadre + rebord (la neige s'y pose toute seule)
           const fx = (dx, dy, sx, sy) => L.get('bois').add(G.base('cube'), { m: G.mat(px + cs * dx + sn * 0.05, fy + dy, pz - sn * dx + cs * 0.05, sx, sy, 0.1, 0, ry), c: cBois, uvm: 'monde', def, w });
-          fx(0, -fh / 2 - 0.05, fw + 0.3, 0.1); fx(0, fh / 2 + 0.04, fw + 0.2, 0.08); fx(-fw / 2 - 0.04, 0, 0.08, fh); fx(fw / 2 + 0.04, 0, 0.08, fh);
-          if (allume && e === 0) out.flaques.push({ x: ox + cs * lx + sn * (prof + 1.6), z: oz - sn * lx + cs * (prof + 1.6), r: 2.2, c: [col[0] * 0.22, col[1] * 0.18, col[2] * 0.12] });
+          fx(0, -fh / 2 - 0.05, fw + 0.3, 0.1); fx(0, fh / 2 + 0.04, fw + 0.2, 0.08);
+          if (allume && e === 0 && rng() < 0.6) out.flaques.push({ x: ox + cs * lx + sn * (prof + 1.6), z: oz - sn * lx + cs * (prof + 1.6), r: 2.2, c: [col[0] * 0.22, col[1] * 0.18, col[2] * 0.12] });
           if (allume && rng() < 0.18) out.lumieres.push({ x: px + sn * 1.0, y: fy, z: pz + cs * 1.0, c: col, i: 0.6, r: 6, chaleur: 0.4 });
         }
       }
@@ -155,8 +158,9 @@ const GEO = (() => {
     L.get('bois').add(G.base('cube'), { m: G.mat(pX, 1.25, pZ + 0.02, 1.35, 2.35, 0.08), c: cBois.map(v => v * 0.6), def, w });
     L.get('pierre').add(G.base('cube'), { m: G.mat(pX, 0.08, pZ + 0.45, 1.6, 0.3, 0.8), c: [0.55, 0.55, 0.57], uvm: 'monde', w });
     L.get('pierre').add(G.base('cube'), { m: G.mat(pX, -0.12, pZ + 0.9, 1.8, 0.3, 0.6), c: [0.5, 0.5, 0.52], uvm: 'monde', w });
-    L.get('unie').add(G.base('tore'), { m: G.mat(pX, 1.65, pZ + 0.12, 0.32, 0.32, 0.5), c: [0.08, 0.22, 0.1], def, w });
-    L.get('unie').add(G.base('sphereB'), { m: G.mat(pX, 1.38, pZ + 0.2, 0.09, 0.07, 0.05), c: [0.6, 0.04, 0.05], def, w });
+    L.get('aiguilles').add(G.base('couronne'), { m: G.mat(pX, 1.62, pZ + 0.12, 0.27, 0.27, 0.6), c: [0.5, 0.75, 0.55], def, w });
+    L.get('unie').add(G.base('sphereB'), { m: G.mat(pX, 1.4, pZ + 0.22, 0.08, 0.06, 0.05), c: [0.6, 0.04, 0.05], def, w });
+    for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; L.get('emis').add(G.base('ico'), { m: G.mat(pX + Math.cos(a) * 0.27, 1.62 + Math.sin(a) * 0.27, pZ + 0.24, 0.035, 0.035, 0.035), c: pal.guirlande[k % pal.guirlande.length], def, w }); }
     L.get('emis').add(G.base('cube'), { m: G.mat(pX + 0.85, 2.15, pZ + 0.2, 0.16, 0.26, 0.16), c: [3.2, 2.0, 0.9], def, w });
     L.get('metal').add(G.base('cube'), { m: G.mat(pX + 0.85, 2.33, pZ + 0.2, 0.24, 0.06, 0.24), c: [0.3, 0.3, 0.32], def, w });
     out.flaques.push({ x: pX + 0.4, z: pZ + 1.8, r: 2.6, c: [0.45, 0.3, 0.14] });
@@ -192,7 +196,7 @@ const GEO = (() => {
     }
     // stalactites de glace sous l'avant-toit
     const nG = Math.floor(rw / 0.35);
-    for (let k = 0; k < nG; k++) { if (rng() < 0.45) continue; const l = 0.15 + rng() * 0.55; L.get('verni').add(G.base('cone8'), { m: G.mat(ox - gw + (k / nG) * gw * 2, yT - 0.1 - l / 2, oz + gd + 0.06, 0.045, -l, 0.045), c: [0.62, 0.74, 0.86], def, w }); }
+    for (let k = 0; k < nG; k++) { if (rng() < 0.45) continue; const l = 0.15 + rng() * 0.55; L.get('verni').add(G.base('glacon'), { m: G.mat(ox - gw + (k / nG) * gw * 2, yT - 0.1 - l / 2, oz + gd + 0.06, 0.045, -l, 0.045), c: [0.62, 0.74, 0.86], def, w }); }
     out.hauteur = Htot;
     return out;
   };

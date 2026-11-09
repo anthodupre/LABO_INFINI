@@ -89,7 +89,7 @@ const MAT = (() => {
     M.platre = std(T.platre, { neige: 1, cle: 'pl' });
     M.planche = std(T.planche, { neige: 1, cle: 'pk', r: 0.85 });
     M.brique = std(T.brique, { neige: 1, cle: 'br' });
-    M.tuiles = std(T.tuiles, { neige: 1, seuil: 0.35, cle: 'tu', r: 0.75, ns: 1.4 });
+    M.tuiles = std(T.tuiles, { neige: 1, seuil: 0.22, cle: 'tu', r: 0.75, ns: 1.4 });
     M.bois = std(T.planche, { neige: 1, cle: 'bo', r: 0.8 });
     M.pierre = std(T.pierre, { neige: 1, seuil: 0.5, cle: 'pi' });
     M.metal = std(T.metal, { r: 0.45, m: 0.85, neige: 0.8, seuil: 0.6, cle: 'me', env: 1 });
@@ -98,6 +98,7 @@ const MAT = (() => {
     M.citrouille = std(T.citrouille, { r: 0.55, neige: 0.6, seuil: 0.7, cle: 'ci' });
     M.tissu = std(T.raye, { r: 0.9, neige: 1, seuil: 0.45, cle: 'ti', double: true });
     M.porte = std({ map: T.porte, nrm: null }, { r: 0.8, cle: 'po' });
+    M.sucre = std({ map: T.bonbon, nrm: null }, { r: 0.3, neige: 0.6, seuil: 0.6, cle: 'su', env: 1 });
     M.cadeau = std({ map: T.cadeau, nrm: null }, { r: 0.5, cle: 'ca', env: 0.8 });
     M.unie = std(null, { r: 0.7, cle: 'un', neige: 1 });            // couronnes, rubans, petits objets (couleur des sommets)
     M.verni = std(null, { r: 0.25, cle: 've', env: 1.2 });          // boules de Noël, chevaux de bois
