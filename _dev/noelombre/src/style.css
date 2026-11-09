@@ -1,0 +1,38 @@
+/* Coquille éprouvée sur iPhone (voir references/ios-webapp.md) : pas de « inset », pas de body en position fixe,
+   tout ce qui flotte sans action propre en pointer-events:none, cibles ≥ 44 px, champs ≥ 16 px.
+   Polices : celles du système par défaut ; une police intégrée se déclare ici (--police) et va dans fonts/. */
+:root{--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);
+  --police:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;--police-nombres:ui-monospace,Menlo,monospace;
+  --bg:#12121c;--panel:#23233a;--bord:#0a0a12;--txt:#eeeef5;--fort:#ffd75e;--ok:#5fd17a;--mal:#ff5c6c;--pale:#9a9ab5}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--txt)}
+body{font:17px var(--police);touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;font:16px var(--police-nombres)}
+.num{font-family:var(--police-nombres);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:var(--panel);border:2px solid var(--bord);border-radius:6px;min-height:44px;min-width:44px;padding:4px 10px;touch-action:manipulation}
+button:active{transform:translateY(1px)}
+#boot{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;font-size:22px}
+#app{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;padding-left:var(--sl);padding-right:var(--sr)}
+#top{display:flex;align-items:center;gap:6px;padding:calc(4px + var(--st)) 8px 4px;background:var(--panel);border-bottom:2px solid var(--bord)}
+#titreZone{flex:1;min-width:0;line-height:1.15}
+#titre{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#statut{font-size:15px;color:var(--pale);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#godBadge{background:var(--mal);color:#fff;padding:2px 6px;font-weight:700;border-radius:4px;pointer-events:none;font-size:14px}
+.hbtn{width:44px;height:44px;padding:0;display:flex;align-items:center;justify-content:center}
+#game{position:relative;flex:1;min-height:0;overflow:hidden;padding-bottom:var(--sb)}
+#toasts{position:fixed;left:8px;right:8px;bottom:calc(8px + var(--sb));display:flex;flex-direction:column;gap:4px;align-items:center;pointer-events:none;z-index:50}
+.toast{background:rgba(10,10,18,.92);border:2px solid var(--pale);padding:6px 10px;border-radius:6px;max-width:440px;pointer-events:none;transition:opacity .4s}
+.toast.warn{border-color:var(--mal)}.toast.save{border-color:var(--ok)}
+#modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:80;background:rgba(5,5,10,.75);display:flex;align-items:center;justify-content:center;padding:calc(8px + var(--st)) calc(8px + var(--sr)) calc(8px + var(--sb)) calc(8px + var(--sl))}
+[hidden]{display:none !important}
+.mbox{background:var(--panel);border:3px solid var(--bord);border-radius:8px;width:100%;max-width:460px;max-height:100%;display:flex;flex-direction:column}
+.mhead{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-bottom:2px solid var(--bord)}
+.mhead b{flex:1}
+.mbody{padding:10px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.mbtns{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px 12px}
+.mbtns button{flex:1 1 40%}
+textarea{width:100%;box-sizing:border-box;height:110px}
+#devCode{width:100%;box-sizing:border-box;font-size:20px;text-transform:uppercase;padding:6px}
+.sect{margin:12px 0 4px;color:var(--fort);font-weight:700}
+.log{font-size:15px;color:var(--pale);margin:2px 0}
+/* ---- jeu d'exemple (à remplacer) ---- */
+#game canvas{display:block;width:100%;height:100%;touch-action:none}

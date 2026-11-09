@@ -1,0 +1,57 @@
+CONSIGNE — textes du jeu « Noëlombre » (fichier unique à écrire : /home/user/LABO_INFINI/_dev/noelombre/src/js/15_textes.js)
+
+Contexte : jeu web 3D joué sur iPhone par un joueur québécois. On marche de nuit, en vue subjective, dans une ville de Noël
+procédurale infinie, sombre, biscornue et féerique (maisons tordues, guirlandes, citrouilles, neige, spectres doux,
+lanternes). Ton : conte gothique fantaisiste, poétique, un brin inquiétant, souvent drôle. 100 % ORIGINAL : aucun nom,
+personnage, lieu, réplique ou chanson d'un film ou livre existant (en particulier rien de « L'Étrange Noël de monsieur
+Jack » : pas de Jack, Sally, Zero, Oogie, Halloween Town, roi des citrouilles, etc.). Français correct, accessible (le
+joueur est québécois : quelques tournures québécoises bienvenues mais légères), typographie française (espaces
+insécables avant « : ; ! ? », guillemets « … » avec insécables, apostrophe ’). Textes COURTS : ils s'affichent sur un écran
+de téléphone.
+
+Le fichier ne doit déclarer qu'UNE globale : `const TXT = { ... };` (objet littéral, pas de fonction globale, pas de
+modules). Schéma EXACT :
+
+TXT.quartiers = { bourg, citrouilles, sapins, cimetiere, lac, foire } → chacun { nom: 'Le Vieux Bourg'…, sous: 'phrase
+  d’arrivée ≤ 70 caractères' }. bourg = rues de maisons tordues ; citrouilles = quartier des potagers de citrouilles
+  lumineuses ; sapins = forêt de sapins tordus illuminés ; cimetiere = cimetière givré ; lac = lacs gelés ; foire = fête
+  foraine hivernale abandonnée.
+TXT.reperes = { horloge, colline, mausolee, carrousel, kiosque, sapin, fontaine, atelier, puits, roue, gare, observatoire }
+  → chacun { nom: 'La Tour de l’Horloge tordue' (≤ 34 caractères), desc: 1-2 phrases ≤ 140 caractères, affichée à la
+  découverte }. (kiosque = kiosque à musique sur un lac gelé, patineurs fantômes ; colline = colline en spirale qu'on
+  peut gravir, dont la pointe s'enroule ; mausolee = mausolée givré au cœur d'un cimetière ; carrousel = carrousel hanté
+  qui tourne seul ; sapin = sapin géant tordu couvert de boules ; fontaine = fontaine gelée en plein jet ; atelier =
+  atelier de jouets abandonné ; puits = puits aux souhaits ; roue = grande roue figée ; gare = petite gare d'un train
+  jouet ; observatoire = observatoire lunaire avec télescope.)
+TXT.curiosites = tableau de EXACTEMENT 48 objets { id: 'c01'…'c48', repere: '<un des 12 ids ci-dessus>', nom (≤ 32
+  car.), desc (≤ 120 car., poétique/drôle) }, EXACTEMENT 4 par repère, dans l'ordre des repères ci-dessus (c01-c04 =
+  horloge, c05-c08 = colline, …). Objets étranges et charmants (« Une clochette qui sonne à l’envers », « Boule à neige
+  d’un village qui n’existe plus »…).
+TXT.etoiles = 12 noms poétiques (≤ 30 car.) des « Étoiles d’ombre », une par repère (même ordre) ; collecter les 12 est le
+  grand but du jeu.
+TXT.habitants = { prenoms: 40 prénoms/titres bizarres (« Madame Grisaille », « Le vieux Tournevis »…), lettres: 20 courtes
+  phrases ≤ 80 car. de remerciement étranges qu'un habitant dit quand on lui livre un cadeau }.
+TXT.quetes = gabarits de quêtes ; chaque gabarit { type, texte } où texte contient {n} (nombre) et éventuellement {lieu} ;
+  types EXACTS (un gabarit par type, plus 1 variante de texte en tableau `variantes`) : 'bonbons' (ramasser {n} bonbons
+  givrés), 'livrer' (livrer {n} cadeaux), 'lanternes' (allumer {n} lanternes), 'spectres' (dissiper {n} spectres avec
+  l’éclat de lumière), 'distance' (marcher {n} mètres), 'repere' (trouver un nouveau repère), 'quartier' (entrer dans le
+  quartier {lieu}), 'curiosite' (trouver une curiosité). Ex. { type: 'livrer', texte: 'Livre {n} cadeaux aux portes à
+  couronne verte', variantes: ['…'] }.
+TXT.astuces = 16 conseils courts (≤ 90 car.) : le froid baisse dans le noir et remonte près des lanternes, fenêtres et
+  braseros ; s'évanouir de froid ramène à la dernière lanterne allumée ; l’Éclat (bouton ✦) chasse les spectres ; les
+  portes à couronne verte attendent un cadeau ; l’Atelier (bouton) vend des améliorations ; la Lanterne améliorée agrandit
+  ta bulle de lumière ; la carte permet de voyager entre lanternes allumées ; grimper la colline en spirale donne une vue
+  plus loin ; minuit sonne parfois et un traîneau passe ; etc.
+TXT.intro = { titre: 'Noëlombre', sous: une phrase d’accroche ≤ 60 car., histoire: 3 phrases ≤ 300 car. au total
+  (tu te réveilles dans une ville de Noël sans fin, sous une lune énorme, dans une bulle de lumière ; ta lanterne te garde
+  au chaud ; trouve les 12 Étoiles d’ombre…) }.
+TXT.ameliorations = { lanterne, bottes, echarpe, sac, aimant, ressorts, boussole, eclat } → { nom, desc ≤ 80 car. } (lanterne :
+  agrandit la bulle de lumière et réchauffe ; bottes : marcher plus vite ; echarpe : le froid descend moins vite ; sac :
+  porter plus de cadeaux ; aimant : attirer les bonbons de plus loin ; ressorts : sauter plus haut, puis double saut ;
+  boussole : flèche vers le repère inconnu le plus proche ; eclat : éclat plus large, recharge plus rapide).
+TXT.rangs = 10 titres progressifs du joueur selon le nombre de cadeaux livrés (du « Somnambule égaré » au titre suprême).
+
+Vérifie : `node -e` qui charge le fichier (new Function('"use strict";' + code + ';return TXT')()) et contrôle par script
+les comptes exacts (48 curiosités, 4 par repère dans le bon ordre, ids uniques c01..c48, 12 étoiles, 40 prénoms, 20
+lettres, 16 astuces, 10 rangs, 8 types de quêtes, longueurs maximales). N'écris RIEN d'autre dans le dépôt que ce fichier.
+Pas de git commit. Réponds par un résumé très court.

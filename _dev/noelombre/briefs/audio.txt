@@ -1,0 +1,56 @@
+CONSIGNE — module audio du jeu « Noëlombre » (fichier unique à écrire : /home/user/LABO_INFINI/_dev/noelombre/src/js/19_audio.js)
+
+Contexte : jeu web 3D (Three.js) en un seul fichier HTML joué sur iPhone. On marche de nuit, en vue subjective, dans une ville de
+Noël procédurale infinie au ton « conte gothique fantaisiste » (ville de Noël sombre et biscornue, façon cinéma d'animation
+image par image, mais 100 % ORIGINAL : ne citer ni reproduire aucune mélodie existante, aucun chant de Noël connu, aucune
+musique de film). Ambiance : boîte à musique, célesta, clochettes de traîneau, chœur lointain, valse mineure en 3/4, un peu
+inquiétante mais féerique. Tout est SYNTHÉTISÉ en WebAudio (aucun fichier, aucun échantillon).
+
+Tous les fichiers src/js/*.js sont concaténés dans UN SEUL <script> classique "use strict" (pas de modules). Ton fichier ne
+doit déclarer qu'UNE globale : `const AUDIO = { ... }` (aucune autre déclaration globale, pas de class/function au niveau
+global : tout dans l'objet ou dans une IIFE assignée à AUDIO). Globales disponibles (déjà déclarées ailleurs, à NE PAS
+redéclarer) : SFXK (SFXK.ctx = AudioContext ou null, SFXK.master = GainNode relié à la sortie, SFXK.init()), S (état ;
+S.jeu.reg = { musique: true, mvol: 0..1, sons: true, svol: 0..1 }), toast(msg). Lis le modèle éprouvé dans
+/home/user/LABO_INFINI/_dev/labo/src/js/27_musique.js (séquenceur avec planification en avance via setInterval 50 ms +
+horloge audio, fondu entre morceaux, coupure en arrière-plan) et 25_audio.js (bruitages). Reprends ces principes.
+
+API EXACTE attendue (le moteur l'appelle ainsi) :
+- AUDIO.musique(nom) : morceau à jouer, fondu enchaîné ~1,5 s. nom ∈ 'titre','bourg','citrouilles','sapins','cimetiere',
+  'lac','foire'. Un morceau DIFFÉRENT et reconnaissable par quartier (tempo, mode, instrument principal), ~8 à 16 mesures
+  qui bouclent avec variations (jamais exactement la même boucle 2 fois de suite : variations de mélodie générées par un
+  aléatoire déterministe). Idées : bourg = valse boîte à musique en ré mineur ; citrouilles = pizzicati espiègles + basson
+  (dent de scie filtrée) ; sapins = célesta lente + chœur doux ; cimetiere = orgue lointain, clochette grave, très lent ;
+  lac = harpe (arpèges) + nappes glacées ; foire = orgue de barbarie mineur, plus rapide ; titre = boîte à musique seule,
+  lente, avec clochettes. Volume global musique modéré (elle doit rester DERRIÈRE l'ambiance).
+- AUDIO.maj(dt, e) : appelé à chaque image. e = { marche: 0..1 (vitesse relative de déplacement, 0 = immobile),
+  surface: 'neige'|'glace'|'pave', courir: bool, froid: 0..1 (1 = gelé), spectre: 0..1 (proximité d'un spectre),
+  feu: 0..1 (proximité d'un feu/brasero), vent: 0..1 (tempête), hauteur: mètres au-dessus du sol moyen, enPause: bool }.
+  Gère : bruits de pas automatiques (craquement de neige = bruit filtré bref ; glace = glissé aigu ; pavé = clac sourd),
+  cadence selon marche/courir ; vent continu (bruit filtré passe-bande modulé lentement, plus fort avec vent et hauteur) ;
+  chuchotement inquiétant quand spectre > 0 (bruit + formants, voix grave désaccordée) ; crépitement de feu quand feu > 0 ;
+  battement de cœur/grincement léger quand froid > 0,7. enPause = true : ambiance et pas en sourdine.
+- AUDIO.sfx(nom, opt) : bruitages ponctuels. nom ∈
+  'bonbon' (petite note de glockenspiel, opt.combo 0..10 fait monter la hauteur),
+  'cadeau' (grelots + arpège), 'livraison' (accord de chœur + clochettes, joyeux-étrange), 'lanterne' (souffle + carillon :
+  une lanterne s'allume = point de sauvegarde), 'eclat' (éclat de lumière : montée cristalline), 'spectre_fuit' (cri
+  aspiré qui s'éloigne), 'toucher_spectre' (frisson glacé), 'saut', 'atterrir', 'achat', 'refus', 'decouverte' (nouveau
+  lieu découvert : petite fanfare mystérieuse 2 s), 'curiosite' (objet rare trouvé : boîte à musique + scintillement),
+  'quete' (quête accomplie), 'etoile' (étoile d'ombre trouvée, important, 3 s), 'evanouir' (glissando descendant),
+  'reveil', 'carillon' (opt.coups = nombre de coups de cloche d'horloge, graves avec harmoniques), 'traineau'
+  (clochettes de traîneau qui passent dans le ciel, 6 s, panoramique gauche→droite), 'menu' (clic doux), 'voyage'
+  (téléportation : whoosh), 'glace_craque', 'corbeau' (croassement synthétique), 'hibou', 'boite_a_musique' (court motif).
+- AUDIO.appliquerReglages() : relit S.jeu.reg (musique/sons ON-OFF et volumes SÉPARÉS). Appelé après un changement.
+- AUDIO.suspendre(bool) : true quand l'app passe en arrière-plan (tout en sourdine), false au retour.
+Robustesse OBLIGATOIRE : toute méthode doit être sans effet (et sans erreur) si SFXK.ctx est null ou pas 'running' (iOS
+démarre le son seulement après une tape ; ne pas créer le contexte toi-même, appelle SFXK.init() puis vérifie). Planifier
+les notes en avance sur ctx.currentTime ; ne jamais créer des centaines de nœuds par seconde (limiter la polyphonie ;
+déconnecter/stopper les nœuds finis). Ambiance continue = quelques nœuds créés une fois et modulés. Pas de console.log.
+Compresseur sur la sortie pour éviter la saturation. Pas d'erreur si appelée avant que S existe (vérifier S && S.jeu && S.jeu.reg).
+
+Vérification : `node --check` sur ton fichier, puis teste-le pour de vrai dans Chromium headless (Playwright installé :
+NODE_PATH=$(npm root -g)). Écris un petit harnais dans /tmp/claude-0/-home-user-LABO-INFINI/2bb422b3-59e9-505b-953a-a62f5c7b79f7/scratchpad/audio/
+qui déclare des faux SFXK/S/toast, charge ton fichier, lance un OfflineAudioContext ou un AudioContext (flag
+--autoplay-policy=no-user-gesture-required), appelle chaque morceau et chaque sfx et AUDIO.maj pendant quelques
+secondes : aucune exception, et vérifie que le signal n'est pas muet ni saturé (analyser le niveau avec un AnalyserNode).
+N'écris RIEN d'autre dans le dépôt que src/js/19_audio.js. Ne fais pas de git commit. Réponds en résumé court (API
+confirmée, ce qui a été testé).
