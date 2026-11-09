@@ -24,14 +24,14 @@ const GEO = (() => {
       case 'glacon': g = new THREE.CylinderGeometry(0, 1, 1, 5, 1, true); break;
       case 'sphere': g = new THREE.SphereGeometry(1, 12, 8); break;
       case 'sphereB': g = new THREE.SphereGeometry(1, 8, 6); break;
-      case 'ico': g = new THREE.IcosahedronGeometry(1, 0); break;
+      case 'ico': g = new THREE.OctahedronGeometry(1, 0); break;
       case 'plan': g = new THREE.PlaneGeometry(1, 1); break;
       case 'plan9': g = new THREE.PlaneGeometry(1, 1, 4, 4); break;
       case 'tore': g = new THREE.TorusGeometry(1, 0.32, 6, 16); break;
       case 'couronne': g = new THREE.TorusGeometry(1, 0.26, 7, 18); break;
       case 'toreFin': g = new THREE.TorusGeometry(1, 0.06, 4, 24); break;
       case 'etage': { // étage de sapin : cône aux pointes déchiquetées (branches) + dessous en pente douce
-        const haut = new THREE.CylinderGeometry(0, 1, 1, 28, 4, true), bas = new THREE.CylinderGeometry(1, 0.15, 0.22, 28, 1, true);
+        const haut = new THREE.CylinderGeometry(0, 1, 1, 18, 3, true), bas = new THREE.CylinderGeometry(1, 0.15, 0.22, 18, 1, true);
         bas.translate(0, -0.61, 0);
         const jag = (g, yBord) => { const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, x); const k = clamp(1 - Math.abs(y - yBord) / 0.6, 0, 1); const dent = 0.72 + 0.38 * Math.pow(Math.abs(Math.sin(a * 7 + Math.sin(a * 3) * 1.3)), 0.6); const f = lerp(1, dent, k); p.setXYZ(i, x * f, y - k * k * (1 - dent) * 0.5, z * f); } g.computeVertexNormals(); };
         jag(haut, -0.5); jag(bas, -0.5);

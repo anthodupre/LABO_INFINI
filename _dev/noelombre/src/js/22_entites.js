@@ -4,7 +4,7 @@ const ENT = (() => {
   const E = { bonbons: [], cadeaux: [], spots: [], spectres: [], lueurs: [] };
   const MAXB = 420, MAXC = 48, MAXS = 12, MAXL = 160, MAXSP = 8;
   let mB, mBo, mC, mCn, mS, pts, lgeo;
-  const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p = new THREE.Vector3(), _s = new THREE.Vector3();
+  const _col = new THREE.Color(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p = new THREE.Vector3(), _s = new THREE.Vector3();
   E.creer = function (scene) {
     // bonbon : sucre d'orge enveloppé (boule + deux torsades)
     const L = GEO.Lots();
@@ -91,7 +91,7 @@ const ENT = (() => {
       if (nc >= MAXC) break;
       _e.set(0, t * 0.8 + c.ph, 0); _q.setFromEuler(_e); _p.set(c.x, c.y + 0.35 + Math.sin(t * 1.6 + c.ph) * 0.1, c.z); _s.set(1, 1, 1); _m.compose(_p, _q, _s);
       mC.setMatrixAt(nc, _m); mCn.setMatrixAt(nc, _m);
-      const cc = COULC[c.coul % 5]; mC.setColorAt(nc, new THREE.Color(cc[0], cc[1], cc[2])); nc++;
+      const cc = COULC[c.coul % 5]; mC.setColorAt(nc, _col.setRGB(cc[0], cc[1], cc[2])); nc++;
     }
     mC.count = nc; mCn.count = nc; mC.instanceMatrix.needsUpdate = true; mCn.instanceMatrix.needsUpdate = true; if (mC.instanceColor) mC.instanceColor.needsUpdate = true;
     let ns = 0;

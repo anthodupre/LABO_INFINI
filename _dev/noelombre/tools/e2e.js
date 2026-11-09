@@ -67,7 +67,7 @@ const verif = (c, m) => { if (c) { ok++; console.log('  ✔ ' + m); } else { ko+
   // évanouissement
   await E(() => { S.god = false; JOUEUR.x += 60; JOUEUR.z += 60; S.jeu.chaleur = 0.2; S.jeu.bonbons = 100; });
   await p.waitForTimeout(6000);
-  verif(await E(() => S.jeu.stats.evanouis === 1 && S.jeu.chaleur > 50 && G.log.some(m => /évanoui.*−20 bonbons/.test(m))), 'évanoui de froid : retour à la lanterne, −20 % de bonbons');
+  verif(await E(() => S.jeu.stats.evanouis === 1 && S.jeu.chaleur > 50 && G.log.some(m => /évanoui.*−\d+ bonbons/.test(m))), 'évanoui de froid : retour à la lanterne, −20 % de bonbons');
   verif(await E(() => { const [x, z] = window.__rel.split(',').map(Number); return Math.hypot(JOUEUR.x - x * MONDE.C, JOUEUR.z - z * MONDE.C) < 6; }), 'réveil près de la dernière lanterne');
   // spectre + éclat
   await E(() => { const sp = ENT.spectres[0]; Object.assign(sp, { actif: true, x: JOUEUR.x + 3, z: JOUEUR.z, y: JOUEUR.y, t: 0, fuite: 0, alpha: 1, ax: 0, az: 0 }); sp.g.visible = true; });

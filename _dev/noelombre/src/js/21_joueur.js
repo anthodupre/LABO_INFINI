@@ -25,6 +25,9 @@ const CTRL = (() => {
         const l = Math.hypot(dx, dy), R = 56; if (l > R) { dx *= R / l; dy *= R / l; }
         K.mx = dx / R; K.mz = dy / R; K.courir = l > R * 0.95;
         bouton.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      } else if (!stick && (!look || e.pointerId !== look.id) && e.pointerType !== 'mouse') { // doigt resté posé après une fenêtre : il redevient la manette
+        const r = couche.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+        if (x < r.width * 0.45) { stick = { id: e.pointerId, ox: x, oy: y, x, y }; base.style.left = (x - 60) + 'px'; base.style.top = (y - 60) + 'px'; base.hidden = false; }
       } else if (look && e.pointerId === look.id) {
         K.dx += e.clientX - look.x; K.dy += e.clientY - look.y; look.x = e.clientX; look.y = e.clientY;
       }

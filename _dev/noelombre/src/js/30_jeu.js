@@ -213,17 +213,17 @@ const JEU = (() => {
     for (let dz = -rr; dz <= rr; dz++) for (let dx = -rr; dx <= rr; dx++) {
       const cx = pcx + dx, cz = pcz + dz, k = MONDE.cle(cx, cz); if (!parcelles.has(k)) continue;
       const P = MONDE.plan(cx, cz), sol = P.sol;
-      for (const b of P.bonbons) { const kb = k + ':' + b.id, pr = bonbonsPris.get(kb); if (pr !== undefined && now - pr < 480) continue; o.bonbons.push({ x: P.X0 + b.x, y: sol(b.x, b.z) + 0.7, z: P.Z0 + b.z, or: b.or, ph: b.id * 1.7, cle: kb }); }
+      for (const b of P.bonbons) { const kb = k + ':' + b.id, pr = bonbonsPris.get(kb); if (pr !== undefined && now - pr < 480) continue; if (b.y0 === undefined) b.y0 = sol(b.x, b.z); o.bonbons.push({ x: P.X0 + b.x, y: b.y0 + 0.7, z: P.Z0 + b.z, or: b.or, ph: b.id * 1.7, cle: kb }); }
       const pris = j().cadeauxPris[k];
-      for (const c of P.cadeaux) { if (pris && pris.indexOf(c.id) >= 0) continue; const w = { x: P.X0 + c.x, y: sol(c.x, c.z), z: P.Z0 + c.z, coul: c.coul, ph: c.id * 2.1, P, id: c.id }; o.cadeaux.push(w); o.lueurs.push({ x: w.x, y: w.y + 0.5, z: w.z, c: [1.1, 0.55, 0.85], s: 2.2 }); if (Math.abs(dx) <= 1 && Math.abs(dz) <= 1) o.carteCadeaux.push(w); }
+      for (const c of P.cadeaux) { if (pris && pris.indexOf(c.id) >= 0) continue; if (c.y0 === undefined) c.y0 = sol(c.x, c.z); const w = { x: P.X0 + c.x, y: c.y0, z: P.Z0 + c.z, coul: c.coul, ph: c.id * 2.1, P, id: c.id }; o.cadeaux.push(w); o.lueurs.push({ x: w.x, y: w.y + 0.5, z: w.z, c: [1.1, 0.55, 0.85], s: 2.2 }); if (Math.abs(dx) <= 1 && Math.abs(dz) <= 1) o.carteCadeaux.push(w); }
       for (const m of P.maisons) if (m.attente && !JEU_livree(P, m)) {
         const w = { x: P.X0 + m.porte.x, z: P.Z0 + m.porte.z, P, m }; o.portes.push(w);
         const c = Math.cos(m.ang), s = Math.sin(m.ang), lx = m.porteX, lz = m.d / 2 + 0.25;
         o.lueurs.push({ x: P.X0 + m.x + c * lx + s * lz, y: m.y + 1.65, z: P.Z0 + m.z - s * lx + c * lz, c: [0.25, 1.4 + 0.5 * Math.sin(t * 3 + m.id), 0.45], s: 1.6 });
         if (j().niv.boussole >= 3 || (Math.abs(dx) <= 1 && Math.abs(dz) <= 1 && Math.hypot(w.x - JOUEUR.x, w.z - JOUEUR.z) < 45)) o.cartePortes.push(w);
       }
-      if (P.relais) { const lit = j().relais[P.relais.id], w = { x: P.X0, z: P.Z0, y: sol(0, 0), k: P.relais.id, lit }; o.relais.push(w); o.lueurs.push({ x: w.x, y: w.y + 5.0, z: w.z, c: lit ? [3, 1.9, 0.9] : [0.25, 0.35, 0.6], s: lit ? 2.6 : 1.1 }); if (lit) o.lueurs.push({ x: w.x, y: w.y + 5.0, z: w.z, c: [1.2, 0.6, 0.25], s: 7 }); }
-      if (P.spot && !j().spotsPris[k]) { const w = { x: P.X0 + P.spot.x, y: sol(P.spot.x, P.spot.z) + P.spot.dy, z: P.Z0 + P.spot.z, P, k }; o.spots.push(w); o.lueurs.push({ x: w.x, y: w.y, z: w.z, c: [0.9, 0.6, 1.5], s: 1.5 + Math.sin(t * 3) * 0.25 }); }
+      if (P.relais) { if (P.relais.y0 === undefined) P.relais.y0 = sol(0, 0); const lit = j().relais[P.relais.id], w = { x: P.X0, z: P.Z0, y: P.relais.y0, k: P.relais.id, lit }; o.relais.push(w); o.lueurs.push({ x: w.x, y: w.y + 5.0, z: w.z, c: lit ? [3, 1.9, 0.9] : [0.25, 0.35, 0.6], s: lit ? 2.6 : 1.1 }); if (lit) o.lueurs.push({ x: w.x, y: w.y + 5.0, z: w.z, c: [1.2, 0.6, 0.25], s: 7 }); }
+      if (P.spot && !j().spotsPris[k]) { if (P.spot.y0 === undefined) P.spot.y0 = sol(P.spot.x, P.spot.z); const w = { x: P.X0 + P.spot.x, y: P.spot.y0 + P.spot.dy, z: P.Z0 + P.spot.z, P, k }; o.spots.push(w); o.lueurs.push({ x: w.x, y: w.y, z: w.z, c: [0.9, 0.6, 1.5], s: 1.5 + Math.sin(t * 3) * 0.25 }); }
     }
     for (let i = libres.length - 1; i >= 0; i--) if (Math.hypot(libres[i].x - JOUEUR.x, libres[i].z - JOUEUR.z) > 90) libres.splice(i, 1);
     for (const b of libres) o.bonbons.push(b);
@@ -445,7 +445,7 @@ const JEU = (() => {
     }
     if (!best) return null;
     const a = Math.atan2(best.x - JOUEUR.x, -(best.z - JOUEUR.z)); // angle depuis le nord
-    return a + JOUEUR.yaw; // relatif au regard (0 = devant)
+    return a; // angle depuis le nord (le regard est ajouté au dessin)
   }
   // ---------- froid ----------
   function majFroid(dt) {
@@ -551,7 +551,7 @@ const JEU = (() => {
   }
 
   // ======================= objet JEU (contrat de la coquille) =======================
-  let tObj = null, tQ = 0, modalVu = false;
+  let tObj = null, tQ = 0, modalVu = 0, tBous = 0, bous = null, bousA = null;
   // si l'appareil peine (moins de 24 images/s en moyenne), on baisse la qualité automatiquement (mode Auto seulement)
   const perf = { n: 0, t0: 0, fait: false };
   function surveillerFluidite() {
@@ -560,7 +560,7 @@ const JEU = (() => {
     perf.n++;
     if (now - perf.t0 > 6000) {
       const fps = perf.n * 1000 / (now - perf.t0); perf.t0 = 0; perf.n = 0;
-      if (j().reg.qualite === 'auto' && fps < 24 && Q > 0) { perf.bas = Q - 1; j().reg.qualite = 'auto'; QP_FORCE = Q - 1; appliquerQualite(false); creerComposer(); redimensionner(); toast('Graphismes réduits pour que ce soit plus fluide (Options › Graphismes).', ''); }
+      if (j().reg.qualite === 'auto' && fps < 24 && Q > 0) { perf.bas = Q - 1; j().reg.qualite = 'auto'; QP_FORCE = Q - 1; Q = QP_FORCE; R = QP[Q].R; renderer.setPixelRatio(Math.min(QP[Q].pr, devicePixelRatio || 1)); creerComposer(); redimensionner(); toast('Graphismes réduits pour que ce soit plus fluide (Options › Graphismes).', ''); }
       else if (fps >= 24) perf.fait = true;
     }
   }
@@ -594,9 +594,10 @@ const JEU = (() => {
       CTRL.installer(document.getElementById('ctrl'), document.getElementById('stickBase'), document.getElementById('stickBtn'));
       const s = j(); JOUEUR.x = s.x; JOUEUR.z = s.z; JOUEUR.y = Math.max(s.y, MONDE.sol(s.x, s.z)); JOUEUR.yaw = s.yaw; JOUEUR.pitch = s.pitch;
       while (s.quetes.length < 3) nouvelleQuete();
-      document.addEventListener('visibilitychange', () => { try { AUDIO.suspendre(document.hidden); } catch (e) { } if (document.hidden) CTRL.relacher(); });
+      document.addEventListener('visibilitychange', () => { try { AUDIO.suspendre(document.hidden); } catch (e) { } if (document.hidden) CTRL.relacher(); else setTimeout(() => { try { if (renderer.getContext().isContextLost()) { save(false); location.reload(); } } catch (e) { } }, 1500); });
       addEventListener('blur', () => CTRL.relacher());
-      setTimeout(() => { prete = true; HUD.fin(); if (!s.intro) intro(); else { try { AUDIO.musique(MONDE.quartier(Math.floor(JOUEUR.x / MONDE.C), Math.floor(JOUEUR.z / MONDE.C))); } catch (e) { } HUD.banniere('Noëlombre', TXT.intro.sous, 4000); } }, 400);
+      setTimeout(() => { try { const sp = ENT.spectres[0]; sp.g.visible = true; sp.g.position.set(JOUEUR.x, -50, JOUEUR.z); renderer.compile(scene, cam); sp.g.visible = false; } catch (e) { }
+        prete = true; HUD.fin(); if (!s.intro) intro(); else { try { AUDIO.musique(MONDE.quartier(Math.floor(JOUEUR.x / MONDE.C), Math.floor(JOUEUR.z / MONDE.C))); } catch (e) { } HUD.banniere('Noëlombre', TXT.intro.sous, 4000); } }, 400);
       majParcelles(400);
     },
     recharger() {
@@ -635,8 +636,9 @@ const JEU = (() => {
     rendu() {
       if (!renderer || !composer) return;
       const s = j();
-      if (MODAL_OPEN) { if (!modalVu) { modalVu = true; CTRL.relacher(); } try { AUDIO.maj(0.016, { marche: 0, enPause: true }); } catch (e) { } } else modalVu = false;
+      if (MODAL_OPEN) { try { AUDIO.maj(0.016, { marche: 0, enPause: true }); } catch (e) { } if (modalVu > 2) return; modalVu++; if (modalVu === 1) CTRL.relacher(); } else modalVu = 0;
       surveillerFluidite();
+      tBous -= 0.016; if (tBous <= 0) { tBous = 0.5; bousA = boussole(); } bous = bousA == null ? null : bousA + JOUEUR.yaw;
       JOUEUR.cameraVers(cam);
       MAT.U.uCentre.value.set(JOUEUR.x, JOUEUR.z); MAT.U.uTemps.value = t;
       // la bulle : brouillard qui s'éclaircit avec la Lanterne et en hauteur, s'épaissit pendant la tempête
@@ -662,7 +664,7 @@ const JEU = (() => {
       // interface
       const q0 = s.quetes[0];
       HUD.maj({ action: actionCourante && !MODAL_OPEN ? actionCourante.txt : null, eclatPret: clamp(eclatT / (14 - s.niv.eclat * 1.3), 0, 1), quete: q0 ? '📜 ' + JEU_texteQuete(q0) + ' (' + fmt(Math.min(q0.prog, q0.n)) + '/' + fmt(q0.n) + ')' : '',
-        fleche: boussole(), carteCadeaux: tObj && (s.niv.boussole >= 3 ? tObj.cadeaux : tObj.carteCadeaux), cartePortes: tObj && tObj.cartePortes, carteSpectres: this._spx ? this._spx.carte : [] });
+        fleche: bous, carteCadeaux: tObj && (s.niv.boussole >= 3 ? tObj.cadeaux : tObj.carteCadeaux), cartePortes: tObj && tObj.cartePortes, carteSpectres: this._spx ? this._spx.carte : [] });
       const C = MONDE.C, q = MONDE.quartier(Math.floor(JOUEUR.x / C), Math.floor(JOUEUR.z / C));
       const st = TXT.quartiers[q].nom + ' · ' + JEU_rang(); const el = $('#statut'); if (el.textContent !== st) el.textContent = st;
     },

@@ -70,7 +70,8 @@ const REPERES = (() => {
       for (let i = 0; i <= 50; i++) { const t = i / 50; if (t < 0.45) pts.push(new THREE.Vector3(M - 1.2 + Math.sin(t * 3) * 0.5, top + t / 0.45 * 7, M - 0.4)); else { const k = (t - 0.45) / 0.55, a = k * Math.PI * 2.6, r = 2.6 * (1 - k * 0.85); pts.push(new THREE.Vector3(M - 1.2 + 0.5 * Math.sin(1.35) + Math.sin(a) * r - 0 + r * 0, top + 7 + (1 - Math.cos(a)) * r * 0.9 + k * 0.6, M - 0.4)); } }
       const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 80, 1, 10, false);
       const pa = tube.attributes.position, ce = new THREE.Vector3();
-      for (let i = 0; i < pa.count; i++) { const seg = Math.floor(i / 11), t = seg / 80; const p = new THREE.Vector3().fromBufferAttribute(pa, i); const c = new THREE.CatmullRomCurve3(pts).getPointAt(Math.min(1, t)); ce.copy(p).sub(c).multiplyScalar(1.15 * (1 - t * 0.88)); pa.setXYZ(i, c.x + ce.x, c.y + ce.y, c.z + ce.z); }
+      const cvC = new THREE.CatmullRomCurve3(pts), csC = []; for (let q = 0; q <= 80; q++) csC.push(cvC.getPointAt(q / 80));
+      for (let i = 0; i < pa.count; i++) { const seg = Math.floor(i / 11), t = seg / 80; const p = new THREE.Vector3().fromBufferAttribute(pa, i); const c = csC[Math.min(80, seg)]; ce.copy(p).sub(c).multiplyScalar(1.15 * (1 - t * 0.88)); pa.setXYZ(i, c.x + ce.x, c.y + ce.y, c.z + ce.z); }
       tube.computeVertexNormals();
       L.get('pierre').add(tube, { c: [0.42, 0.42, 0.48], uvm: 'monde', s: 0.5 });
       L.get('emis').add(G.base('ico'), { m: G.mat(pts[50].x, pts[50].y + 0.4, pts[50].z, 0.35, 0.35, 0.35), c: [3, 3, 4] });
@@ -192,7 +193,8 @@ const REPERES = (() => {
         const a = i / 10 * Math.PI * 2, h0 = i % 2 ? 4.3 : 2.7, r0 = i % 2 ? 1 : 1.9, r1 = 3.6 + (i % 2) * 0.4, pts = [];
         for (let k = 0; k <= 10; k++) { const t = k / 10, r = lerp(r0, r1, t), y = h0 + Math.sin(t * Math.PI * 0.85) * 1.6 - t * t * (h0 - 0.5); pts.push(new THREE.Vector3(M + Math.cos(a) * r, y0 + y, M + Math.sin(a) * r)); }
         const tb = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.13, 6, false);
-        const pa = tb.attributes.position; for (let j = 0; j < pa.count; j++) { const t = Math.floor(j / 7) / 16; const c = new THREE.CatmullRomCurve3(pts).getPointAt(Math.min(1, t)); const k = 0.4 + t * 0.9 + Math.sin(j * 1.7) * 0.15; pa.setXYZ(j, c.x + (pa.getX(j) - c.x) * k, c.y + (pa.getY(j) - c.y) * k, c.z + (pa.getZ(j) - c.z) * k); }
+        const pa = tb.attributes.position, cvF = new THREE.CatmullRomCurve3(pts), csF = []; for (let q = 0; q <= 16; q++) csF.push(cvF.getPointAt(q / 16));
+        for (let j = 0; j < pa.count; j++) { const t = Math.floor(j / 7) / 16; const c = csF[Math.min(16, Math.floor(j / 7))]; const k = 0.4 + t * 0.9 + Math.sin(j * 1.7) * 0.15; pa.setXYZ(j, c.x + (pa.getX(j) - c.x) * k, c.y + (pa.getY(j) - c.y) * k, c.z + (pa.getZ(j) - c.z) * k); }
         tb.computeVertexNormals(); L.get('verni').add(tb, { c: [0.62, 0.78, 0.92] });
       }
       L.get('emis').add(G.base('sphereB'), { m: G.mat(M, y0 + 4.45, M, 0.5, 0.2, 0.5), c: [0.8, 1.6, 2.6] });

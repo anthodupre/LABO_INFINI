@@ -4,7 +4,7 @@
    sur la fenêtre). Les boutons de jeu (Sauter, Éclat, Action) agissent au contact (pointerdown). */
 const HUD = (() => {
   const H = {};
-  let mini, mcx, dernMini = 0, bannT = 0;
+  let mini, mcx, dernMini = 0, bannT = 0, actionVu = 0;
   const $$ = id => document.getElementById(id);
   H.creer = function (zone) {
     zone.insertAdjacentHTML('beforeend', `
@@ -33,7 +33,7 @@ const HUD = (() => {
     const presse = (el, f) => el.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!MODAL_OPEN) f(); });
     presse($$('bSaut'), () => { CTRL.sautDemande = true; });
     presse($$('bEclat'), () => { CTRL.eclatDemande = true; });
-    presse($$('bAction'), () => { CTRL.actionDemande = true; });
+    presse($$('bAction'), () => { if (performance.now() - actionVu > 300) CTRL.actionDemande = true; });
     $$('bAtelier').onclick = () => { snd('menu'); H.ouvrirAtelier(); };
     $$('bQuetes').onclick = () => { snd('menu'); H.ouvrirQuetes(); };
     $$('bAlbum').onclick = () => { snd('menu'); H.ouvrirAlbum(); };
@@ -62,7 +62,7 @@ const HUD = (() => {
     fixe('hQuete', d.quete || '');
     $$('givre').style.opacity = god() ? 0 : clamp((40 - j.chaleur) / 40, 0, 1).toFixed(2);
     const ba = $$('bAction');
-    if (d.action) { if (ba.hidden) ba.hidden = false; fixe('bAction', d.action); } else if (!ba.hidden) ba.hidden = true;
+    if (d.action) { if (ba.hidden) { ba.hidden = false; actionVu = performance.now(); } fixe('bAction', d.action); } else if (!ba.hidden) ba.hidden = true;
     const cd = d.eclatPret; $$('eclatRond').style.strokeDashoffset = String(100 - cd * 100); $$('bEclat').classList.toggle('pret', cd >= 1);
     if (bannT && performance.now() > bannT) { $$('banniere').classList.remove('vu'); bannT = 0; }
     const fl = $$('fleche');
