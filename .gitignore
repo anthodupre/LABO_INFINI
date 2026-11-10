@@ -3,3 +3,5 @@ _dev/**/dist/
 _dev/**/preview/
 node_modules/
 node_modules
+_dev/**/gel/
+__pycache__/

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // Banc d'essai d'un fichier de contenu (merveilles / blocs) sur le cœur GELÉ du jeu (_dev/noelombre/gel/src).
+// Le dossier gel/ n'est pas dans le dépôt : le créer par copie (cp -r src gel/src && cp -r fonts gel/fonts) avant de lancer des sous-agents.
 // Usage (depuis /home/user/LABO_INFINI) :
 //   NODE_PATH=$(npm root -g) node _dev/noelombre/tools/essai.js _dev/noelombre/contenu/18m_a.js <type> [--js "code"] [--vues a,b,c,d,e]
 // Construit une page d'essai privée (sans toucher à index.html), place le type demandé sur une parcelle d'essai, vérifie

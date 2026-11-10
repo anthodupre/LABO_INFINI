@@ -96,10 +96,10 @@ const verif = (c, m) => { if (c) { ok++; console.log('  ✔ ' + m); } else { ko+
   verif(apres.g === avant.g && apres.j === avant.j && apres.s === avant.s && Math.hypot(apres.x - avant.x, apres.z - avant.z) < 1.5, 'sauvegarde et rechargement (position, monde, merveilles vues et à venir)');
   verif(!apres.intro, 'pas de nouvelle introduction après rechargement');
   // export / import
-  const code = await E(() => kitExport(S));
+  const code = await E(() => kitExport(S)), NJ2 = await E(() => S.jeu.journal.length);
   await E(() => { S.jeu.journal = []; });
   await E(c => doImport('voici :\n' + c.slice(0, 20) + '\n' + c.slice(20) + ' merci'), code);
-  verif(await attendre(n => S.jeu.journal.length === n, 20000, NJ), 'export puis import (texte collé abîmé)');
+  verif(NJ2 >= NJ && await attendre(n => S.jeu.journal.length === n, 20000, NJ2), 'export puis import (texte collé abîmé)');
   // paysage
   await p.setViewportSize({ width: 844, height: 390 }); await p.waitForTimeout(3000);
   await E(() => { while (MODAL_OPEN) closeModal(); });
