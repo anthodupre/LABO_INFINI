@@ -15,7 +15,7 @@ GEO.maison = function (L, h, w, rng, pal) {
   const boutique = st === 'boutique', cote = h.porteX >= 0 ? 1 : -1;
   const pX = boutique ? cote * (W / 2 - 0.95) : h.porteX;
   // soubassement de pierre (descend sous le sol pour les pentes)
-  add('moellon', 'cubeS', G.mat(0, -1.25, 0, W + 0.3, 3.4, D + 0.3), [0.62, 0.6, 0.6], { uvm: 'monde', s: 0.4 });
+  add('moellon', 'cubeS', G.mat(0, -1.25, 0, W + 0.12, 3.4, D + 0.12), [0.62, 0.6, 0.6], { uvm: 'monde', s: 0.4 });
   let y = Y0, ew = W, ed = D;
   const jet = st === 'colombage' ? 0.2 : boutique ? 0.12 : 0;
   const atlas = [[0, 0.5, 0.5, 1], [0.5, 0.5, 1, 1], [0, 0, 0.5, 0.5], [0.5, 0, 1, 0.5]];

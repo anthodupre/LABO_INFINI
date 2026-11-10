@@ -554,7 +554,7 @@ p7/6A+wE0tPdzdaLX3oetkqamvgH0Zqam2HbRPXKrnrjzd5123ug0c4mTz/1eGPTtmboiMjZpy+AbZA3
 jwGuTV6hQ2DppP6q484g5XLx7T1D/g4X3pTt3/wa3QX19+7uldEWn7lCg+JQJ9rdyQzScDdzjKr8fwAAAP//ZlvQKQAAAAZJ
 REFUAwBi5ZLX06TpQgAAAABJRU5ErkJggg==">
 <meta name="theme-color" content="#05060d">
-<meta name="version" content="9 novembre 2026 à 21 h 09">
+<meta name="version" content="9 novembre 2026 à 21 h 22">
 <title>Noëlombre</title>
 <style>
 /* Polices intégrées (im-fell-english-latin-400-italic.woff2, im-fell-english-latin-400-normal.woff2, im-fell-english-sc-latin-400-normal.woff2) — vérifier leur licence (OFL…) */
@@ -3090,7 +3090,7 @@ button{background:#1b1e33;border:1px solid #3a3e60;border-radius:10px}
 
 <script>
 "use strict";
-const BUILD_ID = "9 novembre 2026 à 21 h 09";
+const BUILD_ID = "9 novembre 2026 à 21 h 22";
 /* ==== 01_three.js ==== */
 /* Three.js r170 (licence MIT, © 2010-2024 three.js authors) + EffectComposer, UnrealBloomPass, OutputPass, mergeGeometries.
    Fichier GÉNÉRÉ par tools/vendor.js : ne pas modifier à la main. */
@@ -34599,7 +34599,7 @@ GEO.maison = function (L, h, w, rng, pal) {
   const boutique = st === 'boutique', cote = h.porteX >= 0 ? 1 : -1;
   const pX = boutique ? cote * (W / 2 - 0.95) : h.porteX;
   // soubassement de pierre (descend sous le sol pour les pentes)
-  add('moellon', 'cubeS', G.mat(0, -1.25, 0, W + 0.3, 3.4, D + 0.3), [0.62, 0.6, 0.6], { uvm: 'monde', s: 0.4 });
+  add('moellon', 'cubeS', G.mat(0, -1.25, 0, W + 0.12, 3.4, D + 0.12), [0.62, 0.6, 0.6], { uvm: 'monde', s: 0.4 });
   let y = Y0, ew = W, ed = D;
   const jet = st === 'colombage' ? 0.2 : boutique ? 0.12 : 0;
   const atlas = [[0, 0.5, 0.5, 1], [0.5, 0.5, 1, 1], [0, 0, 0.5, 0.5], [0.5, 0, 1, 0.5]];
@@ -35609,7 +35609,7 @@ const REPERES = (() => {
         for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; L2.get('metal').add(G.base('cube'), { m: G.mat(sx, Math.sin(a) * R0 / 2, Math.cos(a) * R0 / 2, 0.08, 0.08, R0, -a, 0, 0), c: [0.85, 0.85, 0.88] }); }
       }
       L2.get('metal').add(G.base('cyl12'), { m: G.mat(0, 0, 0, 0.5, 2.6, 0.5, 0, 0, Math.PI / 2), c: [0.5, 0.5, 0.52] });
-      for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2, b = (i + 1) / 48 * Math.PI * 2; G.guirlande(L2, [0, Math.sin(a) * R0, Math.cos(a) * R0], [0, Math.sin(b) * R0, Math.cos(b) * R0], { couleurs: [[3, 0.6, 0.5], [3, 2.4, 0.8], [0.6, 1.4, 3]], rng, creux: 0.02, pas: 0.6, r: 0.15 }); }
+      for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2, b = (i + 1) / 48 * Math.PI * 2; G.guirlande(L2, [(i % 2 ? 1 : -1) * 1.0, Math.sin(a) * (R0 + 0.75), Math.cos(a) * (R0 + 0.75)], [(i % 2 ? 1 : -1) * 1.0, Math.sin(b) * (R0 + 0.75), Math.cos(b) * (R0 + 0.75)], { couleurs: [[3, 0.6, 0.5], [3, 2.4, 0.8], [0.6, 1.4, 3]], rng, creux: 0.02, pas: 0.6, r: 0.15 }); }
       const roue = maill(L2); roue.position.set(M, yc, M); roue.rotation.y = Math.PI / 2; groupe.add(roue);
       const nac = [], cols = [[0.7, 0.15, 0.2], [0.2, 0.4, 0.7], [0.85, 0.65, 0.2], [0.3, 0.55, 0.35]];
       for (let i = 0; i < 12; i++) {
