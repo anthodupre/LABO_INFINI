@@ -19,7 +19,7 @@ D | D | Bb | Bb | Gm | A7 | D | D
 """
 
 SALLE = dict(rt=2.1, predelai=0.018, graine=61)
-MASTER = dict(cible=-16.0, queue=3.0)
+MASTER = dict(cible=-16.0, queue=3.0, bandes=[('haut', 5500, -2.5)])
 
 A1 = ("f#5:e a5:e d6:e a5:e | b5:e. a5:s g#5:e a5:e | g5:e e5:e c#5:e e5:e | a5:e g5:e e5:q | "
       "f#5:e a5:e d6:e a5:e | b5:e. a5:s g#5:e a5:e | b5:e g#5:e e5:e d6:e | c#6:q a5:q")
@@ -32,14 +32,14 @@ def composer():
                   GRILLE, titre='Fête foraine', ton='ré majeur / si mineur', graine=13)
     m = P.m
     org = P.partie('orgue', 20, tess=(57, 96), role='melodie', legato=0.9, hum_t=0.003, hum_v=1.5, niv=-21.0, rev=0.26, pan=-0.12,
-                   double=7.0, wow=5.0, temps_fort=0)
+                   double=7.0, wow=5.0, temps_fort=0, lp=6500)
     fifre = P.partie('fifre', 72, tess=(69, 96), legato=0.86, hum_t=0.004, hum_v=2, niv=-28.0, rev=0.3, pan=0.2, wow=5.0, lp=7000)
-    acm = P.partie('accordeon_chant', 21, tess=(60, 96), role='melodie', legato=0.97, hum_t=0.008, niv=-21.0, rev=0.28, pan=0.16, double=5.0)
-    acc_ = P.partie('accordeon', 21, tess=(52, 79), legato=0.8, hum_t=0.006, hum_v=3, niv=-25.5, rev=0.24, pan=0.28, temps_fort=0)
+    acm = P.partie('accordeon_chant', 21, tess=(60, 96), role='melodie', legato=0.97, hum_t=0.008, niv=-21.0, rev=0.28, pan=0.16, double=5.0, lp=6500)
+    acc_ = P.partie('accordeon', 21, tess=(52, 79), legato=0.8, hum_t=0.006, hum_v=3, niv=-26.0, rev=0.24, pan=0.28, temps_fort=0, lp=4800)
     tuba = P.partie('tuba', 58, tess=(33, 57), legato=0.8, hum_t=0.006, hum_v=3, niv=-22.5, rev=0.2, pan=-0.05, lp=2400)
     pz = P.partie('pizz', 45, tess=(52, 79), tenue=0.25, hum_t=0.009, niv=-26.0, rev=0.3, pan=-0.3, temps_fort=0, eq=[('haut', 2200, 4.0)])
     glock = P.partie('glock', 9, tess=(72, 96), tenue=0.8, hum_t=0.006, niv=-27.5, rev=0.4, pan=0.34)
-    perc = P.partie('percussions', 0, canal=9, verif=False, hum_t=0.005, hum_v=4, niv=-29.0, rev=0.3, pan=0.0, temps_fort=0)
+    perc = P.partie('percussions', 0, canal=9, verif=False, hum_t=0.005, hum_v=4, niv=-32.0, rev=0.3, pan=0.0, temps_fort=0, lp=8500)
     P.ordre = [org, tuba]
     GC, TAMB, TRI, GRELOT, CYMB = 36, 54, 81, 83, 49
 

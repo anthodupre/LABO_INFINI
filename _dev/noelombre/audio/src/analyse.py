@@ -55,7 +55,7 @@ def silences(x, sr=SR, seuil_db=-55.0, mini=0.6, marge=(0.3, 2.5)):
     return out
 
 
-def chroma(seg, sr=SR, fmin=110.0, fmax=2100.0):
+def chroma(seg, sr=SR, fmin=110.0, fmax=1050.0):
     n = len(seg)
     if n < 2048:
         return np.zeros(12)

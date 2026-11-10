@@ -8,11 +8,24 @@
   const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
   const DBG = true; // mise au point : compte les triangles ajoutés par construire()
   const nTri = L => { let n = 0; for (const k in L.tous) n += L.tous[k].i.length; return Math.round(n / 3); };
-  const bilan = (id, L, n0, extra) => { if (DBG) console.error('[dbg] ' + id + ' : ' + (nTri(L) - n0 + (extra || 0)) + ' triangles propres'); };
+  const bilan = (id, L, n0, extra) => { if (DBG) console.log('[dbg] ' + id + ' : ' + (nTri(L) - n0 + (extra || 0)) + ' triangles propres'); };
   // géométries sur mesure, fabriquées une seule fois
   const geos = {};
   const idx = g => { if (!g.index) { const n = g.attributes.position.count, ix = new Uint32Array(n); for (let i = 0; i < n; i++) ix[i] = i; g.setIndex(new THREE.BufferAttribute(ix, 1)); } return g; };
   const geo = (k, f) => geos[k] || (geos[k] = idx(f()));
+  // Le monde est TORDU par le shader, sommet par sommet : une grande face plate à 2 triangles ne suit pas la torsion
+  // (jusqu'à 20-30 cm d'écart au milieu d'une face de 13 m) et avale les détails posés dessus. Donc : grandes faces
+  // subdivisées (mailles de 2-3 m au plus).
+  const boiteF = (nx, ny, nz) => geo('bx' + nx + '_' + ny + '_' + nz, () => new THREE.BoxGeometry(1, 1, 1, nx, ny, nz));
+  const planF = (nx, ny) => geo('pl' + nx + '_' + ny, () => new THREE.PlaneGeometry(1, 1, nx, ny));
+  // lampadaires de trottoir posés à la main (les merveilles mettent lampes: 0 pour garder l'entrée sud dégagée)
+  const lampesRues = (P, sud, nord, est, ouest) => {
+    const o = MONDE.RUE + 0.35;
+    for (const t of sud || []) if (P.libre(t, o, 0.4)) P.lampe(t, o, Math.PI / 2);
+    for (const t of nord || []) if (P.libre(t, C - o, 0.4)) P.lampe(t, C - o, -Math.PI / 2);
+    for (const t of est || []) if (P.libre(C - o, t, 0.4)) P.lampe(C - o, t, 0);
+    for (const t of ouest || []) if (P.libre(o, t, 0.4)) P.lampe(o, t, Math.PI);
+  };
   // relief : aplatit le terrain au niveau du centre jusqu'à r0, puis rejoint le relief naturel à r1 (r1 <= 19)
   const plat = (lx, lz, t, tc, r0, r1) => { const r = Math.hypot(lx - M, lz - M); return r >= r1 ? t : lerp(tc, t, sstep(r0, r1, r)); };
   // pièce (axe y) tendue entre deux points
@@ -82,14 +95,14 @@
     fabrique: {
       nom: 'La Fabrique de Sucre d’Orge',
       desc: 'On y cuit le sucre des cannes depuis toujours. Nul n’a jamais vu les ouvriers : seulement leurs ombres, derrière les vitres.',
-      maisons: [0, 0.5, 0.35, 0.35], humeur: 'fete',
+      maisons: [0, 0.5, 0.35, 0.35], humeur: 'fete', lampes: 0,
       relief(lx, lz, t, tc) { return plat(lx, lz, t, tc, 12.5, 18.5); },
       plan(P, rng) {
         const y = P.sol(M, 24);
         P.boite(M, 26, 6.9, 4.3, 0);                                   // la halle
         P.boite(20.49, 21.28, 0.65, 0.12, 1.9); P.boite(23.51, 21.28, 0.65, 0.12, Math.PI - 1.9); // vantaux du portail
         P.cyl(31, 16.8, 2.25);                                         // la cuve
-        P.cyl(18.4, 13.2, 0.45); P.cyl(25.6, 14.4, 0.45); P.cyl(12, 17.2, 0.8); // appuis du grand tuyau
+        P.cyl(17.6, 13.2, 0.5); P.cyl(26.4, 14.3, 0.5); P.cyl(12, 17.2, 0.8); // appuis du grand tuyau
         P.fabWag = [{ x: 26.35, z: 19.5, a: 0, pen: 0 }, { x: 26.35, z: 15.9, a: 0.04, pen: 0 }, { x: 28.0, z: 12.2, a: 0.7, pen: 1.3 }];
         for (const w of P.fabWag) P.boite(w.x, w.z, 0.8, 1.0, w.a, 1.6);
         P.boite(26.35, 11.0, 0.8, 0.2, 0, 1.2);                        // butoir
@@ -97,20 +110,20 @@
         P.lum(17.6, y + 4, 20.2, [1, 0.75, 0.4], 1.2, 12);
         P.lum(31, y + 3.6, 16.8, [1, 0.35, 0.5], 1.5, 11);
         P.flaque(M, 19.4, 5.2, [0.55, 0.27, 0.08]); P.flaque(17.6, 19.6, 4.4, [0.4, 0.27, 0.1]); P.flaque(26.35, 19.8, 3.6, [0.42, 0.22, 0.07]); P.flaque(31, 16.8, 5, [0.4, 0.1, 0.18]);
-        for (const [x, z, h] of [[8.5, 9.5, 8], [36, 9, 6.5]]) if (P.libre(x, z, 1.5)) { P.sapins.push({ x, z, h, illum: true }); P.cyl(x, z, 0.5); }
+        lampesRues(P, [8.5, 35.5]);
       },
       construire(L, P, rng, groupe) {
         const y0 = P.sol(M, 24), n0 = nTri(L), anims = [];
-        const br = [0.74, 0.6, 0.57], pi = [0.5, 0.48, 0.5];
+        const br = [0.5, 0.41, 0.41], pi = [0.46, 0.44, 0.47];
         const def = v => { const h = Math.max(0, v.y - y0); v.x += h * h * 0.016 + Math.sin(h * 0.6) * 0.08; };
         const ao = v => 0.45 + 0.55 * sstep(y0 - 0.1, y0 + 1.8, v.y);
         const A = (k, g, m, c, o) => L.get(k).add(typeof g === 'string' ? G.base(g) : g, Object.assign({ m, c, def }, o));
         // ---- la halle de brique ----
-        A('pierre', 'cube', G.mat(M, y0 - 0.45, 26, 13.7, 1.9, 8.7), pi, { uvm: 'monde', s: 0.5 });
-        A('brique', 'boite', G.mat(M, y0 + 4.1, 26, 13, 7.4, 8), br, { uvm: 'monde', s: 0.4, ao });
-        A('pierre', 'cube', G.mat(M, y0 + 7.85, 26, 13.5, 0.34, 8.5), pi, { uvm: 'monde', s: 0.5 });
+        A('pierre', boiteF(6, 1, 4), G.mat(M, y0 - 0.45, 26, 13.7, 1.9, 8.7), pi, { uvm: 'monde', s: 0.5 });
+        A('brique', boiteF(6, 4, 4), G.mat(M, y0 + 4.1, 26, 13, 7.4, 8), br, { uvm: 'monde', s: 0.4, ao });
+        A('pierre', boiteF(6, 1, 4), G.mat(M, y0 + 7.85, 26, 13.5, 0.34, 8.5), pi, { uvm: 'monde', s: 0.5 });
         for (const x of [15.6, 19.75, 24.25, 28.4]) {
-          A('brique', 'boite', G.mat(x, y0 + 3.7, 21.75, 0.75, 6.6, 0.6), [0.64, 0.52, 0.5], { uvm: 'monde', s: 0.4, ao });
+          A('brique', 'boite', G.mat(x, y0 + 3.7, 21.75, 0.75, 6.6, 0.6), [0.44, 0.36, 0.36], { uvm: 'monde', s: 0.4, ao });
           A('pierre', 'cube', G.mat(x, y0 + 7.08, 21.74, 0.9, 0.2, 0.8, -0.5, 0, 0), pi, {});
         }
         for (let i = 0; i < 26; i++) { if (rng() < 0.35) continue; const l = 0.2 + rng() * 0.7; A('verni', 'glacon', G.mat(15.7 + i * 0.5, y0 + 7.66 - l / 2, 21.72, 0.05, -l, 0.05), [0.62, 0.74, 0.86], {}); }
@@ -119,25 +132,25 @@
         for (let i = 0; i < 3; i++) {
           const x0 = 15.5 + i * lw, hT = 2.5 + i * 0.35, Ls = Math.hypot(lw, hT), an = Math.atan2(hT, lw);
           A('brique', 'pignon', G.mat(x0 + lw / 2, yT, 26, lw, hT, 8), br, { uvm: 'monde', s: 0.4, def: v => { v.x -= (v.y - yT) / hT * lw / 2; def(v); } });
-          A('tuiles', 'cube', G.mat(x0 + lw / 2 + 0.05, yT + hT / 2 + 0.09, 26, Ls + 0.3, 0.14, 8.5, 0, 0, -an), [0.27, 0.23, 0.3], { uve: [Ls * 0.55, 8.5 * 0.55] });
-          L.get('emis').add(G.base('plan'), { m: G.mat(x0 - 0.03, yT + hT / 2, 26, 7.4, hT - 0.5, 1, 0, -Math.PI / 2, 0), c: [1.7, 1.05, 0.4], def });
-          for (let k = 0; k <= 6; k++) A('metal', 'cube', G.mat(x0 - 0.06, yT + hT / 2, 22.3 + k * 7.4 / 6, 0.07, hT - 0.4, 0.07), NOIR, {});
-          A('metal', 'cube', G.mat(x0 - 0.06, yT + hT * 0.52, 26, 0.07, 0.07, 7.4), NOIR, {});
+          A('tuiles', boiteF(2, 1, 3), G.mat(x0 + lw / 2 + 0.05, yT + hT / 2 + 0.09, 26, Ls + 0.3, 0.14, 8.5, 0, 0, -an), [0.27, 0.23, 0.3], { uve: [Ls * 0.55, 8.5 * 0.55] });
+          L.get('emis').add(planF(3, 1), { m: G.mat(x0 - 0.07, yT + hT / 2, 26, 7.4, hT - 0.5, 1, 0, -Math.PI / 2, 0), c: [1.7, 1.05, 0.4], def });
+          for (let k = 0; k <= 6; k++) A('metal', 'cube', G.mat(x0 - 0.12, yT + hT / 2, 22.3 + k * 7.4 / 6, 0.07, hT - 0.4, 0.07), NOIR, {});
+          A('metal', boiteF(1, 1, 3), G.mat(x0 - 0.12, yT + hT * 0.52, 26, 0.07, 0.07, 7.4), NOIR, {});
           G.halo(L, x0 - 0.6, yT + hT / 2, 26, [0.2, 0.13, 0.05], 6, { def });
         }
         // ---- verrières de la façade (sud) ----
         const pl4 = geo('plan4', () => new THREE.PlaneGeometry(1, 1, 1, 4));
         const verriere = (x, yb, w, h, col, arche) => {
           const yc = yb + h / 2, nV = Math.round(w / 0.7), nH = Math.round(h / 0.9);
-          L.get('emis').add(pl4, { m: G.mat(x, yc, 21.96, w, h, 1, 0, Math.PI, 0), c: col, def, ao: v => 0.5 + 0.7 * (1 - sstep(yb, yb + h, v.y)) });
-          for (let i = 0; i <= nV; i++) A('metal', 'cube', G.mat(x - w / 2 + i * w / nV, yc, 21.9, 0.07, h, 0.07), NOIR, {});
-          for (let j = 0; j <= nH; j++) A('metal', 'cube', G.mat(x, yb + j * h / nH, 21.9, w, 0.07, 0.07), NOIR, {});
+          L.get('emis').add(pl4, { m: G.mat(x, yc, 21.94, w, h, 1, 0, Math.PI, 0), c: col, def, ao: v => 0.5 + 0.7 * (1 - sstep(yb, yb + h, v.y)) });
+          for (let i = 0; i <= nV; i++) A('metal', 'cube', G.mat(x - w / 2 + i * w / nV, yc, 21.87, 0.07, h, 0.07), NOIR, {});
+          for (let j = 0; j <= nH; j++) A('metal', 'cube', G.mat(x, yb + j * h / nH, 21.87, w, 0.07, 0.07), NOIR, {});
           for (const sx of [-1, 1]) A('pierre', 'cube', G.mat(x + sx * (w / 2 + 0.16), yc, 21.84, 0.32, h + 0.1, 0.4), pi, { uvm: 'monde', s: 0.6 });
           A('pierre', 'cube', G.mat(x, yb - 0.13, 21.8, w + 0.9, 0.26, 0.55), pi, {});
           if (arche) {
             const r = w / 2;
-            L.get('emis').add(G.base('cyl16'), { m: G.mat(x, yb + h, 21.975, r, 0.02, r, Math.PI / 2, 0, 0), c: [col[0] * 0.5, col[1] * 0.5, col[2] * 0.5], def });
-            for (const a of [0.79, 1.57, 2.36]) A('metal', 'cube', G.mat(x + Math.cos(a) * r / 2, yb + h + Math.sin(a) * r / 2, 21.9, r, 0.07, 0.07, 0, 0, a), NOIR, {});
+            L.get('emis').add(G.base('cyl16'), { m: G.mat(x, yb + h, 21.955, r, 0.02, r, Math.PI / 2, 0, 0), c: [col[0] * 0.5, col[1] * 0.5, col[2] * 0.5], def });
+            for (const a of [0.79, 1.57, 2.36]) A('metal', 'cube', G.mat(x + Math.cos(a) * r / 2, yb + h + Math.sin(a) * r / 2, 21.87, r, 0.07, 0.07, 0, 0, a), NOIR, {});
             for (let k = 0; k < 5; k++) { const a = 0.26 + k * 0.655, rr = r + 0.17; A('pierre', 'cube', G.mat(x + Math.cos(a) * rr, yb + h + Math.sin(a) * rr, 21.84, 0.34, rr * 0.7, 0.4, 0, 0, a), pi, {}); }
           } else A('pierre', 'cube', G.mat(x, yb + h + 0.13, 21.82, w + 0.7, 0.26, 0.45), pi, {});
           G.halo(L, x, yc, 21.4, [col[0] * 0.1, col[1] * 0.1, col[2] * 0.1], 6.5, { def });
@@ -156,7 +169,7 @@
           L2.get('verni').add(G.base('cyl8'), { m: G.mat(0, 0.7, 0, 0.3, 1.4, 0.02), c: n, def: v => { v.x *= 0.55 + 0.45 * clamp(v.y / 1.4, 0, 1); } });
           L2.get('verni').add(G.base('cube'), { m: G.mat(0.34, 1.2, 0, 0.6, 0.1, 0.02, 0, 0, 0.5), c: n });
           L2.get('verni').add(G.base('cone8'), { m: G.mat(0, 1.92, 0, 0.2, 0.34, 0.02), c: n });
-          const o = maill(L2); o.position.set(x, y, 21.93); groupe.add(o);
+          const o = maill(L2); o.position.set(x, y, 21.905); groupe.add(o);
           anims.push(t => { const s = Math.sin(t * vit + ph); o.position.x = x + s * amp; o.rotation.z = Math.cos(t * vit + ph) * 0.06; o.scale.x = Math.cos(t * vit + ph) > 0 ? 1 : -1; });
         };
         ombre(17.75, y0 + 1.35, 0.85, 0.21, 0); ombre(26.5, y0 + 4.4, 0.8, 0.17, 2);
@@ -170,7 +183,7 @@
           return maill(L2);
         };
         const p1 = V3(M, y0 + 6.9, 21.5), p2 = V3(M - 2.36, y0 + 8.55, 21.45); def(p1); def(p2);
-        const r1 = roue(1.7, 12, [0.72, 0.5, 0.2]), r2 = roue(0.85, 6, [0.6, 0.36, 0.2]);
+        const r1 = roue(1.7, 12, [0.55, 0.37, 0.14]), r2 = roue(0.85, 6, [0.46, 0.27, 0.15]);
         r1.position.copy(p1); r2.position.copy(p2); groupe.add(r1, r2);
         A('metal', 'cyl8', G.mat(M, y0 + 6.9, 21.8, 0.22, 0.6, 0.22, Math.PI / 2, 0, 0), NOIR, {});
         A('metal', 'cyl8', G.mat(M - 2.36, y0 + 8.55, 21.8, 0.16, 0.7, 0.16, Math.PI / 2, 0, 0), NOIR, {});
@@ -193,8 +206,8 @@
           const g = tuyau(pts.map(p => V3(p[0], y0 + p[1], p[2])), seg, r, nr, rep); L.get('sucre').add(g, { c: [1, 1, 1], def: d });
           for (const i of cols) collier(L, 'metal', g, i, r + 0.1, 0.28, NOIR, d); return g;
         };
-        sucre([[16.4, 5.2, 25.5], [13.2, 5.7, 24.4], [11.3, 3.9, 21], [11.9, 1.25, 17.2], [14.4, 2.2, 14.3], [18.4, 5.1, 13.2], [22, 6.2, 13.5], [25.6, 5.4, 14.4], [28.8, 4.4, 15.6], [30.5, 3.5, 16.4]], 60, 0.5, 7, 6, null, [6, 15, 24, 33, 42, 51, 58]);
-        for (const [x, z, h] of [[18.4, 13.2, 5.1], [25.6, 14.4, 5.4]]) {
+        sucre([[16.4, 5.2, 25.5], [13.2, 5.7, 24.4], [11.3, 3.9, 21], [11.9, 1.25, 17.2], [13.8, 3.6, 14.4], [17.6, 7.8, 13.2], [22, 8.8, 13.4], [26.4, 7.9, 14.3], [29.4, 5.6, 15.6], [30.6, 3.6, 16.4]], 64, 0.5, 7, 7, null, [6, 15, 24, 33, 42, 51, 60]);
+        for (const [x, z, h] of [[17.6, 13.2, 7.8], [26.4, 14.3, 7.9]]) {
           for (const sx of [-1, 1]) L.get('metal').add(G.base('cyl6'), { m: barre(x + sx * 0.9, y0 - 0.2, z + sx * 0.25, x, y0 + h - 0.4, z, 0.09), c: NOIR });
           L.get('metal').add(G.base('cube'), { m: G.mat(x, y0 + h * 0.45, z + 0.06, 1.0, 0.08, 0.08, 0, -0.27, 0), c: NOIR });
         }
@@ -221,7 +234,7 @@
           anims.push(t => { const k = (t * (0.31 + i * 0.07) + i * 0.37) % 1, s = k < 0.85 ? 0.2 + k : (1 - k) * 7; b.scale.set(s, s * 0.8, s); });
         }
         // ---- rails et wagonnets de bonbons ----
-        for (const sx of [-1, 1]) L.get('metal').add(G.base('cube'), { m: G.mat(26.35 + sx * 0.42, y0 + 0.1, 16.5, 0.07, 0.1, 11.2), c: [0.4, 0.4, 0.42] });
+        for (const sx of [-1, 1]) L.get('metal').add(boiteF(1, 1, 5), { m: G.mat(26.35 + sx * 0.42, y0 + 0.1, 16.5, 0.07, 0.1, 11.2), c: [0.4, 0.4, 0.42] });
         for (let z = 11.3; z < 22; z += 0.85) L.get('bois').add(G.base('cube'), { m: G.mat(26.35, y0 + 0.04, z, 1.35, 0.08, 0.2, 0, (rng() - 0.5) * 0.1, 0), c: [0.4, 0.3, 0.24] });
         for (const sx of [-1, 1]) L.get('bois').add(G.base('cube'), { m: G.mat(26.35 + sx * 0.55, y0 + 0.5, 11.0, 0.18, 1.1, 0.18), c: [0.4, 0.3, 0.24] });
         L.get('bois').add(G.base('cube'), { m: G.mat(26.35, y0 + 0.85, 11.0, 1.5, 0.26, 0.22), c: [0.5, 0.16, 0.14] });
@@ -231,7 +244,7 @@
         for (let i = 0; i < 12; i++) { const s = rng.r(0.16, 0.28), x = 29 + rng() * 1.8, z = 11.2 + rng() * 2.2; L.get('verni').add(G.base(i % 3 ? 'ico' : 'sphereB'), { m: G.mat(x, y0 + s * 0.6, z, s, s * 0.85, s, rng() * 3, rng() * 3, 0), c: cols[i % 5] }); }
         // congères au pied de la façade
         for (let i = 0; i < 9; i++) { const x = 15.5 + rng() * 13; if (Math.abs(x - M) < 2 || Math.abs(x - 26.35) < 1.4) continue; L.get('neige').add(G.base('bosse'), { m: G.mat(x, y0 - 0.02, 21.5 - rng() * 0.3, 0.8 + rng() * 0.8, 0.25 + rng() * 0.3, 0.6), c: [1, 1, 1], uvm: 'monde' }); }
-        bilan('fabrique', L, n0, 1500);
+        bilan('fabrique', L, n0);
         return anims;
       },
     },

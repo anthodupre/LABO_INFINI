@@ -205,7 +205,7 @@ const JEU = (() => {
       const P = MONDE.plan(cx + dx, cz + dz), kk = MONDE.cle(P.cx, P.cz);
       if (P.rep && !s.sitesVus[kk] && Math.hypot(P.X0 + C / 2 - JOUEUR.x, P.Z0 + C / 2 - JOUEUR.z) < 21) {
         s.sitesVus[kk] = 1; const Rr = REPERES[P.rep], neuf = s.journal.indexOf(P.rep) < 0; if (neuf) s.journal.push(P.rep);
-        HUD.banniere(Rr.nom || '', Rr.desc || '', 8000); snd('carte'); if (neuf) snd('decouverte');
+        HUD.banniere(Rr.nom || '', Rr.desc || '', 8000); snd(neuf ? 'decouverte' : 'carte');
         guide.fete = 4; guide.ok = false; save(false);
       }
       if (P.relais && !s.lanternes[P.relais.id] && Math.hypot(P.X0 - JOUEUR.x, P.Z0 - JOUEUR.z) < 5.5) {
