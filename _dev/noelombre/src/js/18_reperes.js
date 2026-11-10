@@ -17,7 +17,7 @@ const REPERES = (() => {
   // 1. TOUR DE L'HORLOGE TORDUE — affiche l'heure réelle ; une face tourne à l'envers
   R.horloge = {
     maisons: true,
-    plan(P) { P.boite(M, M, 2.9, 2.9, 0); P.spot = { x: M, z: M + 5, dy: 1 }; const y = P.sol(M, M); for (const [dx, dz] of [[-4, 4], [4, 4], [-4, -4], [4, -4]]) MONDE.ajLampe(P, M + dx, M + dz, Math.atan2(dz, -dx) * 0, MONDE.palette(P.q).lampe); lum(P, M, y + 14, M + 4, [1, 0.85, 0.5], 1.5, 16, 0); },
+    plan(P) { P.boite(M, M, 2.9, 2.9, 0); P.spot = { x: M, z: M + 5, dy: 1 }; const y = P.sol(M, M); for (const [dx, dz] of [[-4, 4], [4, 4], [-4, -4], [4, -4]]) MONDE.ajLampe(P, M + dx, M + dz, Math.atan2(dz, -dx) * 0, MONDE.palette(P.q).lampe); lum(P, M, y + 14, M - 4, [1, 0.85, 0.5], 1.5, 16, 0); lum(P, M, y + 3, M - 4, [1, 0.8, 0.5], 0.8, 8); fl(P, M, M - 4, 5, [0.4, 0.3, 0.15]); },
     construire(L, P, rng, groupe) {
       const y0 = P.sol(M, M), H = 17, w = G.monde(M, y0, M, 0.2);
       const def = v => { const t = clamp(v.y / 26, 0, 1); const a = t * 0.35; const x = v.x, z = v.z; v.x = x * Math.cos(a) - z * Math.sin(a) + t * t * 2.2; v.z = x * Math.sin(a) + z * Math.cos(a); };
@@ -29,7 +29,7 @@ const REPERES = (() => {
       L.get('tuiles').add(G.base('cone4'), { m: G.mat(0, H + 3.4 + 4, 0, 3.6, 8, 3.6), c: [0.3, 0.24, 0.36], uvm: 'monde', s: 0.6, def: v => { const k = clamp((v.y - H - 3.4) / 8, 0, 1); v.x -= Math.pow(k, 3) * 3; v.y -= Math.pow(k, 5) * 1.2; def(v); }, w });
       // fenêtres de la tour
       for (let e = 0; e < 3; e++) for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; L.get('fenetre').add(G.base('plan'), { m: G.mat(Math.sin(a) * 2.13, 5 + e * 3, Math.cos(a) * 2.13, 0.8, 1.4, 1, 0, a), c: rng() < 0.6 ? P.pal.fenetre(rng) : [0.03, 0.03, 0.05], uvr: [0.5, 0.5, 1, 1], def, w }); }
-      L.get('porte').add(G.base('plan'), { m: G.mat(0, 1.2, 2.83, 1.3, 2.4, 1), c: [1, 1, 1], def, w });
+      L.get('porte').add(G.base('plan'), { m: G.mat(0, 1.2, -2.83, 1.3, 2.4, 1, 0, Math.PI, 0), c: [1, 1, 1], def, w });
       // cadrans + aiguilles (sous-groupe animé qui suit la déformation approximativement)
       const hc = 14.2, mob = [];
       for (let i = 0; i < 4; i++) {
@@ -42,8 +42,6 @@ const REPERES = (() => {
         const ah = maill(L2), am = maill(L3); ah.position.z = 0.08; am.position.z = 0.1; piv.add(ah, am); groupe.add(piv);
         mob.push({ ah, am, sens: i === 2 ? -1 : 1 });
       }
-      lum(P, M, y0 + 3, M + 4, [1, 0.8, 0.5], 0.8, 8);
-      fl(P, M, M + 4, 5, [0.4, 0.3, 0.15]);
       return [() => { const d = new Date(), h = d.getHours() % 12 + d.getMinutes() / 60, mi = d.getMinutes() + d.getSeconds() / 60; for (const o of mob) { o.ah.rotation.z = -o.sens * h / 12 * Math.PI * 2; o.am.rotation.z = -o.sens * mi / 60 * Math.PI * 2; } }];
     },
   };
@@ -82,14 +80,14 @@ const REPERES = (() => {
   R.mausolee = {
     maisons: false,
     plan(P, rng) {
-      P.boite(M, M - 1, 3.8, 4.6, 0); P.spot = { x: M, z: M + 5.5, dy: 0.9 };
-      const y = P.sol(M, M); lum(P, M, y + 2, M + 4.5, [0.35, 1, 0.75], 1.6, 10, 0.3); fl(P, M, M + 5, 4, [0.1, 0.4, 0.3]);
+      P.boite(M, M + 1, 3.8, 4.6, 0);
+      const y = P.sol(M, M); lum(P, M, y + 2, M - 4.5, [0.35, 1, 0.75], 1.6, 10, 0.3); fl(P, M, M - 5, 4, [0.1, 0.4, 0.3]);
       P.tombesR = [];
-      for (let i = 0; i < 26; i++) { const a = rng() * Math.PI * 2, r = 8 + rng() * 9, x = M + Math.cos(a) * r, z = M + Math.sin(a) * r; if (P.libre(x, z, 0.8) && Math.abs(x - M) < 19 && Math.abs(z - M) < 19 && !(Math.abs(x - M) < 2 && z > M)) { P.tombes.push({ x, z, a: Math.atan2(x - M, z - M), pen: (rng() - 0.5) * 0.3 }); P.boite(x, z, 0.4, 0.2, 0, 1.3); } }
+      for (let i = 0; i < 26; i++) { const a = rng() * Math.PI * 2, r = 8 + rng() * 9, x = M + Math.cos(a) * r, z = M + Math.sin(a) * r; if (P.libre(x, z, 0.8) && Math.abs(x - M) < 19 && Math.abs(z - M) < 19 && !(Math.abs(x - M) < 2.2 && z < M)) { P.tombes.push({ x, z, a: Math.atan2(x - M, z - M), pen: (rng() - 0.5) * 0.3 }); P.boite(x, z, 0.4, 0.2, 0, 1.3); } }
       for (let i = 0; i < 3; i++) { const a = rng() * 6, r = 12 + rng() * 5; const x = M + Math.cos(a) * r, z = M + Math.sin(a) * r; if (P.libre(x, z, 1.3)) { P.morts.push({ x, z, h: 6 + rng() * 4 }); P.cyl(x, z, 0.4); } }
     },
     construire(L, P, rng) {
-      const y0 = P.sol(M, M), w = G.monde(M, y0, M - 1, 0), pi = [0.66, 0.7, 0.76];
+      const y0 = P.sol(M, M), w = G.monde(M, y0, M + 1, Math.PI), pi = [0.66, 0.7, 0.76];
       L.get('pierre').add(G.base('cube'), { m: G.mat(0, 0.2, 0, 8.4, 0.8, 10), c: pi, uvm: 'monde', w });
       L.get('pierre').add(G.base('cube'), { m: G.mat(0, 2.6, -0.6, 6.6, 4.2, 7.6), c: pi, uvm: 'monde', s: 0.5, w });
       for (const x of [-3, -1.1, 1.1, 3]) { L.get('pierre').add(G.base('cyl12'), { m: G.mat(x, 2.6, 3.7, 0.32, 4.4, 0.32), c: pi, w }); L.get('pierre').add(G.base('cube'), { m: G.mat(x, 0.65, 3.7, 0.8, 0.3, 0.8), c: pi, w }); }
@@ -312,7 +310,7 @@ const REPERES = (() => {
   // 12. OBSERVATOIRE LUNAIRE — un télescope pointé vers la lune énorme
   R.observatoire = {
     maisons: true,
-    plan(P) { P.cyl(M, M, 4.7); P.spot = { x: M, z: M + 6, dy: 0.8 }; const y = P.sol(M, M); lum(P, M, y + 2.5, M + 5.2, [1, 0.8, 0.5], 1.3, 10); fl(P, M, M + 5.4, 4, [0.4, 0.3, 0.14]); },
+    plan(P) { P.cyl(M, M, 4.7); P.spot = { x: M, z: M + 6, dy: 0.8 }; const y = P.sol(M, M); lum(P, M, y + 2.5, M - 5.2, [1, 0.8, 0.5], 1.3, 10); fl(P, M, M - 5.4, 4, [0.4, 0.3, 0.14]); },
     construire(L, P, rng, groupe) {
       const y0 = P.sol(M, M);
       L.get('pierre').add(G.base('cyl16'), { m: G.mat(M, y0 + 2.4, M, 4.5, 5.2, 4.5), c: [0.62, 0.6, 0.64], uvm: 'monde', s: 0.5 });
@@ -324,7 +322,7 @@ const REPERES = (() => {
       const el = Math.asin(dir.y), q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dir.x, dir.y, dir.z).normalize());
       const mt = new THREE.Matrix4().compose(new THREE.Vector3(M + Math.sin(ang) * 2.2, y0 + 7.4 + Math.sin(el) * 1.5, M + Math.cos(ang) * 2.2), q, new THREE.Vector3(0.45, 6, 0.45));
       L.get('verni').add(G.base('cyl12'), { m: mt, c: [0.75, 0.6, 0.3] });
-      L.get('porte').add(G.base('plan'), { m: G.mat(M, y0 + 1.2, M + 4.52, 1.3, 2.4, 1), c: [1, 1, 1] });
+      L.get('porte').add(G.base('plan'), { m: G.mat(M, y0 + 1.2, M - 4.52, 1.3, 2.4, 1, 0, Math.PI, 0), c: [1, 1, 1] });
       for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + 0.5; L.get('fenetre').add(G.base('plan'), { m: G.mat(M + Math.sin(a) * 4.52, y0 + 3.2, M + Math.cos(a) * 4.52, 0.7, 1.1, 1, 0, a, 0), c: P.pal.fenetre(rng), uvr: [0, 0, 0.5, 0.5] }); }
       return [];
     },

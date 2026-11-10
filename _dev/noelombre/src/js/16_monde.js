@@ -199,7 +199,7 @@ const MONDE = (() => {
       if (rng() < 0.4) continue;
       const t = 6 + rng() * (C - 12), o = RUE + 0.2, dec = (rng() - 0.5) * 3;
       const a = axe === 'x' ? [t, o] : [o, t], b = axe === 'x' ? [t + dec, -o] : [-o, t + dec];
-      if (!P.libre(a[0], a[1], 0.5)) continue;
+      if (!P.libre(a[0], a[1], 0.5) || (P.rep && axe === 'x' && Math.abs(t - C / 2) < 6)) continue; // pas de mât dans l'entrée d'une merveille
       P.fils.push({ a, b, etoile: rng() < 0.5 }); P.cyl(a[0], a[1], 0.12); P.cyl(b[0], b[1], 0.12);
     }
     return P;

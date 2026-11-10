@@ -12,7 +12,8 @@ const GEO = (() => {
     if (base[k]) return base[k];
     let g;
     switch (k) {
-      case 'boite': g = new THREE.BoxGeometry(1, 1, 1, 1, 4, 1); break;
+      case 'boite': g = new THREE.BoxGeometry(1, 1, 1, 3, 4, 3); break; // subdivisée : les grands murs doivent suivre la torsion du monde
+      case 'cubeS': g = new THREE.BoxGeometry(1, 1, 1, 3, 1, 3); break;
       case 'cube': g = new THREE.BoxGeometry(1, 1, 1); break;
       case 'cyl6': g = new THREE.CylinderGeometry(1, 1, 1, 6, 1); break;
       case 'cyl8': g = new THREE.CylinderGeometry(1, 1, 1, 8, 3); break;

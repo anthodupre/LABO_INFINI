@@ -15,7 +15,7 @@ GEO.maison = function (L, h, w, rng, pal) {
   const boutique = st === 'boutique', cote = h.porteX >= 0 ? 1 : -1;
   const pX = boutique ? cote * (W / 2 - 0.95) : h.porteX;
   // soubassement de pierre (descend sous le sol pour les pentes)
-  add('moellon', 'cube', G.mat(0, -1.25, 0, W + 0.3, 3.4, D + 0.3), [0.62, 0.6, 0.6], { uvm: 'monde', s: 0.4 });
+  add('moellon', 'cubeS', G.mat(0, -1.25, 0, W + 0.3, 3.4, D + 0.3), [0.62, 0.6, 0.6], { uvm: 'monde', s: 0.4 });
   let y = Y0, ew = W, ed = D;
   const jet = st === 'colombage' ? 0.2 : boutique ? 0.12 : 0;
   const atlas = [[0, 0.5, 0.5, 1], [0.5, 0.5, 1, 1], [0, 0, 0.5, 0.5], [0.5, 0, 1, 0.5]];
@@ -26,9 +26,9 @@ GEO.maison = function (L, h, w, rng, pal) {
     const ao = e === 0 ? (v => 0.5 + 0.5 * sstep(y0 - 0.2, y0 + 1.5, v.y)) : (v => 1 - 0.28 * sstep(y0 + hE - 0.7, y0 + hE, v.y) - 0.15 * (1 - sstep(y0, y0 + 0.4, v.y)));
     add(matE, 'boite', G.mat(0, y + hE / 2, 0, ew, hE, ed), cE, { uvm: 'monde', s: 0.4, ao });
     // ceintures de bois (une boîte fait le tour) + poteaux d'angle
-    add('bois', 'cube', G.mat(0, y + hE - 0.08, 0, ew + 0.14, 0.17, ed + 0.14), cB, { uvm: 'monde', s: 0.6 });
+    add('bois', 'cubeS', G.mat(0, y + hE - 0.08, 0, ew + 0.14, 0.17, ed + 0.14), cB, { uvm: 'monde', s: 0.6 });
     if (st === 'colombage' && !socle) {
-      add('bois', 'cube', G.mat(0, y + 0.08, 0, ew + 0.1, 0.16, ed + 0.1), cB, { uvm: 'monde', s: 0.6 });
+      add('bois', 'cubeS', G.mat(0, y + 0.08, 0, ew + 0.1, 0.16, ed + 0.1), cB, { uvm: 'monde', s: 0.6 });
       for (const sx of [-1, 1]) for (const sz of [-1, 1]) add('bois', 'cube', G.mat(sx * (ew / 2 - 0.04), y + hE / 2, sz * (ed / 2 - 0.04), 0.17, hE, 0.17), cB, { uvm: 'monde', s: 0.6 });
     }
     const faces = [[0, ew, ed / 2], [Math.PI, ew, ed / 2], [Math.PI / 2, ed, ew / 2], [-Math.PI / 2, ed, ew / 2]];
@@ -92,7 +92,7 @@ GEO.maison = function (L, h, w, rng, pal) {
     add(h.mur === 'pierre' ? 'moellon' : h.mur, 'pignon', G.mat(0, yT - 0.02, 0, ew, hT * (ew / rw), ed), cMur, { uvm: 'monde', s: 0.4, ao: v => 1 - 0.3 * sstep(yT, yT + hT * 0.9, v.y) });
     for (const sd of [-1, 1]) {
       const cx = sd * rw / 4, cy = yT + hT / 2;
-      add('tuiles', 'cube', G.mat(cx, cy, 0, Ls + 0.25, 0.12, rd, 0, 0, -sd * an), cT, { uve: [Ls * 0.55, rd * 0.55] });
+      add('tuiles', 'cubeS', G.mat(cx, cy, 0, Ls + 0.25, 0.12, rd, 0, 0, -sd * an), cT, { uve: [Ls * 0.55, rd * 0.55] });
       const nx = sd * Math.sin(an), ny = Math.cos(an);
       L.get('neige').add(G.base('dalle'), { m: G.mat(cx + nx * 0.17, cy + ny * 0.17, 0, Ls + 0.4, 0.26, rd + 0.3, 0, 0, -sd * an), c: [1, 1, 1], uvm: 'monde', w,
         def: v => { const n = NZ.vn(v.x * 1.3 + gr % 97, v.z * 1.3, 5); v.y += (n - 0.5) * 0.14 - sstep(yT + 0.5, yT - 0.1, v.y) * 0.1; def(v); } });
@@ -106,7 +106,7 @@ GEO.maison = function (L, h, w, rng, pal) {
     const pointu = h.toit !== 'croupe', hP = pointu ? hT * 1.3 : hT * 0.75, cr = rng() < 0.5 ? 1 : -1, k4 = h.toit === 'tour' ? 0.64 : 0.76;
     const defP = pointu ? (v => { const t = clamp((v.y - yT) / hP, 0, 1); v.x += cr * Math.pow(t, 3) * hP * 0.32; v.y -= Math.pow(t, 4) * hP * 0.12; def(v); }) : def;
     add('tuiles', h.toit === 'tour' ? 'cone12' : 'cone4', G.mat(0, yT + hP / 2, 0, rw * k4, hP, rd * k4), cT, { uvm: 'monde', s: 0.55, def: defP });
-    add('bois', 'cube', G.mat(0, yT + 0.02, 0, ew + 0.5, 0.14, ed + 0.5), cB, {});
+    add('bois', 'cubeS', G.mat(0, yT + 0.02, 0, ew + 0.5, 0.14, ed + 0.5), cB, {});
     if (pointu) add('emis', 'sphereB', G.mat(cr * hP * 0.32, yT + hP * 0.88, 0, 0.12, 0.12, 0.12), pal.boule, {});
     else add('metal', 'cone8', G.mat(0, yT + hP + 0.4, 0, 0.05, 1.0, 0.05), noir, {});
     if (guir) G.guirlande(L, [-rw / 2 + 0.2, yT - 0.05, rd / 2 - 0.1], [rw / 2 - 0.2, yT - 0.05, rd / 2 - 0.1], og);
