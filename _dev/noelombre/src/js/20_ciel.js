@@ -4,7 +4,9 @@
    tirée (reflets réalistes sur la glace, le métal, les boules). La neige tombe autour du joueur (particules). */
 const CIEL = (() => {
   const K = {};
-  K.dirLune = new THREE.Vector3(0.9, 0.37, 0.19).normalize();
+  // la lune se lève au bout de la rue du départ (la grille est tordue : on suit la direction VUE de cette rue)
+  { const jc = MONDE.jacob(3.5, 2.2), a = Math.atan2(jc[2], jc[0]) + 0.1, el = 0.34;
+    K.dirLune = new THREE.Vector3(Math.cos(a) * Math.cos(el), Math.sin(el), Math.sin(a) * Math.cos(el)).normalize(); }
   K.horizon = new THREE.Color(0.03, 0.05, 0.075);
   const UA = { uTemps: { value: 0 }, uLune: { value: K.dirLune }, uAurore: { value: 0 }, uNuages: { value: 0.5 }, uFilante: { value: new THREE.Vector4(0, 0, 0, -10) }, uHorizon: { value: K.horizon }, uTempete: { value: 0 }, tLune: { value: null }, uLuneOk: { value: 0 } };
   K.U = UA;

@@ -39,7 +39,7 @@ def composer():
     harpe.joue("f2:e c3 f3 g3 a3 c4 g4 a4 | c5 a4 g4 c4 a3 g3 f3 c3 | "
                "f2 c3 g3 a3 c4 g4 a4 c5 | d2 a2 d3 f3 a3 c4 f4 a4 | bb2 f3 bb3 c4 d4 f4 a4 d5 | c3 g3 bb3 f4 e4 g4 bb4 e5 | "
                "a2 f3 a3 c4 f4 a4 c5 f5 | bb2 f3 bb3 c4 d4 f4 c5 d5 | db3 ab3 db4 f4 ab4 db5 f5 ab5 | eb3 bb3 eb4 g4 bb4 eb5 g5 bb5",
-               m(1), v=[(0, 56), (4, 64), (8, 60), (16, 66), (24, 64), (32, 72), (40, 80)])
+               m(1), v=[(0, 64), (4, 70), (8, 66), (16, 70), (24, 68), (32, 74), (40, 80)])
     harpe.joue("[f2 c3 f3 a3 c4 f4]:h~ [a3 c4 f4 a4 c5 f5]:h | [bb2 f3 bb3 db4 g4 bb4]:h~ [db4 g4 bb4 db5]:h | [f2 c3 f3 a3 c4 f4]:h~ a4:q c5:q | "
                "f2:e c3 g3 a3 c4 g4 a4 c5 | [f2 c3 f3 a3 c4 g4]:w~",
                m(11), v=[(0, 84), (4, 76), (8, 70), (12, 56), (16, 50)])
@@ -52,7 +52,7 @@ def composer():
              (m(9, 2), 118), (m(10), 112), (m(11), 124), (m(12), 108), (m(13), 92), (m(14), 56), (m(14, 2), 0)])
 
     # ---- cordes : nappe à quatre voix (notes communes tenues), basses
-    pad.joue("a4:w _:w _:w _:w | bb4:w | c5:w _:w | ab4:w | bb4:w | c5:w | db5:w | c5:w | a4:w _:w", m(2), v=56)
+    pad.joue("a4:w _:w _:w | bb4:w _:w | c5:w _:w | ab4:w | bb4:w | c5:w | db5:w | c5:w | a4:w _:w", m(2), v=56)
     pad.joue("g4:w _:w | f4:w _:w | _:h e4:h | f4:w _:w _:w | g4:w | a4:w | g4:w | a4:w | g4:w _:w", m(2), v=54)
     pad.joue("c4:w _:w _:w | d4:w | c4:w _:w | d4:w | db4:w | eb4:w | f4:w _:w _:w | c4:w _:w", m(2), v=54)
     pad.joue("f3:w _:w _:w _:w | g3:w | f3:w _:w | ab3:w | g3:w | a3:w | bb3:w | a3:w | f3:w _:w", m(2), v=52)

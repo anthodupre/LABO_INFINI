@@ -165,7 +165,7 @@ const MAT = (() => {
           vVP = mvPosition.xyz;
           #include <fog_vertex>
         }`,
-      fragmentShader: `uniform sampler2D tPieces; uniform vec3 uCiel; varying vec2 vUv; varying vec3 vC; varying vec3 vVP; varying vec3 vW0;
+      fragmentShader: `uniform sampler2D tPieces; uniform vec3 uCiel; uniform float uTemps; varying vec2 vUv; varying vec3 vC; varying vec3 vVP; varying vec3 vW0;
         #include <fog_pars_fragment>
         float h1(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
         void main(){
