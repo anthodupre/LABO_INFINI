@@ -309,7 +309,7 @@
     construire(L, P, rng, groupe) {
       const segs = [], yb = P.sol(M, M) + 4.6, n = 22;
       for (let i = 0; i < n; i++) { const L2 = G.Lots(), k = i / (n - 1), r = i === 0 ? 1.15 : 0.85 * (1 - k * 0.55), c = i % 2 ? [3, 0.5, 0.25] : [3, 1.9, 0.5];
-        L2.get('emis').add(G.base(i === 0 ? 'sphere' : 'sphereB'), { m: G.mat(0, 0, 0, r * (i === 0 ? 1.3 : 1), r, r), c }); G.halo(L2, 0, 0, 0, [c[0] * 0.09, c[1] * 0.09, c[2] * 0.09], r * 7);
+        L2.get('emis').add(G.base(i === 0 ? 'sphere' : 'sphereB'), { m: G.mat(0, 0, 0, r * (i === 0 ? 1.3 : 1), r, r), c }); G.halo(L2, 0, 0, 0, [c[0] * 0.05, c[1] * 0.05, c[2] * 0.05], r * 3.6);
         if (i === 0) { for (const sz of [-0.5, 0.5]) { L2.get('emis').add(G.base('sphereB'), { m: G.mat(1.05, 0.45, sz, 0.2, 0.2, 0.2), c: [3.4, 3.4, 2.6] }); L2.get('unie').add(G.base('cone8'), { m: G.mat(0.2, 1.1, sz, 0.14, 1.1, 0.14, 0, 0, -0.5), c: [0.7, 0.55, 0.2] }); } L2.get('unie').add(G.base('cone4'), { m: G.mat(1.5, -0.25, 0, 0.5, 0.9, 0.7, 0, 0, -PI / 2), c: [0.6, 0.1, 0.1] }); }
         else if (i % 3 === 0) L2.get('unie').add(G.base('cone4'), { m: G.mat(0, r + 0.3, 0, 0.25, 0.7, 0.1), c: [0.75, 0.6, 0.2] });
         const m = maill(L2); groupe.add(m); segs.push(m); }
@@ -331,6 +331,7 @@
       for (const [sx, sy, sz, rz] of [[0.75, 2.6, 0.75, 0], [0.6, 2.1, 0.6, PI / 2], [0.6, 2.1, 0.6, PI / 4], [0.6, 2.1, 0.6, -PI / 4]]) { const m = new THREE.Mesh(geo, em); m.scale.set(sx, sy, sz); m.rotation.z = rz; et.add(m); }
       et.children[0].userData.matPropre = true; et.position.set(M, y + 1.9, M); et.rotation.set(0.35, 0, 0.3); groupe.add(et);
       G.halo(L, M, y + 2, M, [0.3, 0.5, 0.7], 16); G.halo(L, M, y + 2, M, [0.5, 0.8, 1.0], 5);
+      for (let k = 1; k <= 6; k++) G.halo(L, M + k * 0.15, y + 2 + k * 3.2, M, [0.16 - k * 0.02, 0.28 - k * 0.035, 0.4 - k * 0.05], 7 - k * 0.6); // colonne de lueur visible de loin
       const ecl = new THREE.Group(); for (let k = 0; k < 9; k++) { const m = new THREE.Mesh(geo, em); const a = k / 9 * 6.28; m.position.set(Math.cos(a) * (3.2 + (k % 3) * 0.9), 1.5 + (k % 4) * 0.9, Math.sin(a) * (3.2 + (k % 3) * 0.9)); m.scale.set(0.1, 0.34, 0.1); m.rotation.set(k, k * 2, k * 3); ecl.add(m); } ecl.position.set(M, y + 1, M); groupe.add(ecl);
       return [(t, dt, ctx) => { const k = 0.75 + Math.sin(t * 1.1) * 0.25 + ctx.eclat * 1.6; em.color.setRGB(1.6 * k, 2.6 * k, 3.4 * k); ecl.rotation.y = t * 0.22; et.rotation.y = Math.sin(t * 0.3) * 0.2; }];
     },

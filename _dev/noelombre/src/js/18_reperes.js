@@ -207,29 +207,28 @@ const REPERES = (() => {
   R.atelier = {
     maisons: true,
     plan(P, rng) {
-      P.boite(M, M - 2, 5, 4, Math.PI); P.spot = { x: M + 3.2, z: M + 4.4, dy: 0.8 }; const y = P.sol(M, M);
-      lum(P, M, y + 2.5, M + 3, [1, 0.75, 0.4], 1.6, 12); for (const dx of [-2.8, 2.8]) P.cyl(M + dx, M + 3.4, 0.4);
+      P.boite(M, M + 2, 5, 4, Math.PI); P.spot = { x: M + 3.2, z: M + 4.4, dy: 0.8 }; const y = P.sol(M, M);
+      lum(P, M, y + 2.5, M - 3, [1, 0.75, 0.4], 1.6, 12); for (const dx of [-2.8, 2.8]) P.cyl(M + dx, M - 3.4, 0.4);
       P.atelier = { x: M, z: M - 2, w: 9.5, d: 7.5 };
     },
     construire(L, P, rng) {
       const y0 = P.sol(M, M), H = { w: 9.5, d: 7.5, etages: 2, hE: 3.3, hToit: 4.5, toit: 'pignon', mur: 'planche', cMur: [0.62, 0.4, 0.34], cBois: [0.3, 0.22, 0.18], cToit: [0.3, 0.25, 0.3], porteX: 0, fenType: 0, pAllume: 1, pGuirlande: 1, torsion: 0.08, courbe: [0.8, 0.3] };
-      const o = GEO.maison(L, H, G.monde(M, y0, M - 2, 0), NZ.rng(77), P.pal);
+      const o = GEO.maison(L, H, G.monde(M, y0, M + 2, Math.PI), NZ.rng(77), P.pal);
       // enseigne + jouets devant
-      L.get('bois').add(G.base('cube'), { m: G.mat(M, y0 + 3.0, M + 1.9, 3.6, 0.7, 0.12), c: [0.6, 0.15, 0.15] });
-      L.get('emis').add(G.base('cube'), { m: G.mat(M, y0 + 3.0, M + 1.97, 3.2, 0.4, 0.02), c: [3, 2.2, 0.8] });
+      L.get('bois').add(G.base('cube'), { m: G.mat(M, y0 + 3.45, M - 1.9, 3.6, 0.7, 0.12), c: [0.6, 0.15, 0.15] });
+      L.get('emis').add(G.base('cube'), { m: G.mat(M, y0 + 3.45, M - 1.97, 3.2, 0.4, 0.02), c: [3, 2.2, 0.8] });
       for (const dx of [-2.8, 2.8]) {
-        const x = M + dx, z = M + 3.4, c = dx < 0 ? [0.7, 0.1, 0.12] : [0.15, 0.25, 0.65];
+        const x = M + dx, z = M - 3.4, c = dx < 0 ? [0.7, 0.1, 0.12] : [0.15, 0.25, 0.65];
         L.get('verni').add(G.base('cyl12'), { m: G.mat(x, y0 + 1.1, z, 0.35, 1.4, 0.3), c });
         L.get('verni').add(G.base('cyl12'), { m: G.mat(x, y0 + 0.2, z, 0.3, 0.4, 0.3), c: [0.1, 0.1, 0.12] });
         L.get('verni').add(G.base('sphere'), { m: G.mat(x, y0 + 2.05, z, 0.3, 0.32, 0.3), c: [0.95, 0.8, 0.65] });
         L.get('verni').add(G.base('cyl12'), { m: G.mat(x, y0 + 2.65, z, 0.28, 0.85, 0.28), c: [0.08, 0.08, 0.1] });
-        L.get('verni').add(G.base('cube'), { m: G.mat(x, y0 + 1.95, z + 0.25, 0.3, 0.08, 0.05), c: [0.1, 0.1, 0.1] });
+        L.get('verni').add(G.base('cube'), { m: G.mat(x, y0 + 1.95, z - 0.25, 0.3, 0.08, 0.05), c: [0.1, 0.1, 0.1] });
       }
-      for (let i = 0; i < 7; i++) { const s = 0.5 + rng() * 0.3; L.get('verni').add(G.base('cube'), { m: G.mat(M - 5 + rng() * 10, y0 + s / 2 + (i > 4 ? s : 0), M + 5 + rng() * 3, s, s, s, 0, rng() * 6, 0), c: [[0.8, 0.2, 0.2], [0.2, 0.5, 0.8], [0.9, 0.75, 0.2], [0.3, 0.7, 0.3]][i % 4] }); }
+      for (let i = 0; i < 7; i++) { const s = 0.5 + rng() * 0.3; L.get('verni').add(G.base('cube'), { m: G.mat(M - 5 + rng() * 10, y0 + s / 2 + (i > 4 ? s : 0), M - 5 - rng() * 3, s, s, s, 0, rng() * 6, 0), c: [[0.8, 0.2, 0.2], [0.2, 0.5, 0.8], [0.9, 0.75, 0.2], [0.3, 0.7, 0.3]][i % 4] }); }
       // toupie géante
-      L.get('verni').add(G.base('cone12'), { m: G.mat(M + 5.5, y0 + 0.9, M + 3, 1, -1.2, 1), c: [0.8, 0.3, 0.6] });
-      L.get('verni').add(G.base('cone12'), { m: G.mat(M + 5.5, y0 + 1.75, M + 3, 1, 0.5, 1), c: [0.9, 0.8, 0.3] });
-      if (o.cheminee) P.feux.length; // (fumée gérée par la parcelle pour les maisons ordinaires)
+      L.get('verni').add(G.base('cone12'), { m: G.mat(M + 5.5, y0 + 0.9, M - 3, 1, -1.2, 1), c: [0.8, 0.3, 0.6] });
+      L.get('verni').add(G.base('cone12'), { m: G.mat(M + 5.5, y0 + 1.75, M - 3, 1, 0.5, 1), c: [0.9, 0.8, 0.3] });
       return [];
     },
   };

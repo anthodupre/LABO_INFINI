@@ -409,7 +409,7 @@
       plan(P, rng) {
         const cx = M + 0.6, cz = M + 0.4, yF = P.sol(cx, cz);
         P.cyl(cx, cz, 2.9);
-        P.lum(cx, yF + 2.6, cz - 3.6, [0.55, 0.85, 1], 2.3, 18); P.lum(cx, yF + 7.5, cz, [0.5, 0.75, 1], 1.3, 24);
+        P.lum(cx, yF + 2.6, cz - 3.6, [0.55, 0.85, 1], 1.7, 18); P.lum(cx, yF + 7.5, cz, [0.5, 0.75, 1], 1.0, 24);
         P.etRoches = [];
         for (let i = 0; i < 30; i++) {
           const an = rng() * TAU, r = 11.5 + rng() * 5.5, x = M + Math.cos(an) * r, z = M + Math.sin(an) * r, sz = 0.35 + rng() * rng() * 1.4;
@@ -452,7 +452,7 @@
           const k = plat ? 1 : 0.5 + 0.6 * Math.abs(N.dot(Ld)) + (N.dot(Cc) * Math.sign(N.dot(Cc)) > 0 ? 0 : 0);
           sp.push(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z); sc.push(c0[0] * k, c0[1] * k, c0[2] * k, c1[0] * k, c1[1] * k, c1[2] * k, c2[0] * k, c2[1] * k, c2[2] * k);
         };
-        const CR = [[2.7, 2.95, 3.2], [1.25, 2.1, 3.0], [0.5, 1.25, 2.6], [0.22, 0.65, 2.0]], FR = [0, 0.3, 0.62, 1], NOIRC = [0.01, 0.03, 0.08];
+        const CR = [[1.9, 2.1, 2.3], [0.9, 1.5, 2.2], [0.36, 0.9, 1.9], [0.16, 0.48, 1.5]], FR = [0, 0.3, 0.62, 1], NOIRC = [0.01, 0.03, 0.08];
         const branche = (dx, dy, dz, n, l, w, b, coupe, M4, fissure, dim) => {
           const d = V3(dx, dy, dz).normalize(), u = V3().crossVectors(d, Math.abs(d.y) > 0.9 ? V3(1, 0, 0) : V3(0, 1, 0)).normalize(), v = V3().crossVectors(d, u), rings = [];
           const nr = coupe ? 2 : 3;
@@ -466,7 +466,7 @@
             const k2 = (k + 1) % n; tri(rings[j][k], rings[j][k2], rings[j + 1][k2], cl(j), cl(j), cl(j + 1));
             if (coupe || j < nr - 1) tri(rings[j][k], rings[j + 1][k2], rings[j + 1][k], cl(j), cl(j + 1), cl(j + 1));
           }
-          if (coupe) { const c = V3(); for (const q of rings[nr]) c.add(q); c.multiplyScalar(1 / n); const cc = [3.6, 3.6, 3.6]; for (let k = 0; k < n; k++) tri(rings[nr][k], rings[nr][(k + 1) % n], c, cc, cc, cc, true); }
+          if (coupe) { const c = V3(); for (const q of rings[nr]) c.add(q); c.multiplyScalar(1 / n); const cc = [2.6, 2.6, 2.6]; for (let k = 0; k < n; k++) tri(rings[nr][k], rings[nr][(k + 1) % n], c, cc, cc, cc, true); }
           if (fissure) { // fêlure : ruban sombre en zigzag sur une facette, de la base vers la pointe
             const p0 = rings[0][0], p1 = rings[0][1], ap = rings[nr][0].clone().add(rings[nr][1]).multiplyScalar(0.5), mb = p0.clone().add(p1).multiplyScalar(0.5), lat = p1.clone().sub(p0).normalize();
             A.subVectors(p1, p0); B.subVectors(ap, p0); const nf = V3().crossVectors(A, B).normalize(); if (nf.dot(mb.clone().sub(V3().copy(d).multiplyScalar(b).applyMatrix4(M4))) < 0) nf.negate();
@@ -486,9 +486,9 @@
         const matE = MAT.patch(new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false, side: THREE.DoubleSide }), { cle: 'etoileVerre' });
         const etoile = new THREE.Mesh(gE, matE); etoile.userData.matPropre = true; groupe.add(etoile);
         // halos de l'étoile (ils pulsent avec elle) et lueur au fond de la cuvette
-        const LH = G.Lots(); G.halo(LH, cx, yF + 2.6, cz, [0.2, 0.34, 0.5], 15); G.halo(LH, cx, yF + 5, cz - 1, [0.1, 0.2, 0.34], 9); G.halo(LH, cx - 4.5, yF + 2.4, cz + 0.8, [0.1, 0.2, 0.34], 6);
+        const LH = G.Lots(); G.halo(LH, cx, yF + 2.6, cz, [0.1, 0.17, 0.26], 13); G.halo(LH, cx, yF + 5, cz - 1, [0.06, 0.12, 0.2], 8); G.halo(LH, cx - 4.5, yF + 2.4, cz + 0.8, [0.05, 0.1, 0.17], 5);
         const gH = maill(LH); groupe.add(gH); const hA = gH.children[0].geometry.attributes.color, hB = Float32Array.from(hA.array);
-        L.get('flaque').add(planF(12, 12), { m: G.mat(cx, 0, cz, 25, 25, 1, -Math.PI / 2, 0, 0), c: [0.2, 0.36, 0.55], def: v => { v.y = sol(v.x, v.z) + 0.13; } });
+        L.get('flaque').add(planF(12, 12), { m: G.mat(cx, 0, cz, 25, 25, 1, -Math.PI / 2, 0, 0), c: [0.1, 0.19, 0.3], def: v => { v.y = sol(v.x, v.z) + 0.13; } });
         fumee(groupe, [V3(cx - 2.6, yF + 0.4, cz - 2.2), V3(cx + 2.8, yF + 0.4, cz - 1.2), V3(cx + 0.5, yF + 0.4, cz + 3.2), V3(cx - 3.4, yF + 0.5, cz + 2)], 6);
         // ---- éclats qui flottent et tournent au-dessus ----
         const anneaux = [], seuls = [], eclatM = (L2, x, y, z, sz, c) => L2.get('emis').add(G.base('ico'), { m: G.mat(x, y, z, sz * 0.26, sz, sz * 0.2, rng() * 3, rng() * 3, rng() * 3), c });
