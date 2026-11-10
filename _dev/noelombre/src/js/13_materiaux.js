@@ -184,6 +184,12 @@ const MAT = (() => {
           if (t >= tt.z) { float ix = floor(gr * 3.999); cp = texture2D(tPieces, (vec2(mod(ix, 2.0), floor(ix * 0.5)) + clamp(h.xy, 0.02, 0.98)) * 0.5).rgb; }
           else if (t >= tt.y) cp = d.y < 0.0 ? vec3(0.34, 0.2, 0.11) * (0.75 + 0.25 * step(0.5, fract(h.x * 5.0))) : vec3(0.7, 0.66, 0.58);
           else cp = mix(vec3(0.5, 0.22, 0.18), vec3(0.22, 0.34, 0.3), fract(gr * 5.3)) * (0.82 + 0.18 * step(0.5, fract(h.y * 7.0)));
+          // quelqu'un passe parfois dans la pièce (une ombre qui traverse le mur du fond, dans une fenêtre sur trois)
+          if (t >= tt.z && fract(gr * 3.7) > 0.66) {
+            float sx = fract(uTemps * 0.018 * (0.6 + gr) + gr * 9.0) * 5.0 - 2.0;
+            float corps = smoothstep(0.17, 0.1, abs(h.x - sx)) * step(h.y, 0.56) + smoothstep(0.11, 0.07, length(h.xy - vec2(sx, 0.66)));
+            cp *= 1.0 - 0.8 * clamp(corps, 0.0, 1.0);
+          }
           cp *= mix(1.15, 0.4, clamp(h.z / prof, 0.0, 1.0));
           float lum = max(vC.r, max(vC.g, vC.b));
           vec3 col = cp * vC;
