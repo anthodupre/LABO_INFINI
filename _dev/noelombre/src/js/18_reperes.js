@@ -262,7 +262,7 @@ const REPERES = (() => {
         for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; L2.get('metal').add(G.base('cube'), { m: G.mat(sx, Math.sin(a) * R0 / 2, Math.cos(a) * R0 / 2, 0.08, 0.08, R0, -a, 0, 0), c: [0.85, 0.85, 0.88] }); }
       }
       L2.get('metal').add(G.base('cyl12'), { m: G.mat(0, 0, 0, 0.5, 2.6, 0.5, 0, 0, Math.PI / 2), c: [0.5, 0.5, 0.52] });
-      for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2, b = (i + 1) / 48 * Math.PI * 2; G.guirlande(L2, [0, Math.sin(a) * R0, Math.cos(a) * R0], [0, Math.sin(b) * R0, Math.cos(b) * R0], { couleurs: [[3, 0.6, 0.5], [3, 2.4, 0.8], [0.6, 1.4, 3]], rng, creux: 0.02, pas: 0.6, r: 0.15 }); }
+      for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2, b = (i + 1) / 48 * Math.PI * 2; G.guirlande(L2, [(i % 2 ? 1 : -1) * 1.0, Math.sin(a) * (R0 + 0.75), Math.cos(a) * (R0 + 0.75)], [(i % 2 ? 1 : -1) * 1.0, Math.sin(b) * (R0 + 0.75), Math.cos(b) * (R0 + 0.75)], { couleurs: [[3, 0.6, 0.5], [3, 2.4, 0.8], [0.6, 1.4, 3]], rng, creux: 0.02, pas: 0.6, r: 0.15 }); }
       const roue = maill(L2); roue.position.set(M, yc, M); roue.rotation.y = Math.PI / 2; groupe.add(roue);
       const nac = [], cols = [[0.7, 0.15, 0.2], [0.2, 0.4, 0.7], [0.85, 0.65, 0.2], [0.3, 0.55, 0.35]];
       for (let i = 0; i < 12; i++) {
