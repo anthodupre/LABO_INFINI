@@ -29,7 +29,8 @@ const GEO = (() => {
       case 'pt': g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute([0, 1, 0], 3)); g.setIndex([0]); break; // un seul sommet (ampoules, halos)
       case 'bosse': g = new THREE.SphereGeometry(1, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2); break; // congère (demi-sphère)
       case 'dalle': g = new THREE.BoxGeometry(1, 1, 1, 6, 1, 4); break; // couche de neige d'un toit (assez de sommets pour onduler)
-      case 'tronc': g = new THREE.CylinderGeometry(0.62, 1, 1, 7, 1); break; // branche qui s'affine
+      case 'tronc': g = new THREE.CylinderGeometry(0.62, 1, 1, 5, 1, true); break; // branche qui s'affine (légère : un arbre en a des dizaines)
+      case 'pique': g = new THREE.CylinderGeometry(0, 1, 1, 4, 1, true); break; // barreau de grille
       case 'plan9': g = new THREE.PlaneGeometry(1, 1, 4, 4); break;
       case 'tore': g = new THREE.TorusGeometry(1, 0.32, 6, 16); break;
       case 'couronne': g = new THREE.TorusGeometry(1, 0.26, 7, 18); break;
@@ -183,13 +184,13 @@ const GEO = (() => {
       const n = prof > 3 ? 2 : 2 + (rng() < 0.6 ? 1 : 0);
       for (let i = 0; i < n; i++) br(ex, ey, ez, ang + (rng() - 0.5) * 2.6 + (i ? 2.1 : 0), Math.min(1.5, inc + 0.25 + rng() * 0.45), len * (0.6 + rng() * 0.18), rad * 0.62, prof - 1);
     };
-    br(0, -0.3, 0, rng() * 6, 0.1, H * 0.4, H * 0.045, 5);
+    br(0, -0.3, 0, rng() * 6, 0.1, H * 0.4, H * 0.045, H > 15 ? 5 : 4);
   };
 
   // ---- CITROUILLE (lanterne : visage lumineux) ----
   G.citrouille = function (L, w, rng, s, lanterne) {
     const c = [1, 0.48 + rng() * 0.12, 0.12];
-    L.get('citrouille').add(G.base('sphere'), { m: G.mat(0, s * 0.62, 0, s, s * 0.72, s), c, uvm: undefined, w });
+    L.get('citrouille').add(G.base(s > 0.55 ? 'sphere' : 'sphereB'), { m: G.mat(0, s * 0.62, 0, s, s * 0.72, s), c, uvm: undefined, w });
     L.get('ecorce').add(G.base('cyl6'), { m: G.mat(0, s * 1.32, 0, s * 0.09, s * 0.3, s * 0.09, 0.2, 0, 0.3), c: [0.35, 0.45, 0.2], w });
     if (lanterne) {
       const g = [3.6, 1.7, 0.3];
@@ -224,10 +225,10 @@ const GEO = (() => {
 
   // ---- CLÔTURE de fer (le long d'un segment) ----
   G.cloture = function (L, a, b, w) {
-    const l = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(2, Math.floor(l / 0.32)), ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(2, Math.floor(l / 0.4)), ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
     L.get('metal').add(G.base('cube'), { m: G.mat((a[0] + b[0]) / 2, 0.9, (a[1] + b[1]) / 2, l, 0.05, 0.05, 0, -ang, 0), c: [0.15, 0.15, 0.17], w });
     L.get('metal').add(G.base('cube'), { m: G.mat((a[0] + b[0]) / 2, 0.3, (a[1] + b[1]) / 2, l, 0.05, 0.05, 0, -ang, 0), c: [0.15, 0.15, 0.17], w });
-    for (let i = 0; i <= n; i++) { const t = i / n, x = lerp(a[0], b[0], t), z = lerp(a[1], b[1], t); L.get('metal').add(G.base('cone4'), { m: G.mat(x, 0.6, z, 0.03, 1.25, 0.03), c: [0.15, 0.15, 0.17], w }); }
+    for (let i = 0; i <= n; i++) { const t = i / n, x = lerp(a[0], b[0], t), z = lerp(a[1], b[1], t); L.get('metal').add(G.base('pique'), { m: G.mat(x, 0.6, z, 0.035, 1.25, 0.035), c: [0.15, 0.15, 0.17], w }); }
   };
   G.banc = function (L, w) {
     for (let i = 0; i < 3; i++) L.get('bois').add(G.base('cube'), { m: G.mat(0, 0.48, -0.15 + i * 0.16, 1.6, 0.05, 0.12), c: [0.55, 0.42, 0.32], uvm: 'monde', w });

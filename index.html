@@ -554,7 +554,7 @@ p7/6A+wE0tPdzdaLX3oetkqamvgH0Zqam2HbRPXKrnrjzd5123ug0c4mTz/1eGPTtmboiMjZpy+AbZA3
 jwGuTV6hQ2DppP6q484g5XLx7T1D/g4X3pTt3/wa3QX19+7uldEWn7lCg+JQJ9rdyQzScDdzjKr8fwAAAP//ZlvQKQAAAAZJ
 REFUAwBi5ZLX06TpQgAAAABJRU5ErkJggg==">
 <meta name="theme-color" content="#05060d">
-<meta name="version" content="9 novembre 2026 à 20 h 51">
+<meta name="version" content="9 novembre 2026 à 21 h 00">
 <title>Noëlombre</title>
 <style>
 /* Polices intégrées (im-fell-english-latin-400-italic.woff2, im-fell-english-latin-400-normal.woff2, im-fell-english-sc-latin-400-normal.woff2) — vérifier leur licence (OFL…) */
@@ -3090,7 +3090,7 @@ button{background:#1b1e33;border:1px solid #3a3e60;border-radius:10px}
 
 <script>
 "use strict";
-const BUILD_ID = "9 novembre 2026 à 20 h 51";
+const BUILD_ID = "9 novembre 2026 à 21 h 00";
 /* ==== 01_three.js ==== */
 /* Three.js r170 (licence MIT, © 2010-2024 three.js authors) + EffectComposer, UnrealBloomPass, OutputPass, mergeGeometries.
    Fichier GÉNÉRÉ par tools/vendor.js : ne pas modifier à la main. */
@@ -34367,7 +34367,8 @@ const GEO = (() => {
       case 'pt': g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute([0, 1, 0], 3)); g.setIndex([0]); break; // un seul sommet (ampoules, halos)
       case 'bosse': g = new THREE.SphereGeometry(1, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2); break; // congère (demi-sphère)
       case 'dalle': g = new THREE.BoxGeometry(1, 1, 1, 6, 1, 4); break; // couche de neige d'un toit (assez de sommets pour onduler)
-      case 'tronc': g = new THREE.CylinderGeometry(0.62, 1, 1, 7, 1); break; // branche qui s'affine
+      case 'tronc': g = new THREE.CylinderGeometry(0.62, 1, 1, 5, 1, true); break; // branche qui s'affine (légère : un arbre en a des dizaines)
+      case 'pique': g = new THREE.CylinderGeometry(0, 1, 1, 4, 1, true); break; // barreau de grille
       case 'plan9': g = new THREE.PlaneGeometry(1, 1, 4, 4); break;
       case 'tore': g = new THREE.TorusGeometry(1, 0.32, 6, 16); break;
       case 'couronne': g = new THREE.TorusGeometry(1, 0.26, 7, 18); break;
@@ -34521,13 +34522,13 @@ const GEO = (() => {
       const n = prof > 3 ? 2 : 2 + (rng() < 0.6 ? 1 : 0);
       for (let i = 0; i < n; i++) br(ex, ey, ez, ang + (rng() - 0.5) * 2.6 + (i ? 2.1 : 0), Math.min(1.5, inc + 0.25 + rng() * 0.45), len * (0.6 + rng() * 0.18), rad * 0.62, prof - 1);
     };
-    br(0, -0.3, 0, rng() * 6, 0.1, H * 0.4, H * 0.045, 5);
+    br(0, -0.3, 0, rng() * 6, 0.1, H * 0.4, H * 0.045, H > 15 ? 5 : 4);
   };
 
   // ---- CITROUILLE (lanterne : visage lumineux) ----
   G.citrouille = function (L, w, rng, s, lanterne) {
     const c = [1, 0.48 + rng() * 0.12, 0.12];
-    L.get('citrouille').add(G.base('sphere'), { m: G.mat(0, s * 0.62, 0, s, s * 0.72, s), c, uvm: undefined, w });
+    L.get('citrouille').add(G.base(s > 0.55 ? 'sphere' : 'sphereB'), { m: G.mat(0, s * 0.62, 0, s, s * 0.72, s), c, uvm: undefined, w });
     L.get('ecorce').add(G.base('cyl6'), { m: G.mat(0, s * 1.32, 0, s * 0.09, s * 0.3, s * 0.09, 0.2, 0, 0.3), c: [0.35, 0.45, 0.2], w });
     if (lanterne) {
       const g = [3.6, 1.7, 0.3];
@@ -34562,10 +34563,10 @@ const GEO = (() => {
 
   // ---- CLÔTURE de fer (le long d'un segment) ----
   G.cloture = function (L, a, b, w) {
-    const l = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(2, Math.floor(l / 0.32)), ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(2, Math.floor(l / 0.4)), ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
     L.get('metal').add(G.base('cube'), { m: G.mat((a[0] + b[0]) / 2, 0.9, (a[1] + b[1]) / 2, l, 0.05, 0.05, 0, -ang, 0), c: [0.15, 0.15, 0.17], w });
     L.get('metal').add(G.base('cube'), { m: G.mat((a[0] + b[0]) / 2, 0.3, (a[1] + b[1]) / 2, l, 0.05, 0.05, 0, -ang, 0), c: [0.15, 0.15, 0.17], w });
-    for (let i = 0; i <= n; i++) { const t = i / n, x = lerp(a[0], b[0], t), z = lerp(a[1], b[1], t); L.get('metal').add(G.base('cone4'), { m: G.mat(x, 0.6, z, 0.03, 1.25, 0.03), c: [0.15, 0.15, 0.17], w }); }
+    for (let i = 0; i <= n; i++) { const t = i / n, x = lerp(a[0], b[0], t), z = lerp(a[1], b[1], t); L.get('metal').add(G.base('pique'), { m: G.mat(x, 0.6, z, 0.035, 1.25, 0.035), c: [0.15, 0.15, 0.17], w }); }
   };
   G.banc = function (L, w) {
     for (let i = 0; i < 3; i++) L.get('bois').add(G.base('cube'), { m: G.mat(0, 0.48, -0.15 + i * 0.16, 1.6, 0.05, 0.12), c: [0.55, 0.42, 0.32], uvm: 'monde', w });
@@ -35101,7 +35102,7 @@ const MONDE = (() => {
       const t = (i + 0.5) / nLampes * (C - 10) + 5 + (rng() - 0.5) * 3, off = RUE + 0.35;
       const x = axe === 'x' ? t : (rue === 0 ? off : C - off), z = axe === 'x' ? (rue === 0 ? off : C - off) : t;
       const ang = axe === 'x' ? (rue === 0 ? Math.PI / 2 : -Math.PI / 2) : (rue === 0 ? Math.PI : 0);
-      if (!P.libre(x, z, 0.4)) continue;
+      if (!P.libre(x, z, 0.4) || (P.rep && axe === 'x' && rue === 0 && Math.abs(t - C / 2) < 5)) continue; // jamais de lampadaire dans l'entrée d'une merveille
       ajLampe(P, x, z, ang, pal.lampe);
     }
     // --- guirlandes tendues au-dessus des rues SUD et OUEST (chaque rue touche deux parcelles : une seule la décore) ---
@@ -35208,9 +35209,9 @@ const PARCELLE = (() => {
   // ---- petits modèles propres aux quartiers ----
   function bonhomme(L, w, rng) {
     const blanc = [0.95, 0.95, 1];
-    L.get('unie').add(GEO.base('sphere'), { m: GEO.mat(0, 0.45, 0, 0.55, 0.5, 0.55), c: blanc, w });
-    L.get('unie').add(GEO.base('sphere'), { m: GEO.mat(0.04, 1.12, 0, 0.4, 0.38, 0.4), c: blanc, w });
-    L.get('unie').add(GEO.base('sphere'), { m: GEO.mat(0.1, 1.62, 0.02, 0.27, 0.28, 0.27, 0, 0, 0.2), c: blanc, w });
+    L.get('unie').add(GEO.base('sphereB'), { m: GEO.mat(0, 0.45, 0, 0.55, 0.5, 0.55), c: blanc, w });
+    L.get('unie').add(GEO.base('sphereB'), { m: GEO.mat(0.04, 1.12, 0, 0.4, 0.38, 0.4), c: blanc, w });
+    L.get('unie').add(GEO.base('sphereB'), { m: GEO.mat(0.1, 1.62, 0.02, 0.27, 0.28, 0.27, 0, 0, 0.2), c: blanc, w });
     L.get('unie').add(GEO.base('cone8'), { m: GEO.mat(0.12, 1.62, 0.42, 0.05, 0.4, 0.05, Math.PI / 2, 0, 0), c: [1, 0.4, 0.05], w });
     L.get('emis').add(GEO.base('sphereB'), { m: GEO.mat(0.02, 1.7, 0.24, 0.04, 0.04, 0.03), c: [2.5, 0.4, 0.2], w });
     L.get('emis').add(GEO.base('sphereB'), { m: GEO.mat(0.2, 1.72, 0.22, 0.04, 0.04, 0.03), c: [2.5, 0.4, 0.2], w });
@@ -35770,6 +35771,1130 @@ const REPERES = (() => {
         semer(P, rng, 0.6, 2, (x, z) => P.cadeauxDeco.push({ x, z, s: 0.5 + rng() * 0.3 }));
       },
       construire() { return []; },
+    },
+  });
+})();
+
+/* ==== 18b_lieux.js ==== */
+/* ===================== LIEUX SUPPLÉMENTAIRES : 12 blocs et 8 merveilles =====================
+   Pour que la ville ne se répète pas : chaque bloc a son idée forte visible depuis la rue, chaque merveille sa
+   silhouette. Même format que 18_reperes.js / 18a_blocs.js. Les fichiers 18m_*.js (autres lieux) passent après. */
+(() => {
+  const C = MONDE.C, M = C / 2, G = GEO, maill = REPERES_OUTILS.maill, PI = Math.PI;
+  const noir = [0.16, 0.16, 0.18], ambre = [3.2, 2.0, 0.8];
+  const semer = (P, rng, r, n, f, x0, x1) => { x0 = x0 == null ? 8 : x0; x1 = x1 == null ? C - 8 : x1; for (let i = 0, e = 0; i < n && e < n * 10; e++) { const x = x0 + rng() * (x1 - x0), z = x0 + rng() * (x1 - x0); if (P.libre(x, z, r)) { f(x, z); i++; } } };
+  // petit lampion lumineux avec son halo
+  const lampion = (L, x, y, z, c, t) => { L.get('emis').add(G.base('sphereB'), { m: G.mat(x, y, z, t, t * 1.25, t), c }); G.halo(L, x, y, z, [c[0] * 0.11, c[1] * 0.11, c[2] * 0.11], t * 14); };
+  const B = {}, W = {};
+
+  // ---------- BLOCS ----------
+  B.marche = { // marché de Noël : étals à auvents rayés, lampions, caisses, guirlandes
+    genre: 'bloc', maisons: [0.25, 0.9, 0.6, 0.9], humeur: 'fete',
+    plan(P, rng) {
+      P.etals = [];
+      for (let r = 0; r < 3; r++) for (let i = 0; i < 4; i++) { const x = 9 + i * 8.6 + rng() * 1.2, z = 8 + r * 7.5 + rng(); if (P.libre(x, z, 2)) { P.etals.push({ x, z, a: (rng() - 0.5) * 0.3 + (r % 2 ? PI : 0), c: Math.floor(rng() * 4) }); P.boite(x, z, 1.5, 0.9, 0); } }
+      P.feu(M + 1, 4.8 + 7.5 * 0.5); P.flaque(M, 14, 12, [0.3, 0.2, 0.09]);
+    },
+    construire(L, P, rng) {
+      const cols = [[0.8, 0.2, 0.2], [0.2, 0.45, 0.3], [0.75, 0.6, 0.2], [0.5, 0.25, 0.6]];
+      for (const e of P.etals) {
+        const w = G.monde(e.x, P.sol(e.x, e.z), e.z, e.a);
+        L.get('bois').add(G.base('cube'), { m: G.mat(0, 0.9, 0, 2.8, 0.1, 1.3), c: [0.5, 0.38, 0.28], uvm: 'monde', w });
+        L.get('bois').add(G.base('cube'), { m: G.mat(0, 0.45, -0.5, 2.7, 0.9, 0.08), c: [0.42, 0.3, 0.22], uvm: 'monde', w });
+        for (const sx of [-1.35, 1.35]) L.get('bois').add(G.base('cube'), { m: G.mat(sx, 1.25, -0.6, 0.09, 2.5, 0.09), c: [0.35, 0.26, 0.2], w });
+        L.get('tissu').add(G.base('cube'), { m: G.mat(0, 2.45, 0.1, 3.2, 0.06, 1.9, 0.32, 0, 0), c: cols[e.c], w });
+        for (let k = 0; k < 4; k++) L.get('verni').add(G.base(k % 2 ? 'sphereB' : 'cube'), { m: G.mat(-1 + k * 0.65, 1.08, 0.1 + (k % 2) * 0.2, 0.16, 0.16, 0.16), c: cols[(e.c + k) % 4], w });
+        const v = new THREE.Vector3(0.9, 2.05, 0.75).applyMatrix4(w); lampion(L, v.x, v.y, v.z, ambre, 0.1);
+        if (rng() < 0.6) L.get('bois').add(G.base('cube'), { m: G.mat(1.9, 0.3, 0.3, 0.6, 0.6, 0.6, 0, rng(), 0), c: [0.45, 0.34, 0.25], uvm: 'monde', w });
+      }
+      for (let i = 0; i + 1 < P.etals.length; i += 2) { const a = P.etals[i], b = P.etals[i + 1]; G.guirlande(L, [a.x, P.sol(a.x, a.z) + 2.6, a.z], [b.x, P.sol(b.x, b.z) + 2.6, b.z], { couleurs: P.pal.guirlande, rng, creux: 0.5 }); }
+      return [];
+    },
+  };
+  B.parc = { // petit parc : grille, statue enneigée, bancs, haies
+    genre: 'bloc', maisons: [0, 0.8, 0.5, 0.5],
+    plan(P, rng) {
+      const m = 6;
+      for (const [p0, p1] of [[[m, m], [M - 2, m]], [[M + 2, m], [C - m, m]], [[C - m, m], [C - m, C - 13]], [[m, C - 13], [m, m]]]) { P.clotures.push({ a: p0, b: p1 }); P.boite((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, Math.abs(p1[0] - p0[0]) / 2 + 0.1, Math.abs(p1[1] - p0[1]) / 2 + 0.1, 0, 1.3); }
+      P.cyl(M, M - 3, 1.4);
+      for (const a of [0.8, 2.35, 3.9, 5.5]) { const x = M + Math.cos(a) * 5.5, z = M - 3 + Math.sin(a) * 5.5; P.bancs.push({ x, z, a: -a - PI / 2 }); P.cyl(x, z, 0.8, 0.9); }
+      for (const [x, z] of [[10, 10], [C - 10, 10], [10, 26], [C - 10, 26]]) P.lampe(x, z, 0);
+      P.haies = []; for (const a of [0, PI / 2, PI, PI * 1.5]) { const x = M + Math.cos(a + 0.78) * 9, z = M - 3 + Math.sin(a + 0.78) * 9; P.haies.push({ x, z, a }); P.boite(x, z, 2.2, 0.7, a + 0.78 + PI / 2, 1.3); }
+      semer(P, rng, 1.5, 4, (x, z) => { P.sapins.push({ x, z, h: 3 + rng() * 3, illum: rng() < 0.5 }); P.cyl(x, z, 0.5); }, 8, C - 14);
+    },
+    construire(L, P, rng) {
+      const y = P.sol(M, M - 3), pi = [0.55, 0.57, 0.62];
+      L.get('pierre').add(G.base('cyl8'), { m: G.mat(M, y + 0.5, M - 3, 1.3, 1.6, 1.3), c: pi, uvm: 'monde' });
+      L.get('pierre').add(G.base('cone8'), { m: G.mat(M, y + 2.9, M - 3, 0.75, 3.4, 0.75), c: pi, def: v => { v.x += Math.sin((v.y - y) * 0.9) * 0.18; } });
+      L.get('pierre').add(G.base('sphere'), { m: G.mat(M + 0.15, y + 4.75, M - 3, 0.42, 0.5, 0.42), c: pi });
+      L.get('pierre').add(G.base('cube'), { m: G.mat(M + 0.5, y + 3.7, M - 3, 1.5, 0.16, 0.16, 0, 0, 0.5), c: pi });
+      lampion(L, M + 1.15, y + 4.25, M - 3, [2.4, 2.6, 3.2], 0.11);
+      for (const h of P.haies) L.get('aiguilles').add(G.base('boite'), { m: G.mat(h.x, P.sol(h.x, h.z) + 0.6, h.z, 4.2, 1.3, 1.2, 0, -(h.a + 0.78 + PI / 2), 0), c: [0.5, 0.7, 0.55], uvm: 'monde', s: 0.9, def: v => { v.y += Math.sin(v.x * 2.3 + v.z) * 0.06; } });
+      return [];
+    },
+  };
+  B.lumignons = { // champ de lumignons posés au sol en spirale
+    genre: 'bloc', maisons: [0, 0.7, 0.4, 0.4], humeur: 'neige',
+    plan(P, rng) {
+      P.pts = []; for (let i = 0; i < 70; i++) { const t = i / 70, a = t * PI * 7, r = 1.8 + t * 15.5, x = M + Math.cos(a) * r, z = M + Math.sin(a) * r; if (z > 4.5 && P.libre(x, z, 0.3)) P.pts.push({ x, z, k: rng() }); }
+      P.bancs.push({ x: M, z: M, a: 0 }); P.cyl(M, M, 0.8, 0.9); P.flaque(M, M, 17, [0.22, 0.14, 0.06]);
+      P.lum(M, P.sol(M, M) + 1, M + 3, [1, 0.7, 0.35], 1.3, 14); P.lum(M + 9, P.sol(M + 9, M) + 1, M - 6, [1, 0.7, 0.35], 1, 12);
+    },
+    construire(L, P) {
+      for (const p of P.pts) { const y = P.sol(p.x, p.z); L.get('emis').add(G.base('cube'), { m: G.mat(p.x, y + 0.17, p.z, 0.2, 0.3, 0.2, 0, p.k * 3, 0), c: [2.6 + p.k, 1.6 + p.k * 0.5, 0.6] }); G.halo(L, p.x, y + 0.22, p.z, [0.3, 0.19, 0.07], 1.5 + p.k * 0.6); }
+      return [];
+    },
+  };
+  B.verger = { // verger d'arbres morts décorés de boules et de petites lumières
+    genre: 'bloc', maisons: [0.15, 0.8, 0.5, 0.5],
+    plan(P, rng) {
+      P.arbres = []; for (let r = 0; r < 3; r++) for (let i = 0; i < 4; i++) { const x = 9.5 + i * 8.3 + rng() * 1.5, z = 8.5 + r * 8 + rng() * 1.5; if (P.libre(x, z, 1.2)) { const h = 5 + rng() * 3; P.morts.push({ x, z, h }); P.arbres.push({ x, z, h }); P.cyl(x, z, 0.4); } }
+      P.lampe(M, 6); P.feu(M - 6, M + 3);
+    },
+    construire(L, P, rng) {
+      const cols = [[0.75, 0.1, 0.14], [0.85, 0.65, 0.2], [0.2, 0.3, 0.75], [0.8, 0.8, 0.85]];
+      for (const a of P.arbres) { const y = P.sol(a.x, a.z); for (let k = 0; k < 9; k++) { const an = rng() * 6.28, r = 0.8 + rng() * a.h * 0.32, yy = y + a.h * (0.38 + rng() * 0.3), x = a.x + Math.cos(an) * r, z = a.z + Math.sin(an) * r;
+        if (k % 3) { L.get('verni').add(G.base('sphereB'), { m: G.mat(x, yy, z, 0.13, 0.13, 0.13), c: cols[k % 4] }); L.get('unie').add(G.base('cyl6'), { m: G.mat(x, yy + 0.3, z, 0.008, 0.5, 0.008), c: [0.5, 0.5, 0.5] }); } else G.ampoule(L, x, yy, z, P.pal.guirlande[k % P.pal.guirlande.length], { rng }); } }
+      const y0 = P.sol(M + 6, M - 2); // une échelle oubliée contre un arbre
+      for (const sx of [-0.25, 0.25]) L.get('bois').add(G.base('cube'), { m: G.mat(M + 6 + sx, y0 + 1.6, M - 2, 0.06, 3.4, 0.06, 0.25, 0, 0), c: [0.5, 0.4, 0.3] });
+      for (let k = 0; k < 7; k++) L.get('bois').add(G.base('cube'), { m: G.mat(M + 6, y0 + 0.4 + k * 0.42, M - 2 + 0.1 * (k * 0.42 + 0.4) * 2.5 - 0.42, 0.5, 0.04, 0.05), c: [0.5, 0.4, 0.3] });
+      return [];
+    },
+  };
+  B.bonshommes = { // une armée de bonshommes de neige, tous tournés vers la rue du sud
+    genre: 'bloc', maisons: [0, 0.8, 0.35, 0.35], fantomes: true,
+    plan(P, rng) {
+      for (let r = 0; r < 4; r++) for (let i = 0; i < 7; i++) { const x = 7 + i * 5 + (r % 2) * 2.2 + rng() * 0.8, z = 7 + r * 5.2 + rng() * 0.8; if (rng() < 0.82 && P.libre(x, z, 0.9)) { P.bonshommes.push({ x, z, a: PI + (rng() - 0.5) * 0.5 }); P.cyl(x, z, 0.55); } }
+      P.lampe(5.5, 5.5, PI / 2); P.lampe(C - 5.5, 5.5, PI / 2, [1.2, 2.6, 2.8]);
+    },
+    construire() { return []; },
+  };
+  B.manoir = { // un seul grand manoir biscornu derrière sa grille
+    genre: 'bloc', maisons: 0, lampes: 0.6, humeur: 'ombres',
+    plan(P, rng) {
+      const aj = (x, z, w, d, st, et) => { P.maisons.push(MONDE.maison(P, rng, x, z, w, d, PI, { style: st, etages: et })); P.boite(x, z, w / 2 + 0.25, d / 2 + 0.25, PI); };
+      aj(M, M + 3, 10, 8.5, 'pierre', 3); aj(M - 8, M + 4, 5.2, 5.2, 'tour', 5); aj(M + 8.2, M + 3.5, 6, 7, 'brique', 2); aj(M + 4, M + 9.5, 4.6, 4.6, 'tour', 6);
+      const m = 6; for (const [p0, p1] of [[[m, m], [M - 2, m]], [[M + 2, m], [C - m, m]], [[C - m, m], [C - m, C - m]], [[m, C - m], [m, m]], [[m, C - m], [C - m, C - m]]]) { P.clotures.push({ a: p0, b: p1 }); P.boite((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, Math.abs(p1[0] - p0[0]) / 2 + 0.1, Math.abs(p1[1] - p0[1]) / 2 + 0.1, 0, 1.3); }
+      for (let z = 8; z < M - 4; z += 3.4) for (const sx of [-2.2, 2.2]) P.pts = (P.pts || []).concat([{ x: M + sx, z }]);
+      semer(P, rng, 1.5, 3, (x, z) => { P.morts.push({ x, z, h: 6 + rng() * 4 }); P.cyl(x, z, 0.4); }, 8, C - 8);
+    },
+    construire(L, P) { for (const p of P.pts || []) { const y = P.sol(p.x, p.z); L.get('metal').add(G.base('cyl6'), { m: G.mat(p.x, y + 0.5, p.z, 0.03, 1, 0.03), c: noir }); lampion(L, p.x, y + 1.1, p.z, [1.2, 2.8, 2.4], 0.09); } return []; },
+  };
+  B.tourelles = { // îlot de tours d'habitation très hautes, reliées par des passerelles
+    genre: 'bloc', maisons: 0.9,
+    plan(P, rng) {
+      P.tours = []; for (const [x, z] of [[M - 4.5, M - 3], [M + 4.5, M - 2], [M, M + 4.5]]) { const H = MONDE.maison(P, rng, x, z, 4.4, 4.4, PI + (rng() - 0.5) * 0.4, { style: 'tour', etages: 5 + Math.floor(rng() * 3) }); P.maisons.push(H); P.tours.push(H); P.boite(x, z, 2.5, 2.5, 0); }
+    },
+    construire(L, P, rng) {
+      for (let i = 0; i < 3; i++) { const a = P.tours[i], b = P.tours[(i + 1) % 3], ya = a.y + 6.5 + i * 2.6, dx = b.x - a.x, dz = b.z - a.z, l = Math.hypot(dx, dz);
+        L.get('bois').add(G.base('cube'), { m: G.mat((a.x + b.x) / 2, ya, (a.z + b.z) / 2, l, 0.12, 0.9, 0, -Math.atan2(dz, dx), 0), c: [0.4, 0.3, 0.24], uvm: 'monde' });
+        G.guirlande(L, [a.x, ya + 1.1, a.z], [b.x, ya + 1.1, b.z], { couleurs: P.pal.guirlande, rng, creux: 0.25 }); }
+      return [];
+    },
+  };
+  B.entrepot = { // montagnes de cadeaux géants et traîneau garé
+    genre: 'bloc', maisons: [0.2, 0.8, 0.6, 0.6], humeur: 'fete',
+    plan(P, rng) { P.tas = []; semer(P, rng, 3, 5, (x, z) => { P.tas.push({ x, z }); P.cyl(x, z, 2.3); }, 9, C - 12); P.boite(M, 7.5, 2.4, 1, 0); P.lampe(M - 7, 6, PI / 2); P.lampe(M + 7, 6, PI / 2); },
+    construire(L, P, rng) {
+      const cols = [[0.7, 0.1, 0.12], [0.12, 0.45, 0.2], [0.25, 0.25, 0.7], [0.55, 0.2, 0.6], [0.85, 0.85, 0.85], [0.8, 0.6, 0.15]];
+      for (const t of P.tas) { let y = P.sol(t.x, t.z), s = 2.2 + rng() * 1.2; for (let k = 0; k < 5 && s > 0.5; k++) { const h = s * (0.6 + rng() * 0.4); L.get('cadeau').add(G.base('cube'), { m: G.mat(t.x + (rng() - 0.5) * s * 0.4, y + h / 2, t.z + (rng() - 0.5) * s * 0.4, s, h, s, (rng() - 0.5) * 0.1, rng() * 3, (rng() - 0.5) * 0.1), c: cols[Math.floor(rng() * 6)] });
+        y += h * 0.96; s *= 0.62 + rng() * 0.15; } for (let k = 0; k < 3; k++) { const s2 = 0.5 + rng() * 0.6, a = rng() * 6.28; L.get('cadeau').add(G.base('cube'), { m: G.mat(t.x + Math.cos(a) * 2.6, P.sol(t.x, t.z) + s2 / 2, t.z + Math.sin(a) * 2.6, s2, s2, s2, 0, rng() * 3, 0), c: cols[Math.floor(rng() * 6)] }); } }
+      const w = G.monde(M, P.sol(M, 7.5), 7.5, 0.1); // le traîneau
+      L.get('verni').add(G.base('cube'), { m: G.mat(0, 0.75, 0, 3.6, 0.9, 1.5), c: [0.5, 0.08, 0.1], def: v => { v.y += Math.max(0, v.x) * 0.25; }, w });
+      for (const sz of [-0.7, 0.7]) { L.get('metal').add(G.base('cube'), { m: G.mat(0, 0.12, sz, 4.6, 0.07, 0.07), c: [0.7, 0.6, 0.3], def: v => { v.y += Math.pow(Math.max(0, v.x - 1.2), 2) * 0.5; }, w }); for (const sx of [-1.2, 1.2]) L.get('metal').add(G.base('cube'), { m: G.mat(sx, 0.25, sz, 0.06, 0.35, 0.06), c: [0.7, 0.6, 0.3], w }); }
+      const v = new THREE.Vector3(1.9, 1.75, 0).applyMatrix4(w); lampion(L, v.x, v.y, v.z, ambre, 0.12);
+      return [];
+    },
+  };
+  B.ruines = { // maison en ruine : pans de murs troués, arche, corbeaux, une fenêtre encore allumée
+    genre: 'bloc', maisons: [0.2, 0.6, 0, 0.6], humeur: 'ombres', fantomes: true,
+    plan(P, rng) {
+      P.murs = [[M - 6, M - 3, 0.5, 6, 7], [M + 6, M - 1, 0.5, 5, 5], [M, M + 5, 6.5, 0.5, 8], [M - 3, M - 9, 3, 0.5, 4.5]];
+      for (const m of P.murs) P.boite(m[0], m[1], m[2] + 0.1, m[3] + 0.1, 0);
+      semer(P, rng, 1.4, 4, (x, z) => { P.morts.push({ x, z, h: 5 + rng() * 5 }); P.cyl(x, z, 0.4); }, 7, C - 7);
+      P.lum(M, P.sol(M, M + 5) + 4, M + 3.8, [1, 0.75, 0.4], 1.1, 9); P.flaque(M + 1.6, M + 3.2, 3, [0.4, 0.27, 0.12]);
+    },
+    construire(L, P, rng) {
+      for (const m of P.murs) { const y = P.sol(m[0], m[1]), k = rng() * 9;
+        L.get('pierre').add(G.base('dalle'), { m: G.mat(m[0], y + m[4] / 2 - 0.8, m[1], m[2] * 2, m[4] + 1.6, m[3] * 2), c: [0.5, 0.5, 0.54], uvm: 'monde', s: 0.5, def: v => { if (v.y > y + m[4] * 0.55) v.y -= NZ.vn((v.x + v.z) * 0.9 + k, k, 7) * m[4] * 0.55; }, ao: v => 0.55 + 0.45 * sstep(y, y + 1.6, v.y) }); }
+      const y = P.sol(M, M + 5); L.get('fenetre').add(G.base('plan'), { m: G.mat(M + 1.6, y + 3.6, M + 4.47, 0.9, 1.3, 1, 0, PI, 0), c: P.pal.fenetre(rng), uvr: [0.5, 0.5, 1, 1] });
+      for (let k = 0; k < 6; k++) { const m = P.murs[k % 4], x = m[0] + (rng() - 0.5) * m[2] * 1.6, z = m[1] + (rng() - 0.5) * m[3] * 1.6, yy = P.sol(m[0], m[1]) + m[4] * 0.62; L.get('unie').add(G.base('sphereB'), { m: G.mat(x, yy + 0.16, z, 0.13, 0.16, 0.24, 0, rng() * 6, 0), c: [0.03, 0.03, 0.04] }); L.get('unie').add(G.base('cone4'), { m: G.mat(x, yy + 0.25, z + 0.22, 0.04, 0.12, 0.04, PI / 2, 0, 0), c: [0.05, 0.05, 0.05] }); }
+      return [(t, dt, ctx) => { if (ctx.eclat > 0.9 && !ctx._c) { ctx._c = 1; ctx.son('corbeau'); } else if (ctx.eclat < 0.1) ctx._c = 0; }];
+    },
+  };
+  B.butte = { // butte de luge : petite colline, torches, luges plantées dans la neige
+    genre: 'bloc', maisons: [0, 0.5, 0.3, 0.3], route: 0.8,
+    relief(lx, lz, t) { const r = Math.hypot(lx - M, lz - M - 2); if (r < 15) { const k = 1 - r / 15; return t + 5.5 * k * k * (3 - 2 * k); } return t; },
+    plan(P, rng) { for (const a of [0.6, 1.9, 3.3, 4.6, 5.7]) P.feu(M + Math.cos(a) * 12.5, M + 2 + Math.sin(a) * 12.5); semer(P, rng, 1.5, 5, (x, z) => { if (Math.hypot(x - M, z - M - 2) > 13) { P.sapins.push({ x, z, h: 4 + rng() * 4, illum: rng() < 0.6 });
+      P.cyl(x, z, 0.5); } }, 6, C - 6); P.luges = []; for (let i = 0; i < 5; i++) { const a = rng() * 6.28, r = 3 + rng() * 9; P.luges.push({ x: M + Math.cos(a) * r, z: M + 2 + Math.sin(a) * r, a: rng() * 6, p: rng() < 0.4 }); } },
+    construire(L, P) {
+      for (const l of P.luges) { const w = G.mat(l.x, P.sol(l.x, l.z) + (l.p ? 0.55 : 0.12), l.z, 1, 1, 1, l.p ? 1.2 : 0, l.a, 0);
+        for (const sz of [-0.22, 0.22]) L.get('bois').add(G.base('cube'), { m: G.mat(0, 0, sz, 1.3, 0.05, 0.05), c: [0.55, 0.3, 0.2], def: v => { v.y += Math.pow(Math.max(0, v.x - 0.3), 2) * 0.9; }, w });
+        for (let k = 0; k < 4; k++) L.get('bois').add(G.base('cube'), { m: G.mat(-0.45 + k * 0.28, 0.14, 0, 0.2, 0.03, 0.56), c: [0.6, 0.45, 0.32], w }); }
+      const y = P.sol(M, M + 2); L.get('bois').add(G.base('cube'), { m: G.mat(M, y + 1, M + 2, 0.1, 2.2, 0.1), c: [0.45, 0.33, 0.25] }); lampion(L, M, y + 2.3, M + 2, ambre, 0.16);
+      return [];
+    },
+  };
+  B.placette = { // placette aux lampadaires en bouquet, kiosque à boissons chaudes, bancs
+    genre: 'bloc', maisons: 0.9,
+    plan(P, rng) { for (let i = 0; i < 3; i++) { const a = i / 3 * 6.28; P.lampe(M + Math.cos(a) * 0.7, M + Math.sin(a) * 0.7, -a, null, 3.2 + i * 0.7); } P.boite(M + 4.5, M - 3, 1.6, 1.2, 0.4); for (const a of [2.2, 3.6, 5]) { const x = M + Math.cos(a) * 4.5, z = M + Math.sin(a) * 4.5; P.bancs.push({ x, z, a: -a - PI / 2 }); P.cyl(x, z, 0.8, 0.9); } P.place = true; },
+    construire(L, P, rng) {
+      const w = G.monde(M + 4.5, P.sol(M + 4.5, M - 3), M - 3, 0.4);
+      L.get('planche').add(G.base('cube'), { m: G.mat(0, 1.1, 0, 3, 2.2, 2.2), c: [0.55, 0.3, 0.26], uvm: 'monde', w });
+      L.get('tuiles').add(G.base('pignon'), { m: G.mat(0, 2.2, 0, 3.6, 1.1, 2.8), c: [0.32, 0.26, 0.32], uvm: 'monde', w });
+      L.get('fenetre').add(G.base('plan'), { m: G.mat(0, 1.35, 1.12, 2.2, 1.0, 1), c: [2.6, 1.7, 0.8], uvr: [0.5, 0, 1, 0.5], w });
+      L.get('bois').add(G.base('cube'), { m: G.mat(0, 0.82, 1.3, 2.6, 0.08, 0.5), c: [0.4, 0.3, 0.22], w });
+      G.guirlande(L, [M + 3, P.sol(M + 3, M - 2) + 2.3, M - 1.6], [M + 6, P.sol(M + 6, M - 3) + 2.3, M - 2.6], { couleurs: P.pal.guirlande, rng, creux: 0.2 });
+      return [];
+    },
+  };
+  B.chapelle = { // petite chapelle au clocher pointu, vitraux lumineux, quelques tombes
+    genre: 'bloc', maisons: [0, 0.6, 0.5, 0.5], humeur: 'ombres',
+    plan(P, rng) { P.boite(M, M + 2, 3.6, 5.2, 0); P.boite(M, M - 4.2, 1.7, 1.7, 0); semer(P, rng, 0.9, 9, (x, z) => { P.tombes.push({ x, z, a: PI + (rng() - 0.5) * 0.4, pen: (rng() - 0.5) * 0.25 }); P.boite(x, z, 0.4, 0.2, 0, 1.3); }, 7, C - 12);
+      P.sapins.push({ x: M + 9, z: M + 4, h: 9, illum: false }); P.cyl(M + 9, M + 4, 0.6); P.lum(M, P.sol(M, M) + 2.5, M - 6.5, [1, 0.8, 0.5], 1.1, 9); P.flaque(M, M - 7, 3.5, [0.4, 0.3, 0.14]); P.flaque(M - 5.5, M + 2, 4, [0.2, 0.1, 0.3]); P.flaque(M + 5.5, M + 2, 4, [0.1, 0.25, 0.3]); },
+    construire(L, P, rng) {
+      const y = P.sol(M, M), mur = [0.62, 0.62, 0.66], def = v => { v.x += Math.pow(Math.max(0, v.y - y) / 17, 2) * 2.2; };
+      L.get('pierre').add(G.base('boite'), { m: G.mat(M, y + 2, M + 2, 6.6, 6, 10), c: mur, uvm: 'monde', s: 0.45, ao: v => 0.55 + 0.45 * sstep(y, y + 1.6, v.y) });
+      L.get('tuiles').add(G.base('pignon'), { m: G.mat(M, y + 5, M + 2, 7.4, 3.8, 10.6), c: [0.26, 0.26, 0.32], uvm: 'monde', s: 0.55 });
+      L.get('pierre').add(G.base('boite'), { m: G.mat(M, y + 5.5, M - 4.2, 3, 13, 3), c: mur, uvm: 'monde', s: 0.45, def });
+      L.get('tuiles').add(G.base('cone4'), { m: G.mat(M, y + 15.5, M - 4.2, 2.6, 7, 2.6), c: [0.26, 0.26, 0.32], uvm: 'monde', def: v => { const k = clamp((v.y - y - 12) / 7, 0, 1); v.x -= k * k * k * 2; def(v); } });
+      L.get('emis').add(G.base('cube'), { m: G.mat(M, y + 10, M - 5.72, 0.9, 1.6, 0.05), c: [2.6, 1.9, 0.8], def }); G.halo(L, M + 0.8, y + 10, M - 5.9, [0.3, 0.2, 0.08], 5);
+      L.get('porte').add(G.base('plan'), { m: G.mat(M, y + 1.2, M - 5.73, 1.3, 2.4, 1, 0, PI, 0), c: [1, 1, 1] });
+      const vit = [[2.4, 0.5, 2.6], [0.4, 2.2, 2.6], [2.8, 1.6, 0.4], [0.5, 2.4, 0.9]];
+      for (let k = 0; k < 4; k++) for (const sx of [-1, 1]) { const z = M - 1.5 + k * 2.3, c = vit[(k + (sx > 0 ? 1 : 0)) % 4]; L.get('emis').add(G.base('plan'), { m: G.mat(M + sx * 3.33, y + 2.6, z, 0.8, 2.2, 1, 0, sx * PI / 2, 0), c }); G.halo(L, M + sx * 3.6, y + 2.6, z, [c[0] * 0.07, c[1] * 0.07, c[2] * 0.07], 3.5); }
+      return [(t, dt, ctx) => { if (ctx.d < 16 && !ctx._s) { ctx._s = 1; ctx.son('cloche'); } else if (ctx.d > 40) ctx._s = 0; }];
+    },
+  };
+
+  // ---------- MERVEILLES ----------
+  W.arbre_lanternes = {
+    nom: 'L’Arbre aux Mille Lanternes', desc: 'Chaque lanterne est un vœu que quelqu’un a oublié de reprendre. L’arbre, lui, se souvient de tout.',
+    sansPlace: true, maisons: false, humeur: 'neige',
+    plan(P, rng) { P.cyl(M, M, 1.6); P.lum(M, P.sol(M, M) + 6, M - 2, [1, 0.7, 0.35], 2, 18); P.lum(M + 4, P.sol(M, M) + 11, M + 3, [1, 0.6, 0.3], 1.6, 16); P.flaque(M, M, 14, [0.4, 0.26, 0.1]); P.cercle = []; for (let i = 0; i < 16; i++) { const a = i / 16 * 6.28; P.cercle.push({ x: M + Math.cos(a) * 8.5, z: M + Math.sin(a) * 8.5 }); } },
+    construire(L, P, rng, groupe) {
+      const y = P.sol(M, M); G.arbreMort(L, G.monde(M, y, M, 0.7), NZ.rng(11), 24); G.arbreMort(L, G.monde(M, y + 1, M, 2.9), NZ.rng(23), 19);
+      for (let k = 0; k < 170; k++) { const a = rng() * 6.28, r = 1.5 + rng() * 8.5, yy = y + 6 + rng() * 11 - r * 0.25; G.ampoule(L, M + Math.cos(a) * r, yy, M + Math.sin(a) * r, [3, 1.6 + rng() * 0.9, 0.5 + rng() * 0.4], { rng }); }
+      const L2 = G.Lots(); // gros lampions qui se balancent
+      for (let k = 0; k < 14; k++) { const a = k / 14 * 6.28 + rng(), r = 2.5 + rng() * 6, yy = 5.5 + rng() * 7; L2.get('metal').add(G.base('cyl6'), { m: G.mat(Math.cos(a) * r, yy + 1, Math.sin(a) * r, 0.012, 2, 0.012), c: noir });
+        L2.get('emis').add(G.base('cyl8'), { m: G.mat(Math.cos(a) * r, yy - 0.15, Math.sin(a) * r, 0.2, 0.42, 0.2), c: [3.2, 1.7 + rng() * 0.6, 0.5] }); G.halo(L2, Math.cos(a) * r, yy - 0.15, Math.sin(a) * r, [0.4, 0.24, 0.08], 4.5); }
+      const lamp = maill(L2); lamp.position.set(M, y, M); groupe.add(lamp);
+      for (const p of P.cercle) { const yy = P.sol(p.x, p.z); L.get('emis').add(G.base('cube'), { m: G.mat(p.x, yy + 0.18, p.z, 0.22, 0.32, 0.22), c: [3, 1.9, 0.7] }); G.halo(L, p.x, yy + 0.2, p.z, [0.3, 0.19, 0.07], 2); }
+      return [(t) => { lamp.rotation.z = Math.sin(t * 0.5) * 0.012; lamp.rotation.x = Math.cos(t * 0.37) * 0.012; }];
+    },
+  };
+  W.boule_neige = {
+    nom: 'La Grande Boule à Neige', desc: 'Dedans, une petite ville sous la neige. Regarde bien : quelqu’un y tient une lanterne et lève les yeux vers toi.',
+    maisons: true, boucle: 'manege',
+    plan(P) { P.cyl(M, M, 5.2); const y = P.sol(M, M); P.lum(M, y + 4.5, M - 5.5, [0.8, 0.9, 1], 1.6, 14); P.lum(M, y + 3.5, M, [1, 0.75, 0.4], 1.2, 9); P.flaque(M, M, 9, [0.22, 0.26, 0.36]); },
+    construire(L, P, rng, groupe) {
+      const y = P.sol(M, M), R = 4.6, yc = y + 2.3 + R;
+      L.get('bois').add(G.base('cyl16'), { m: G.mat(M, y + 0.7, M, 5, 1.8, 5), c: [0.35, 0.2, 0.16], uvm: 'monde' });
+      L.get('verni').add(G.base('cyl16'), { m: G.mat(M, y + 1.9, M, 4.3, 0.7, 4.3), c: [0.75, 0.6, 0.25] });
+      L.get('verni').add(G.base('tore'), { m: G.mat(M + 5.3, y + 1.1, M, 0.55, 0.55, 0.35, 0, PI / 2, 0), c: [0.8, 0.65, 0.3] });
+      L.get('neige').add(G.base('bosse'), { m: G.mat(M, y + 2.2, M, 3.9, 1.1, 3.9), c: [1, 1, 1] });
+      // la petite scène : maison, sapin, promeneur à la lanterne
+      L.get('platre').add(G.base('cube'), { m: G.mat(M - 0.9, y + 3.9, M, 1.7, 1.5, 1.5), c: [0.6, 0.5, 0.56] });
+      L.get('tuiles').add(G.base('pignon'), { m: G.mat(M - 0.9, y + 4.65, M, 2.1, 1.3, 1.9), c: [0.3, 0.25, 0.34] });
+      L.get('emis').add(G.base('plan'), { m: G.mat(M - 0.9, y + 3.9, M + 0.77, 0.5, 0.6, 1), c: [3, 2, 0.8] }); L.get('emis').add(G.base('plan'), { m: G.mat(M - 0.9, y + 3.9, M - 0.77, 0.5, 0.6, 1, 0, PI, 0), c: [3, 2, 0.8] });
+      G.sapin(L, G.monde(M + 1.5, y + 3.1, M + 0.3, 0), NZ.rng(4), 2.6, P.pal, true);
+      L.get('unie').add(G.base('cone8'), { m: G.mat(M + 0.4, y + 3.55, M - 1.3, 0.14, 0.7, 0.14), c: [0.1, 0.1, 0.14] }); L.get('unie').add(G.base('sphereB'), { m: G.mat(M + 0.4, y + 3.98, M - 1.3, 0.1, 0.1, 0.1), c: [0.1, 0.1, 0.14] }); lampion(L, M + 0.62, y + 3.6, M - 1.3, ambre, 0.045);
+      // le globe de verre et la neige qui tourbillonne dedans
+      const verre = MAT.patch(new THREE.MeshStandardMaterial({ color: 0xbfd6ee, transparent: true, opacity: 0.16, roughness: 0.04, metalness: 0.1, envMapIntensity: 2.4, depthWrite: false }), { cle: 'globe' });
+      const sph = new THREE.Mesh(new THREE.SphereGeometry(R, 32, 20), verre); sph.position.set(M, yc, M); sph.renderOrder = 6; sph.userData.matPropre = true; groupe.add(sph);
+      const L2 = G.Lots(); for (let k = 0; k < 260; k++) { const a = rng() * 6.28, b = Math.acos(rng() * 2 - 1), r = R * 0.93 * Math.cbrt(rng()); G.ampoule(L2, Math.sin(b) * Math.cos(a) * r, Math.cos(b) * r, Math.sin(b) * Math.sin(a) * r, [0.7, 0.75, 0.85], { rng }); }
+      const fl = maill(L2); fl.position.set(M, yc, M); groupe.add(fl);
+      return [(t, dt, ctx) => { fl.rotation.y = t * (0.25 + ctx.eclat * 2.5); fl.rotation.z = Math.sin(t * 0.3) * 0.25; }];
+    },
+  };
+  W.grande_porte = {
+    nom: 'La Grande Porte Sans Mur', desc: 'Une porte, et rien autour. Ceux qui la franchissent jurent qu’ils arrivent exactement au même endroit, mais un peu changés.',
+    maisons: false,
+    plan(P) { for (const sx of [-4.2, 4.2]) P.boite(M + sx, M, 1.3, 1.3, 0); const y = P.sol(M, M); P.lum(M, y + 3, M - 3, [1, 0.9, 0.7], 2.4, 18); P.lum(M, y + 3, M + 3, [1, 0.9, 0.7], 2, 16); P.flaque(M, M - 5, 9, [0.6, 0.5, 0.32]); P.flaque(M, M + 5, 8, [0.5, 0.42, 0.28]); for (const sx of [-8, 8]) for (const sz of [-7, 7]) P.lampe(M + sx, M + sz, 0, [2.2, 2.6, 3.2]); },
+    construire(L, P, rng, groupe) {
+      const y = P.sol(M, M), pi = [0.5, 0.5, 0.56], def = v => { const k = Math.max(0, v.y - y) / 14; v.z += Math.sin(k * 3) * 0.5; v.x += k * k * 0.9; };
+      for (const sx of [-4.2, 4.2]) { L.get('pierre').add(G.base('boite'), { m: G.mat(M + sx, y + 5.5, M, 2.4, 13, 2.4), c: pi, uvm: 'monde', s: 0.45, def, ao: v => 0.5 + 0.5 * sstep(y, y + 2, v.y) }); L.get('pierre').add(G.base('cone4'), { m: G.mat(M + sx, y + 14.2, M, 1.9, 4.5, 1.9), c: pi, def }); lampion(L, M + sx + 0.9 + 1.1, y + 16.6, M + 0.4, [2.4, 2.8, 3.4], 0.2); }
+      L.get('pierre').add(G.base('pignon'), { m: G.mat(M, y + 11, M, 10.5, 3.6, 2.2), c: pi, uvm: 'monde', def }); L.get('pierre').add(G.base('cube'), { m: G.mat(M, y + 10.6, M, 10.2, 1.1, 2), c: pi, uvm: 'monde', def });
+      for (const sx of [-1, 1]) L.get('bois').add(G.base('cube'), { m: G.mat(M + sx * 2.35, y + 5, M - 0.9, 0.18, 10, 2.9, 0, sx * 0.55, 0), c: [0.32, 0.22, 0.18], uvm: 'monde', def });
+      const mat = MAT.patch(new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 2.7, 1.9), toneMapped: false, side: THREE.DoubleSide }), { cle: 'porteL' });
+      const lueur = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 9.6), mat); lueur.position.set(M + 0.35, y + 5, M); lueur.userData.matPropre = true; groupe.add(lueur);
+      G.halo(L, M + 0.35, y + 5, M - 0.6, [0.5, 0.42, 0.28], 14); G.halo(L, M + 0.35, y + 5, M + 0.6, [0.5, 0.42, 0.28], 12);
+      let cote = 0;
+      return [(t, dt, ctx) => { const k = 1 + Math.sin(t * 1.3) * 0.12 + ctx.eclat * 1.5; mat.color.setRGB(3.2 * k, 2.7 * k, 1.9 * k); const c2 = ctx.jz > M ? 1 : -1; if (cote && c2 !== cote && Math.abs(ctx.jx - M) < 2.8) ctx.son('cloche'); cote = c2; }];
+    },
+  };
+  W.geant = {
+    nom: 'Le Géant Endormi', desc: 'Il s’est couché là pour une petite sieste, il y a cent hivers. Marche doucement : il ronfle en flocons.',
+    sansPlace: true, maisons: false, humeur: 'neige',
+    plan(P) { P.boite(M + 1, M + 2, 9.5, 4, 0); P.lampe(M - 9, M - 5, 0); P.lampe(M + 11, M - 4, PI); P.flaque(M - 8, M + 1, 5, [0.3, 0.2, 0.1]); P.lum(M - 8.5, P.sol(M, M) + 3, M - 2, [1, 0.75, 0.45], 1.4, 12); },
+    construire(L, P, rng, groupe) {
+      const y = P.sol(M, M + 2), bl = [0.95, 0.96, 1];
+      const L2 = G.Lots(); L2.get('neige').add(G.base('sphere'), { m: G.mat(0, 0, 0, 5.4, 4, 4.2), c: bl, uvm: 'monde' }); L2.get('neige').add(G.base('sphere'), { m: G.mat(5.6, -0.5, 0.2, 3.6, 3, 3.3), c: bl, uvm: 'monde' });
+      for (let k = 0; k < 3; k++) L2.get('unie').add(G.base('sphereB'), { m: G.mat(-1.5 + k * 1.6, 2.4 + (k === 1 ? 0.5 : 0.25), -3.1 - (k === 1 ? 0.3 : 0), 0.28, 0.28, 0.2), c: [0.04, 0.04, 0.05] });
+      const corps = maill(L2); corps.position.set(M + 1, y + 2.6, M + 2); groupe.add(corps);
+      L.get('neige').add(G.base('sphere'), { m: G.mat(M - 6.4, y + 2.6, M + 1.6, 2.7, 2.6, 2.6), c: bl, uvm: 'monde' });
+      L.get('unie').add(G.base('cone8'), { m: G.mat(M - 7.2, y + 3, M - 1.6, 0.3, 2.2, 0.3, -PI / 2 + 0.2, 0, 0.3), c: [1, 0.42, 0.06] });
+      L.get('tissu').add(G.base('tore'), { m: G.mat(M - 3.9, y + 2.5, M + 1.7, 2.3, 2.3, 1.6, 0, PI / 2, 0), c: [0.75, 0.15, 0.18] });
+      L.get('unie').add(G.base('cone12'), { m: G.mat(M - 8.6, y + 4.2, M + 1.8, 1.9, 3.4, 1.9, 0, 0, 1.15), c: [0.2, 0.3, 0.55], def: v => { v.y -= Math.pow(Math.max(0, M - 8.6 - v.x), 2) * 0.12; } });
+      L.get('neige').add(G.base('sphereB'), { m: G.mat(M - 11.3, y + 3.9, M + 1.8, 0.6, 0.6, 0.6), c: bl });
+      for (const sz of [-0.75, 0.75]) L.get('unie').add(G.base('cube'), { m: G.mat(M - 7.1 - Math.abs(sz) * 0.1, y + 3.55, M - 0.75 + sz * 0.9, 0.9, 0.09, 0.09, 0, 0.5, 0.15 * Math.sign(sz)), c: [0.04, 0.04, 0.05] });
+      const oeil = MAT.patch(new THREE.MeshBasicMaterial({ color: new THREE.Color(0, 0, 0), toneMapped: false }), { cle: 'oeilG' });
+      const o = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8), oeil); o.position.set(M - 7.5, y + 3.5, M - 0.72); o.scale.set(1, 0.05, 1); o.userData.matPropre = true; groupe.add(o);
+      return [(t, dt, ctx) => { const s = 1 + Math.sin(t * 0.7) * 0.035; corps.scale.set(1, s, s); const k = ctx.eclat; o.scale.y = 0.05 + k * 0.95; oeil.color.setRGB(3.2 * k, 2.2 * k, 0.6 * k); }];
+    },
+  };
+  W.phare = {
+    nom: 'Le Phare des Égarés', desc: 'Il n’y a pas de mer ici. Le phare tourne quand même, pour ceux qui se sont perdus en chemin… comme toi, peut-être.',
+    maisons: true,
+    plan(P) { P.cyl(M, M, 3.4); const y = P.sol(M, M); P.lum(M, y + 3, M - 4.5, [1, 0.8, 0.5], 1.4, 11); P.flaque(M, M - 4.6, 4, [0.4, 0.3, 0.14]); },
+    construire(L, P, rng, groupe) {
+      const y = P.sol(M, M), H = 19, def = v => { const k = Math.max(0, v.y - y) / H; v.x += Math.sin(k * 2.6) * 1.1; v.z += k * k * 0.8; };
+      L.get('pierre').add(G.base('cyl16'), { m: G.mat(M, y + 0.6, M, 3.6, 2.6, 3.6), c: [0.55, 0.55, 0.6], uvm: 'monde' });
+      for (let k = 0; k < 6; k++) { const r0 = 2.9 - k * 0.3; L.get(k % 2 ? 'verni' : 'unie').add(G.base('cyl12'), { m: G.mat(M, y + 1.9 + k * 2.75 + 1.37, M, r0, 2.75, r0), c: k % 2 ? [0.6, 0.1, 0.12] : [0.85, 0.85, 0.88], def }); }
+      L.get('metal').add(G.base('cyl16'), { m: G.mat(M, y + H - 0.4, M, 2.3, 0.2, 2.3), c: noir, def }); L.get('metal').add(G.base('toreFin'), { m: G.mat(M, y + H + 0.6, M, 2.2, 2.2, 2.2, PI / 2, 0, 0), c: noir, def });
+      L.get('metal').add(G.base('cone12'), { m: G.mat(M, y + H + 3.3, M, 1.5, 2.2, 1.5), c: [0.25, 0.1, 0.1], def: v => { const k = clamp((v.y - y - H - 2.2) / 2.2, 0, 1); v.x += k * k * 0.9; def(v); } });
+      L.get('porte').add(G.base('plan'), { m: G.mat(M, y + 2.6, M - 2.95, 1.2, 2.3, 1, 0, PI, 0), c: [1, 1, 1] });
+      const top = new THREE.Vector3(M, y + H + 1.1, M); def(top);
+      L.get('emis').add(G.base('cyl12'), { m: G.mat(top.x, top.y, top.z, 0.95, 1.7, 0.95), c: [3.4, 3, 2] }); G.halo(L, top.x, top.y, top.z, [0.5, 0.45, 0.3], 11);
+      const fm = MAT.patch(new THREE.MeshBasicMaterial({ color: new THREE.Color(0.5, 0.46, 0.34), transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), { cle: 'faisceau' });
+      const cone = new THREE.CylinderGeometry(0.5, 5, 36, 14, 1, true); cone.rotateZ(PI / 2); cone.translate(18, 0, 0);
+      const fa = new THREE.Group(); for (const s of [0, PI]) { const m = new THREE.Mesh(cone, fm); m.rotation.y = s; m.renderOrder = 5; fa.add(m); } fa.children[0].userData.matPropre = true; fa.position.copy(top); groupe.add(fa);
+      return [(t) => { fa.rotation.y = t * 0.35; }];
+    },
+  };
+  W.montgolfiere = {
+    nom: 'La Montgolfière Captive', desc: 'Elle tire sur ses cordes depuis des années. Un jour elle partira, et la ville entière lèvera le nez.',
+    maisons: false,
+    plan(P) { P.piq = []; for (let i = 0; i < 4; i++) { const a = i / 4 * 6.28 + 0.6, x = M + Math.cos(a) * 9, z = M + Math.sin(a) * 9; P.piq.push({ x, z }); P.cyl(x, z, 0.3); } const y = P.sol(M, M); P.lum(M, y + 6, M, [1, 0.6, 0.25], 2.4, 20); P.flaque(M, M, 11, [0.5, 0.3, 0.1]); },
+    construire(L, P, rng, groupe) {
+      const y = P.sol(M, M), L2 = G.Lots();
+      L2.get('tissu').add(G.base('sphere'), { m: G.mat(0, 9.5, 0, 5.4, 6.2, 5.4), c: [0.8, 0.25, 0.22], def: v => { if (v.y < 7.5) { const k = (7.5 - v.y) / 4.5; v.x *= 1 - k * 0.55; v.z *= 1 - k * 0.55; } } });
+      L2.get('bois').add(G.base('cube'), { m: G.mat(0, 0, 0, 1.7, 1.2, 1.7), c: [0.55, 0.4, 0.26], uvm: 'monde' });
+      for (const [sx, sz] of [[-0.8, -0.8], [0.8, -0.8], [-0.8, 0.8], [0.8, 0.8]]) L2.get('unie').add(G.base('cyl6'), { m: G.mat(sx * 1.25, 2.2, sz * 1.25, 0.02, 3.6, 0.02, sz * 0.24, 0, -sx * 0.24), c: [0.5, 0.45, 0.35] });
+      for (let k = 0; k < 10; k++) { const a = k / 10 * 6.28; G.ampoule(L2, Math.cos(a) * 5.45, 9.5, Math.sin(a) * 5.45, P.pal.guirlande[k % P.pal.guirlande.length], { rng }); }
+      const bal = maill(L2); bal.position.set(M, y + 6, M); groupe.add(bal);
+      const fm = MAT.patch(new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 1.6, 0.4), toneMapped: false }), { cle: 'bruleur' });
+      const fl = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.6, 8), fm); fl.position.set(0, 1.9, 0); fl.userData.matPropre = true; bal.add(fl);
+      for (const p of P.piq) { const yy = P.sol(p.x, p.z); L.get('bois').add(G.base('cyl6'), { m: G.mat(p.x, yy + 0.4, p.z, 0.12, 1, 0.12), c: [0.4, 0.3, 0.22] });
+        const dx = M - p.x, dz = M - p.z, dh = y + 5.5 - yy - 0.8, l = Math.hypot(dx, dz, dh), q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / l, dh / l, dz / l));
+        L.get('unie').add(G.base('cyl6'), { m: new THREE.Matrix4().compose(new THREE.Vector3((p.x + M) / 2, (yy + 0.8 + y + 5.5) / 2, (p.z + M) / 2), q, new THREE.Vector3(0.02, l, 0.02)), c: [0.5, 0.45, 0.35] }); }
+      return [(t, dt, ctx) => { bal.position.y = y + 6 + Math.sin(t * 0.6) * 0.35; bal.rotation.z = Math.sin(t * 0.43) * 0.03; const k = Math.max(0, Math.sin(t * 0.9) * 2 - 1) + ctx.eclat; fl.scale.set(1, 0.3 + k * 1.6, 1); fm.color.setRGB(1 + k * 4, 0.5 + k * 2.2, 0.15 + k * 0.6); }];
+    },
+  };
+  W.dragon = {
+    nom: 'Le Dragon de Lampions', desc: 'Du papier, des bougies et beaucoup d’orgueil. Il ondule au-dessus de la place en attendant qu’on l’applaudisse.',
+    maisons: false, humeur: 'fete',
+    plan(P) { P.per = []; for (let i = 0; i < 7; i++) { const x = 6.5 + i * 5.2, z = M + Math.sin(i * 1.1) * 6; P.per.push({ x, z }); P.cyl(x, z, 0.18); } const y = P.sol(M, M); P.lum(M - 8, y + 4, M, [1, 0.45, 0.2], 2, 16); P.lum(M + 8, y + 4, M, [1, 0.6, 0.2], 2, 16); P.flaque(M, M, 15, [0.45, 0.2, 0.07]); },
+    construire(L, P, rng, groupe) {
+      const segs = [], yb = P.sol(M, M) + 4.6, n = 22;
+      for (let i = 0; i < n; i++) { const L2 = G.Lots(), k = i / (n - 1), r = i === 0 ? 1.15 : 0.85 * (1 - k * 0.55), c = i % 2 ? [3, 0.5, 0.25] : [3, 1.9, 0.5];
+        L2.get('emis').add(G.base(i === 0 ? 'sphere' : 'sphereB'), { m: G.mat(0, 0, 0, r * (i === 0 ? 1.3 : 1), r, r), c }); G.halo(L2, 0, 0, 0, [c[0] * 0.09, c[1] * 0.09, c[2] * 0.09], r * 7);
+        if (i === 0) { for (const sz of [-0.5, 0.5]) { L2.get('emis').add(G.base('sphereB'), { m: G.mat(1.05, 0.45, sz, 0.2, 0.2, 0.2), c: [3.4, 3.4, 2.6] }); L2.get('unie').add(G.base('cone8'), { m: G.mat(0.2, 1.1, sz, 0.14, 1.1, 0.14, 0, 0, -0.5), c: [0.7, 0.55, 0.2] }); } L2.get('unie').add(G.base('cone4'), { m: G.mat(1.5, -0.25, 0, 0.5, 0.9, 0.7, 0, 0, -PI / 2), c: [0.6, 0.1, 0.1] }); }
+        else if (i % 3 === 0) L2.get('unie').add(G.base('cone4'), { m: G.mat(0, r + 0.3, 0, 0.25, 0.7, 0.1), c: [0.75, 0.6, 0.2] });
+        const m = maill(L2); groupe.add(m); segs.push(m); }
+      for (const p of P.per) { const yy = P.sol(p.x, p.z); L.get('bois').add(G.base('cyl6'), { m: G.mat(p.x, yy + 2, p.z, 0.05, 4.2, 0.05), c: [0.45, 0.33, 0.25] }); }
+      for (let i = 0; i + 1 < P.per.length; i += 2) { const a = P.per[i], b = P.per[i + 1]; G.guirlande(L, [a.x, P.sol(a.x, a.z) + 2.4, a.z], [b.x, P.sol(b.x, b.z) + 2.4, b.z], { couleurs: [[3, 0.5, 0.3], [3, 2, 0.5]], rng, creux: 0.5 }); }
+      return [(t) => { for (let i = 0; i < n; i++) { const u = t * 0.55 - i * 0.26, x = M + Math.cos(u * 0.6) * (15 - i * 0.0), z = M + Math.sin(u * 1.2) * 6.5; segs[i].position.set(M + Math.sin(u * 0.6) * 15.5, yb + Math.sin(u * 2.1) * 1.1 + (i === 0 ? 0.3 : 0), z); if (i === 0) segs[i].rotation.y = -Math.atan2(Math.cos(u * 1.2) * 6.5 * 1.2, Math.cos(u * 0.6) * 15.5 * 0.6); } }];
+    },
+  };
+  W.etoile_tombee = {
+    nom: 'L’Étoile Tombée', desc: 'Elle a raté le sommet d’un sapin de quelques rues. Elle boude au fond de son trou, et elle brille quand même.',
+    sansPlace: true, maisons: false, humeur: 'neige',
+    relief(lx, lz, t) { const r = Math.hypot(lx - M, lz - M); if (r >= 15) return t; const k = 1 - r / 15; return t - 4.2 * k * k * (3 - 2 * k) + 1.1 * Math.exp(-Math.pow((r - 11.5) / 2, 2)); },
+    plan(P) { P.cyl(M, M, 1.7); const y = P.sol(M, M); P.lum(M, y + 2.5, M, [0.6, 0.85, 1], 3, 22); P.lum(M + 3, y + 5, M - 3, [0.7, 0.8, 1], 1.5, 16); P.flaque(M, M, 12, [0.2, 0.34, 0.5]); },
+    construire(L, P, rng, groupe) {
+      const y = P.sol(M, M);
+      for (let k = 0; k < 9; k++) { const a = rng() * 6.28, r = 2.2 + rng() * 4; L.get('pierre').add(G.base('ico'), { m: G.mat(M + Math.cos(a) * r, P.sol(M + Math.cos(a) * r, M + Math.sin(a) * r) + 0.2, M + Math.sin(a) * r, 0.5 + rng() * 0.6, 0.4 + rng() * 0.5, 0.5 + rng() * 0.6, rng() * 3, rng() * 3, 0), c: [0.14, 0.14, 0.17] }); }
+      const em = MAT.patch(new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 2.6, 3.4), toneMapped: false }), { cle: 'etoileT' });
+      const geo = new THREE.OctahedronGeometry(1, 0), et = new THREE.Group();
+      for (const [sx, sy, sz, rz] of [[0.75, 2.6, 0.75, 0], [0.6, 2.1, 0.6, PI / 2], [0.6, 2.1, 0.6, PI / 4], [0.6, 2.1, 0.6, -PI / 4]]) { const m = new THREE.Mesh(geo, em); m.scale.set(sx, sy, sz); m.rotation.z = rz; et.add(m); }
+      et.children[0].userData.matPropre = true; et.position.set(M, y + 1.9, M); et.rotation.set(0.35, 0, 0.3); groupe.add(et);
+      G.halo(L, M, y + 2, M, [0.3, 0.5, 0.7], 16); G.halo(L, M, y + 2, M, [0.5, 0.8, 1.0], 5);
+      const ecl = new THREE.Group(); for (let k = 0; k < 9; k++) { const m = new THREE.Mesh(geo, em); const a = k / 9 * 6.28; m.position.set(Math.cos(a) * (3.2 + (k % 3) * 0.9), 1.5 + (k % 4) * 0.9, Math.sin(a) * (3.2 + (k % 3) * 0.9)); m.scale.set(0.1, 0.34, 0.1); m.rotation.set(k, k * 2, k * 3); ecl.add(m); } ecl.position.set(M, y + 1, M); groupe.add(ecl);
+      return [(t, dt, ctx) => { const k = 0.75 + Math.sin(t * 1.1) * 0.25 + ctx.eclat * 1.6; em.color.setRGB(1.6 * k, 2.6 * k, 3.4 * k); ecl.rotation.y = t * 0.22; et.rotation.y = Math.sin(t * 0.3) * 0.2; }];
+    },
+  };
+  Object.assign(REPERES, B, W);
+})();
+
+/* ==== 18m_a.js ==== */
+/* ===================== LIEUX — LOT A =====================
+   Merveilles : cathedrale, baleine, theatre_ombres, moulin, pont_gele, arbre_lanternes.
+   Blocs : marche, parc, ruines, lanternes_sol.
+   Même contrat que 18_reperes.js / 18a_blocs.js (voir briefs/contenu.txt). */
+(() => {
+  const C = MONDE.C, M = C / 2, G = GEO;
+  const maill = REPERES_OUTILS.maill;
+  const PI = Math.PI, NOIR = [0.012, 0.013, 0.02], GLACE = [0.6, 0.76, 0.92];
+
+  // ---------- outils communs ----------
+  const cache = {};
+  // géométrie Three.js calculée UNE fois (index et uv garantis)
+  const geo = (k, f) => {
+    let g = cache[k];
+    if (!g) {
+      g = f();
+      if (!g.index) { const n = g.attributes.position.count, ix = new Uint32Array(n); for (let i = 0; i < n; i++) ix[i] = i; g.setIndex(new THREE.BufferAttribute(ix, 1)); }
+      if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+      cache[k] = g;
+    }
+    return g;
+  };
+  const brut = (P, N, U, I) => ({ attributes: { position: { array: P }, normal: { array: N }, uv: { array: U } }, index: { array: I } });
+  // quadrilatère a, b, c, d (sens inverse des aiguilles d'une montre vu du côté visible)
+  function quad(a, b, c, d) {
+    const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = d[0] - a[0], vy = d[1] - a[1], vz = d[2] - a[2];
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+    return brut([a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], d[0], d[1], d[2]], [nx, ny, nz, nx, ny, nz, nx, ny, nz, nx, ny, nz], [0, 0, 1, 0, 1, 1, 0, 1], [0, 1, 2, 0, 2, 3]);
+  }
+  // tuyau qui suit une ligne de points [x, y, z] ; rf(t 0..1, i) = rayon ; nc côtés ; sans bouchons
+  function tuyau(pts, rf, nc) {
+    const n = pts.length, P = [], N = [], U = [], I = [];
+    let nx = 0, ny = 0, nz = 0, init = false;
+    for (let i = 0; i < n; i++) {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)], p = pts[i];
+      let tx = b[0] - a[0], ty = b[1] - a[1], tz = b[2] - a[2]; const tl = Math.hypot(tx, ty, tz) || 1; tx /= tl; ty /= tl; tz /= tl;
+      if (!init) { init = true; if (Math.abs(ty) < 0.9) { nx = 0; ny = 1; nz = 0; } else { nx = 1; ny = 0; nz = 0; } }
+      const d = nx * tx + ny * ty + nz * tz; nx -= tx * d; ny -= ty * d; nz -= tz * d; const nl = Math.hypot(nx, ny, nz) || 1; nx /= nl; ny /= nl; nz /= nl;
+      const bx = ty * nz - tz * ny, by = tz * nx - tx * nz, bz = tx * ny - ty * nx, r = rf(i / (n - 1), i);
+      for (let j = 0; j <= nc; j++) { const an = j / nc * PI * 2, c = Math.cos(an), s = Math.sin(an), ux = c * nx + s * bx, uy = c * ny + s * by, uz = c * nz + s * bz; P.push(p[0] + ux * r, p[1] + uy * r, p[2] + uz * r); N.push(ux, uy, uz); U.push(j / nc, i / (n - 1)); }
+    }
+    const w = nc + 1;
+    for (let i = 0; i < n - 1; i++) for (let j = 0; j < nc; j++) { const a = i * w + j, b = a + 1, c = a + w, d = c + 1; I.push(a, b, c, b, d, c); }
+    return brut(P, N, U, I);
+  }
+  // courbe lissée (Catmull-Rom) passant par des points [x, y, z] -> n + 1 points
+  function lisse(pts, n) {
+    const cv = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(p[0], p[1], p[2]))), out = [], v = new THREE.Vector3();
+    for (let i = 0; i <= n; i++) { cv.getPoint(i / n, v); out.push([v.x, v.y, v.z]); }
+    return out;
+  }
+  // fenêtre en ogive (trou dans une forme)
+  const ogive = (x, y, w, h, hp) => { const p = new THREE.Path(); p.moveTo(x - w / 2, y); p.lineTo(x + w / 2, y); p.lineTo(x + w / 2, y + h); p.quadraticCurveTo(x + w / 2, y + h + hp * 0.72, x, y + h + hp); p.quadraticCurveTo(x - w / 2, y + h + hp * 0.72, x - w / 2, y + h); p.lineTo(x - w / 2, y); return p; };
+  const extr = (s, ep, seg) => new THREE.ExtrudeGeometry(s, { depth: ep, bevelEnabled: false, curveSegments: seg || 5 });
+  // glaçon pendu (pointe en bas) depuis (x, y, z) ; faces tournées vers l'extérieur
+  const glacon = (L, x, y, z, r, l, o) => L.get('verni').add(G.base('glacon'), { m: G.mat(x, y - l / 2, z, r, -l, -r), c: GLACE, def: o && o.def, w: o && o.w });
+  // pic de glace dressé (pointe en haut)
+  const pic = (L, x, y, z, r, h, o) => L.get('verni').add(G.base('glacon'), { m: G.mat(x, y + h / 2, z, r, h, r, o && o.rx || 0, 0, o && o.rz || 0), c: o && o.c || GLACE, def: o && o.def, w: o && o.w });
+  // change la couleur d'une plage de sommets d'un maillage (lumières qui s'allument) : aucun objet créé
+  const teinte = (att, i0, n, r, g, b) => { const a = att.array; for (let i = i0 * 3, e = (i0 + n) * 3; i < e; i += 3) { a[i] = r; a[i + 1] = g; a[i + 2] = b; } att.needsUpdate = true; };
+  const enfant = (gr, nom) => { for (const m of gr.children) if (m.name === nom) return m; return null; };
+
+  // ======================================================================================================
+  // 1. LA CATHÉDRALE DE GLAÇONS — repère local : origine au pied du portail (22, sol, 14), +z vers le sud
+  // ======================================================================================================
+  const CATH_PICS = [[3.7, 1.3, 3.0], [-3.9, 1.6, 2.2], [9.8, 0.6, 4.6], [-9.6, 1.2, 3.4], [10.3, -5.5, 2.4], [-10.2, -6.4, 3.8], [9.6, -13.5, 3.2], [-9.4, -17.6, 4.4], [4.5, -19, 2.6], [-2.5, -19.4, 3.6]];
+  const CATH_BUT = [-8.15, -11.65, -15.3];
+  const cathedrale = {
+    nom: 'La Cathédrale de Glaçons',
+    desc: 'Personne ne l’a bâtie : elle a gelé là, d’un seul coup, une nuit de grand froid. L’orgue y joue tout seul pour les stalactites.',
+    maisons: [0, 0.5, 0.3, 0.3], boucle: 'orgue', humeur: 'ombres',
+    relief(lx, lz, t, tc) { const r = Math.hypot(lx - M, lz - M); return r >= 18.5 ? t : lerp(tc, t, sstep(12.5, 18.5, r)); },
+    plan(P) {
+      const y = P.sol(M, M), X = lx => M - lx, Z = lz => 14 - lz;
+      P.boite(X(3), 14.45, 1.5, 0.45); P.boite(X(-3), 14.45, 1.5, 0.45);                 // façade, de part et d'autre du portail
+      P.boite(X(6.3), Z(-1.7), 2.25, 2.25); P.boite(X(-6.3), Z(-1.7), 2.25, 2.25);       // tours
+      P.boite(X(4.15), Z(-8), 0.38, 8); P.boite(X(-4.15), Z(-8), 0.38, 8);               // murs de la nef
+      P.boite(M, Z(-16.45), 4.5, 0.48);                                                   // chevet
+      P.boite(M, Z(-15), 2.5, 0.75);                                                      // orgue
+      for (const sx of [-1, 1]) for (const z of [-4.3, -8.3, -12.3]) P.cyl(X(sx * 2.5), Z(z), 0.42);
+      for (const sx of [-1, 1]) for (const z of CATH_BUT) P.boite(X(sx * 7.3), Z(z), 0.5, 0.65);
+      for (const [x, z, h] of CATH_PICS) if (h > 2.5) P.cyl(X(x), Z(z), 0.4);
+      P.lum(M, y + 4.6, 24, [1, 0.72, 0.42], 1.8, 15);       // la nef, chaude
+      P.lum(M, y + 2.4, 12.4, [1, 0.74, 0.44], 1.3, 9);      // le portail
+      P.lum(M, y + 9.5, 10.8, [0.62, 0.5, 1], 1.1, 15);      // la rosace éclaire la façade
+      P.flaque(M, 11.6, 4.6, [0.5, 0.33, 0.14]); P.flaque(M, 8.5, 6, [0.1, 0.08, 0.2]);
+      for (const sx of [-1, 1]) for (const z of [-6.4, -9.9, -13.4]) P.flaque(X(sx * 6.4), Z(z), 2.6, [0.07, 0.12, 0.24]);
+    },
+    construire(L, P, rng, groupe) {
+      const y0 = P.sol(M, M), w = G.monde(M, y0, 14, PI);
+      const glace = L.get('glace'), verni = L.get('verni'), emis = L.get('emis');
+      // toute l'église penche et se vrille un peu avec la hauteur
+      const tord = v => { const k = v.y / 28, a = k * k * 0.42, x = v.x, z = v.z + 8, c = Math.cos(a), s = Math.sin(a); v.x = x * c - z * s + k * k * 1.3; v.z = x * s + z * c - 8; };
+      const o = { def: tord, w };
+      // --- murs percés (formes extrudées) ---
+      const gFac = geo('cath_fac', () => {
+        const s = new THREE.Shape(); s.moveTo(-4.5, -1.5); s.lineTo(-1.5, -1.5); s.lineTo(-1.5, 3.2); s.quadraticCurveTo(-1.5, 4.9, 0, 5.6); s.quadraticCurveTo(1.5, 4.9, 1.5, 3.2); s.lineTo(1.5, -1.5); s.lineTo(4.5, -1.5); s.lineTo(4.5, 10); s.lineTo(0, 16.6); s.lineTo(-4.5, 10); s.lineTo(-4.5, -1.5);
+        const h = new THREE.Path(); h.absarc(0, 10, 2.2, 0, PI * 2, false); s.holes.push(h); return extr(s, 0.9, 7);
+      });
+      glace.add(gFac, { m: G.mat(0, 0, -0.9, 1, 1, 1), uvm: 'monde', s: 0.2, def: tord, w });
+      const gMur = geo('cath_mur', () => { const s = new THREE.Shape(); s.moveTo(0, -1.5); s.lineTo(16, -1.5); s.lineTo(16, 9.5); s.lineTo(0, 9.5); s.lineTo(0, -1.5); for (const x of [6.4, 9.9, 13.4]) s.holes.push(ogive(x, 2.6, 1.6, 3.6, 1.6)); return extr(s, 0.7, 4); });
+      for (const x of [-4.5, 3.8]) glace.add(gMur, { m: G.mat(x, 0, 0, 1, 1, 1, 0, PI / 2, 0), uvm: 'monde', s: 0.2, def: tord, w });
+      const gChe = geo('cath_che', () => { const s = new THREE.Shape(); s.moveTo(-4.5, -1.5); s.lineTo(4.5, -1.5); s.lineTo(4.5, 9.5); s.lineTo(0, 15.6); s.lineTo(-4.5, 9.5); s.lineTo(-4.5, -1.5); s.holes.push(ogive(0, 3.4, 2, 5.4, 2.2)); return extr(s, 0.9, 5); });
+      glace.add(gChe, { m: G.mat(0, 0, -16.9, 1, 1, 1), uvm: 'monde', s: 0.2, def: tord, w });
+      // --- toit enneigé, voûte intérieure, dallage de glace ---
+      L.get('tuiles').add(G.base('pignon'), { m: G.mat(0, 9.5, -8.8, 9.9, 6.2, 16.7), c: [0.5, 0.6, 0.75], uvm: 'monde', s: 0.5, def: tord, w });
+      const cV = [0.12, 0.17, 0.32];
+      L.get('unie').add(quad([-4.1, 9.5, -0.9], [-4.1, 9.5, -16], [0, 14.7, -16], [0, 14.7, -0.9]), { c: cV, def: tord, w });
+      L.get('unie').add(quad([4.1, 9.5, -16], [4.1, 9.5, -0.9], [0, 14.7, -0.9], [0, 14.7, -16]), { c: cV, def: tord, w });
+      glace.add(G.base('cube'), { m: G.mat(0, 0.02, -8.45, 7.7, 0.1, 15.2), uvm: 'monde', s: 0.12, w });
+      L.get('pierre').add(G.base('cube'), { m: G.mat(0, -0.02, 0.9, 5, 0.12, 2.4), c: [0.42, 0.46, 0.56], uvm: 'monde', s: 0.5, w });
+      for (let i = 0; i < 12; i++) G.ampoule(L, rng.r(-3, 3), rng.r(10.4, 13.2), rng.r(-15, -2), [1.6, 2.3, 3], { rng, w });
+      // --- vitraux des bas-côtés (visibles des deux côtés) et du chevet ---
+      const VIT = [[0.25, 0.7, 2.0], [0.95, 0.42, 2.0], [0.3, 1.5, 1.8], [1.9, 0.5, 1.1], [2.3, 1.4, 0.45]];
+      for (const sx of [-1, 1]) for (const z of [-6.4, -9.9, -13.4]) {
+        const x = sx * 4.15, ys = [2.6, 4.4, 6.1, 7.85];
+        for (let k = 0; k < 3; k++) {
+          const c = k === 2 && rng() < 0.5 ? VIT[4] : VIT[rng.i(0, 3)], yc = (ys[k] + ys[k + 1]) / 2, h = ys[k + 1] - ys[k];
+          emis.add(G.base('plan'), { m: G.mat(x + sx * 0.02, yc, z, 1.62, h, 1, 0, sx * PI / 2, 0), c, def: tord, w });
+          emis.add(G.base('plan'), { m: G.mat(x - sx * 0.02, yc, z, 1.62, h, 1, 0, -sx * PI / 2, 0), c: [c[0] * 0.8, c[1] * 0.8, c[2] * 0.8], def: tord, w });
+          if (k) emis.add(G.base('cube'), { m: G.mat(x, ys[k], z, 0.5, 0.07, 1.62), c: NOIR, def: tord, w });
+        }
+        emis.add(G.base('cube'), { m: G.mat(x, 5.2, z, 0.5, 5.3, 0.07), c: NOIR, def: tord, w });
+        G.halo(L, x + sx * 0.6, 5.2, z, [0.07, 0.13, 0.3], 5, o);
+      }
+      for (let k = 0; k < 3; k++) {
+        const ys = [3.4, 5.6, 8.2, 11.1], c = [[2.6, 1.5, 0.5], [2.9, 1.9, 0.7], [2.4, 0.9, 0.35]][k], yc = (ys[k] + ys[k + 1]) / 2, h = ys[k + 1] - ys[k];
+        emis.add(G.base('plan'), { m: G.mat(0, yc, -16.4, 2.02, h, 1), c, def: tord, w });
+        emis.add(G.base('plan'), { m: G.mat(0, yc, -16.5, 2.02, h, 1, 0, PI, 0), c, def: tord, w });
+        if (k) emis.add(G.base('cube'), { m: G.mat(0, ys[k], -16.45, 2.02, 0.08, 0.6), c: NOIR, def: tord, w });
+      }
+      emis.add(G.base('cube'), { m: G.mat(0, 7.2, -16.45, 0.08, 7.8, 0.6), c: NOIR, def: tord, w });
+      G.halo(L, 0, 7, -17.6, [0.3, 0.18, 0.06], 7, o);
+      // --- intérieur : colonnes en sablier, orgue, cierges ---
+      const gCol = geo('cath_col', () => new THREE.CylinderGeometry(1, 1, 1, 8, 8, true));
+      for (const sx of [-1, 1]) for (const z of [-4.3, -8.3, -12.3]) {
+        const x = sx * 2.5;
+        verni.add(gCol, { m: G.mat(x, 4.75, z, 0.5, 9.6, 0.5), c: GLACE, def: v => { const k = Math.abs(v.y / 9.5 * 2 - 1), f = 0.42 + 0.58 * k * k; v.x = x + (v.x - x) * f; v.z = z + (v.z - z) * f; tord(v); }, w });
+        pic(L, sx * 3.45, 0, z + 2, 0.16, 1.3, o);
+        L.get('unie').add(G.base('cyl6'), { m: G.mat(sx * 3.45, 1.42, z + 2, 0.035, 0.3, 0.035), c: [0.9, 0.88, 0.8], w });
+        emis.add(G.base('ico'), { m: G.mat(sx * 3.45, 1.66, z + 2, 0.04, 0.1, 0.04), c: [4, 2.6, 0.9], w });
+        G.halo(L, sx * 3.45, 1.66, z + 2, [0.3, 0.19, 0.07], 1.7, { w });
+      }
+      L.get('bois').add(G.base('cube'), { m: G.mat(0, 0.75, -15, 4.8, 1.6, 1.3), c: [0.22, 0.2, 0.26], uvm: 'monde', w });
+      L.get('verni').add(G.base('cube'), { m: G.mat(0, 1.25, -14.2, 1.7, 0.12, 0.5, 0.25, 0, 0), c: [0.85, 0.85, 0.8], w });
+      for (let i = 0; i < 13; i++) { const h = 2.4 + 3.6 * Math.pow(Math.abs(i - 6) / 6, 1.3) + (i % 2) * 0.35; verni.add(G.base('cyl6'), { m: G.mat((i - 6) * 0.37, 1.5 + h / 2, -15.2 + (i % 2) * 0.22, 0.15, h, 0.15), c: [0.7, 0.78, 0.92], def: tord, w }); }
+      // --- tours : fût effilé, baies froides, corniche, pinacles, grande flèche torse ---
+      const gFl = geo('cath_fleche', () => { const g = new THREE.CylinderGeometry(0, 1, 1, 10, 11), p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i), a = Math.atan2(z, x), f = 0.8 + 0.2 * Math.cos(a * 5); p.setX(i, x * f); p.setZ(i, z * f); } g.computeVertexNormals(); return g; });
+      const fleche = (x, z, yb, h, r, A, ph, tw) => verni.add(gFl, { m: G.mat(x, yb + h / 2, z, r, h, r), c: GLACE, def: v => { const k = clamp((v.y - yb) / h, 0, 1), a = k * tw, dx = v.x - x, dz = v.z - z, c = Math.cos(a), s = Math.sin(a); v.x = x + dx * c - dz * s + A * k * k * Math.cos(ph + k * 2.4); v.z = z + dx * s + dz * c + A * k * k * Math.sin(ph + k * 2.4); tord(v); }, w });
+      for (const sx of [-1, 1]) {
+        const tx = sx * 6.3, tz = -1.7, H = sx > 0 ? 14.6 : 12.4;
+        const defT = v => { const k = clamp(v.y / H, 0, 1), f = 1 - 0.17 * k; v.x = tx + (v.x - tx) * f; v.z = tz + (v.z - tz) * f; tord(v); }, oT = { def: defT, w };
+        glace.add(G.base('boite'), { m: G.mat(tx, (H - 1.5) / 2, tz, 4.4, H + 1.5, 4.4), uvm: 'monde', s: 0.2, def: defT, w });
+        L.get('pierre').add(G.base('cube'), { m: G.mat(tx, H + 0.05, tz, 4.9, 0.45, 4.9), c: [0.5, 0.58, 0.72], uvm: 'monde', def: defT, w });
+        L.get('pierre').add(G.base('cube'), { m: G.mat(tx, H * 0.52, tz, 4.75, 0.3, 4.75), c: [0.5, 0.58, 0.72], uvm: 'monde', def: defT, w });
+        for (let f = 0; f < 4; f++) { // quatre faces : deux baies étroites éclairées de bleu, glaçons sous les corniches
+          const a = f * PI / 2, ca = Math.cos(a), sa = Math.sin(a);
+          for (const d of [-0.75, 0.75]) {
+            emis.add(G.base('plan'), { m: G.mat(tx + sa * 2.23 + ca * d, H - 2.6, tz + ca * 2.23 - sa * d, 0.62, 3.3, 1, 0, a, 0), c: [0.42, 1.15, 2.1], def: defT, w });
+            emis.add(G.base('plan'), { m: G.mat(tx + sa * 2.23 + ca * d, H * 0.52 - 2.3, tz + ca * 2.23 - sa * d, 0.5, 2.2, 1, 0, a, 0), c: [0.1, 0.3, 0.62], def: defT, w });
+          }
+          for (let i = 0; i < 5; i++) { const d = rng.r(-2.1, 2.1); glacon(L, tx + sa * 2.5 + ca * d, H - 0.15, tz + ca * 2.5 - sa * d, rng.r(0.1, 0.2), rng.r(0.6, 2.4), oT); if (i < 3) glacon(L, tx + sa * 2.42 + ca * d, H * 0.52 - 0.12, tz + ca * 2.42 - sa * d, 0.11, rng.r(0.4, 1.3), oT); }
+          pic(L, tx + (ca - sa) * 2.05, H + 0.2, tz + (-sa - ca) * 2.05, 0.42, rng.r(2.6, 4.6), oT);
+        }
+        G.halo(L, tx, H - 2.6, tz + 2.6, [0.05, 0.13, 0.26], 6, oT);
+        fleche(tx, tz, H + 0.2, sx > 0 ? 13.2 : 10.2, 1.85, sx > 0 ? 2.1 : 1.5, sx > 0 ? 2.6 : 0.4, sx * 2.3);
+      }
+      fleche(0, -8.8, 15.3, 7.6, 0.75, 0.9, 1.2, 2.6);
+      // --- portail : gâble, colonnettes, glaçons de l'arc ---
+      for (const sx of [-1, 1]) {
+        verni.add(G.base('cube'), { m: G.mat(sx * 1.2, 5.05, 0.28, 4.3, 0.34, 0.5, 0, 0, -sx * 0.99), c: GLACE, w });
+        for (const [dx, dz] of [[1.78, 0.16], [2.15, 0.34]]) verni.add(G.base('cyl8'), { m: G.mat(sx * dx, 1.6, dz, 0.15, 3.3, 0.15), c: GLACE, w });
+        pic(L, sx * 2.5, 3.1, 0.3, 0.3, 1.5, { w });
+      }
+      pic(L, 0, 6.7, 0.3, 0.26, 1.2, { w });
+      for (const x of [-1, -0.45, 0.2, 0.8]) glacon(L, x, 5.5 - 1.6 * Math.pow(Math.abs(x) / 1.5, 1.7), -0.3, 0.09, rng.r(0.35, 0.8), { w });
+      for (let i = 0; i < 9; i++) glacon(L, -2 + i * 0.5 + rng.r(-0.1, 0.1), 7.55, 0.12, rng.r(0.08, 0.14), rng.r(0.4, 1.3), o);
+      L.get('pierre').add(G.base('cube'), { m: G.mat(0, 7.6, 0.1, 5.6, 0.22, 0.5), c: [0.5, 0.58, 0.72], def: tord, w });
+      for (const sx of [-1, 1]) for (let i = 1; i < 8; i++) { const k = i / 8; glacon(L, sx * 4.6 * (1 - k), 10 + 6.5 * k, 0.1, rng.r(0.09, 0.16), rng.r(0.5, 1.9), o); }
+      // --- arcs-boutants, pinacles, glaçons géants des gouttières ---
+      for (const sx of [-1, 1]) {
+        for (const z of CATH_BUT) {
+          glace.add(G.base('boite'), { m: G.mat(sx * 7.3, 2.6, z, 0.95, 8.2, 1.25), uvm: 'monde', s: 0.2, def: tord, w });
+          pic(L, sx * 7.3, 6.6, z, 0.55, 3.4, o);
+          verni.add(G.base('cube'), { m: G.mat(sx * 5.7, 7.5, z, 3.6, 0.45, 0.6, 0, 0, -sx * 0.8), c: GLACE, def: tord, w });
+          for (const k of [0.25, 0.5, 0.75]) glacon(L, sx * lerp(6.9, 4.6, k), lerp(6.2, 8.6, k), z, 0.13, rng.r(0.7, 2), o);
+        }
+        for (let z = -4.6; z > -16.6; z -= rng.r(0.55, 1.1)) glacon(L, sx * 4.95, 9.55, z, rng.r(0.1, 0.24), rng() < 0.2 ? rng.r(2.4, 4) : rng.r(0.5, 1.9), o);
+      }
+      // --- pics de glace et congères au pied ---
+      for (const [x, z, h] of CATH_PICS) { pic(L, x, -0.4, z, h * 0.16, h + 0.4, { w, rx: rng.r(-0.12, 0.12), rz: rng.r(-0.12, 0.12) }); pic(L, x + rng.r(-0.7, 0.7), -0.3, z + rng.r(-0.7, 0.7), h * 0.09, h * 0.5, { w, rx: rng.r(-0.3, 0.3), rz: rng.r(-0.3, 0.3) }); }
+      for (const [x, z, sx, sz] of [[8.6, 1, 2.4, 1.3], [-8.4, 1.2, 2, 1.2], [5.2, -6, 1.4, 2.2], [-5.3, -10, 1.3, 2.6], [5.4, -13.5, 1.5, 2], [0, -17.6, 3.4, 1.3], [-8.8, -3.8, 1.6, 1.4], [8.9, -4, 1.5, 1.6]]) L.get('neige').add(G.base('bosse'), { m: G.mat(x, -0.05, z, sx, 0.55, sz), c: [1, 1, 1], uvm: 'monde', w });
+      // --- la grande rosace : remplage fixe, verres qui tournent lentement et flamboient à l'éclat ---
+      for (const [r, ep] of [[2.2, 2.6], [1.08, 2]]) emis.add(G.base('toreFin'), { m: G.mat(0, 10, -0.28, r, r, ep), c: NOIR, def: tord, w });
+      for (let i = 0; i < 12; i++) { const a = i / 12 * PI * 2; emis.add(G.base('cube'), { m: G.mat(Math.cos(a) * 1.32, 10 + Math.sin(a) * 1.32, -0.28, 0.07, 1.78, 0.1, 0, 0, a - PI / 2), c: NOIR, def: tord, w }); }
+      G.halo(L, 0, 10, 0.4, [0.2, 0.15, 0.4], 9, o);
+      const L2 = G.Lots(), e2 = L2.get('emis'), ROSE = [[1.25, 0.45, 2.3], [0.35, 1.4, 2.5], [2.2, 0.5, 1.3], [0.5, 0.6, 2.6]];
+      const secteur = (a0, da, r0, r1, c, z, dos) => e2.add(G.base('plan'), { c, def: v => { const a = dos ? a0 + (v.x + 0.5) * da : a0 + da - (v.x + 0.5) * da, r = r0 + (v.y + 0.5) * (r1 - r0); v.set(Math.cos(a) * r, Math.sin(a) * r, z); } });
+      for (let i = 0; i < 12; i++) {
+        const a = i / 12 * PI * 2, c = ROSE[i % 4], c2 = i % 2 ? [3, 1.8, 0.6] : [2.6, 0.9, 0.5];
+        for (const dos of [0, 1]) { secteur(a, PI / 6, 1.08, 2.2, c, dos ? -0.02 : 0.02, dos); secteur(a, PI / 6, 0.42, 1.08, c2, dos ? -0.02 : 0.02, dos); }
+      }
+      e2.add(G.base('cyl8'), { m: G.mat(0, 0, 0, 0.45, 0.06, 0.45, PI / 2, 0, 0), c: [3.2, 2.7, 1.5] });
+      G.halo(L2, 0, 0, 0.5, [0.16, 0.11, 0.3], 11);
+      const rose = maill(L2), pr = new THREE.Vector3(0, 10, -0.45); tord(pr); pr.applyMatrix4(w); rose.position.copy(pr); rose.rotation.y = PI;
+      const verre = enfant(rose, 'emis'), lueur = enfant(rose, 'halos').geometry.attributes.color;
+      const matR = MAT.patch(new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false }), { cle: 'a_rosace' }); verre.material = matR; verre.userData.matPropre = true;
+      let ang = 0, tp = -1, kp = -1, tSon = -99;
+      return [(t, dt, ctx) => {
+        const e = ctx.eclat, pas = tp < 0 ? 0 : Math.min(0.1, t - tp); tp = t;
+        ang += pas * (0.05 + e * 1.6); rose.rotation.z = ang;
+        const k = 1 + 0.1 * Math.sin(t * 0.9) + 2.8 * e * e;
+        if (Math.abs(k - kp) > 0.01) { kp = k; matR.color.setScalar(k); const h = (k - 0.9) * 0.6; lueur.setXYZ(0, 0.16 * h * 3, 0.11 * h * 3, 0.3 * h * 3); lueur.needsUpdate = true; }
+        if (e > 0.9 && t - tSon > 25) { tSon = t; ctx.son('cloche'); }
+      }];
+    },
+  };
+
+  Object.assign(REPERES, { cathedrale });
+})();
+
+/* ==== 18m_b.js ==== */
+/* ===================== LIEUX — lot B =====================
+   Merveilles : horloger, labyrinthe, geant, marches_givre, serre, phare. Blocs : verger, chapelle, terrasse, manoir.
+   Même contrat que 18_reperes.js / 18a_blocs.js (voir briefs/contenu.txt). */
+(() => {
+  const C = MONDE.C, M = C / 2, G = GEO;
+  const maill = REPERES_OUTILS.maill;
+  const PI = Math.PI, NOIR = [0.15, 0.15, 0.17], GIVRE = [0.62, 0.74, 0.86];
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  // ---- géométries sur mesure : index, normales et uv garantis ; mises en cache par clé ----
+  const fini = g => {
+    if (!g.index) { const n = g.attributes.position.count, ix = new Uint32Array(n); for (let i = 0; i < n; i++) ix[i] = i; g.setIndex(new THREE.BufferAttribute(ix, 1)); }
+    if (!g.attributes.normal) g.computeVertexNormals();
+    if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
+    return g;
+  };
+  const formes = {};
+  const forme = (k, f) => formes[k] || (formes[k] = fini(f()));
+  const F = {
+    pyr: () => forme('pyr', () => { const g = new THREE.CylinderGeometry(0, 1, 1, 4, 1); g.rotateY(PI / 4); return g; }),      // pyramide basse (12 triangles)
+    disque: () => forme('disque', () => new THREE.CircleGeometry(1, 16)),                                                      // disque face à +z (cadrans)
+    tamb: () => forme('tamb', () => { const g = new THREE.CylinderGeometry(1, 1, 1, 12, 1); g.rotateX(PI / 2); return g; }),   // tambour d'axe z
+    tamb8: () => forme('tamb8', () => { const g = new THREE.CylinderGeometry(1, 1, 1, 8, 1); g.rotateX(PI / 2); return g; }),
+    disque10: () => forme('disque10', () => new THREE.CircleGeometry(1, 10)),
+    fleche: () => forme('fleche', () => { const g = new THREE.CylinderGeometry(0, 1, 1, 4, 10); g.rotateY(PI / 4); return g; }),              // flèche de toit à 4 pans (assez de niveaux pour se tordre)
+    boule: () => forme('boule', () => new THREE.SphereGeometry(1, 6, 4)),
+    grosse: () => forme('grosse', () => new THREE.SphereGeometry(1, 26, 16)),
+    cyl5: () => forme('cyl5', () => new THREE.CylinderGeometry(0.6, 1, 1, 5, 1, true)),                                         // branche légère (10 triangles)
+    cyl4: () => forme('cyl4', () => new THREE.CylinderGeometry(0.55, 1, 1, 4, 1, true)),
+    cyl3: () => forme('cyl3', () => new THREE.CylinderGeometry(0.3, 1, 1, 3, 1, true)),
+  };
+  // ---- lampadaires de trottoir posés à la main (fiche avec `lampes: 0`) : l'entrée sud reste dégagée, budget maîtrisé ----
+  function trottoir(P, rng, sud, nord, est, ouest) {
+    const o = MONDE.RUE + 0.35, j = () => (rng() - 0.5) * 2, p = (x, z, a) => { if (P.libre(x, z, 0.4)) P.lampe(x, z, a); };
+    for (const x of sud || []) p(x + j(), o, PI / 2);
+    for (const x of nord || []) p(x + j(), C - o, -PI / 2);
+    for (const z of est || []) p(C - o, z + j(), 0);
+    for (const z of ouest || []) p(o, z + j(), PI);
+  }
+  // ---- pièce étirée d'un point A à un point B (barreaux, branches, cordes) ----
+  const _h = V(0, 1, 0), _d = V(0, 0, 0), _q = new THREE.Quaternion();
+  function barre(L, k, a, b, ep, c, o) {
+    _d.set(b[0] - a[0], b[1] - a[1], b[2] - a[2]); const l = _d.length(); _d.multiplyScalar(1 / l); _q.setFromUnitVectors(_h, _d);
+    const m = new THREE.Matrix4().compose(V((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2), _q, V(ep, l, (o && o.ep2) || ep));
+    L.get(k).add((o && o.g) || G.base('cube'), Object.assign({ m, c }, o));
+  }
+  // ---- petite lanterne (y = dessous de la cage) : fer, verre lumineux, halo ----
+  function lanterne(L, x, y, z, s, col, o) {
+    o = o || {};
+    L.get('emis').add(G.base('cube'), { m: G.mat(x, y + 0.2 * s, z, 0.24 * s, 0.34 * s, 0.24 * s), c: col, w: o.w, def: o.def });
+    L.get('metal').add(F.pyr(), { m: G.mat(x, y + 0.48 * s, z, 0.25 * s, 0.22 * s, 0.25 * s), c: NOIR, w: o.w, def: o.def });
+    L.get('metal').add(G.base('cube'), { m: G.mat(x, y + 0.01 * s, z, 0.3 * s, 0.05 * s, 0.3 * s), c: NOIR, w: o.w, def: o.def });
+    G.halo(L, x, y + 0.2 * s, z, [col[0] * 0.09, col[1] * 0.09, col[2] * 0.09], o.halo || 2.2 * s, { w: o.w, def: o.def });
+  }
+  // ---- roue dentée dans le plan XY (axe z) : N dents, rayon extérieur r ; `ep` = épaisseur (0 = silhouette plate) ----
+  function roue(N, r, ep) {
+    const sh = new THREE.Shape(), da = PI * 2 / N, rr = r - Math.min(0.2, r * 0.16);
+    for (let i = 0; i < N; i++) for (const [k, rad] of [[-0.3, rr], [-0.17, r], [0.17, r], [0.3, rr]]) { const a = (i + k) * da, x = Math.cos(a) * rad, y = Math.sin(a) * rad; if (!i && k === -0.3) sh.moveTo(x, y); else sh.lineTo(x, y); }
+    sh.closePath();
+    const tr = new THREE.Path(); tr.absarc(0, 0, rr * 0.74, 0, PI * 2, true); sh.holes.push(tr);
+    if (!ep) return fini(new THREE.ShapeGeometry(sh, 5));
+    const g = new THREE.ExtrudeGeometry(sh, { depth: ep, bevelEnabled: false, curveSegments: 5 }); g.translate(0, 0, -ep / 2); return fini(g);
+  }
+  // rayons et moyeu d'une roue (dans le même lot)
+  function rayons(L, k, r, ep, c, o) {
+    const rr = (r - Math.min(0.2, r * 0.16)) * 0.78;
+    for (let i = 0; i < 2; i++) L.get(k).add(G.base('cube'), Object.assign({ m: G.mat(0, 0, 0, rr * 2, r * 0.13, ep * 0.7, 0, 0, i * PI / 2 + 0.4), c }, o));
+    L.get(k).add(F.tamb(), Object.assign({ m: G.mat(0, 0, 0, r * 0.2, r * 0.2, ep * 1.5), c }, o));
+  }
+
+  Object.assign(REPERES, {
+    // =====================================================================================================
+    // 1. LA MAISON DE L'HORLOGER — haute maison tordue couverte de cadrans, rouages qui tournent, balancier, coucou
+    // =====================================================================================================
+    horloger: {
+      nom: 'La Maison de l’Horloger',
+      desc: 'Mille cadrans, aucune heure juste. L’horloger est sorti il y a cent ans ; ses rouages l’attendent en tournant.',
+      maisons: [0, 0.5, 0.35, 0.35], lampes: 0, humeur: 'ombres',
+      plan(P, rng) {
+        const cx = M, cz = M + 1.5, y = P.sol(cx, cz);
+        P.horl = { x: cx, z: cz };
+        P.boite(cx, cz, 3.3, 3.0, 0);            // la maison
+        P.boite(cx + 4.3, cz + 0.3, 1.6, 2.2, 0); // l'atelier en appentis
+        P.cyl(cx - 4.6, cz - 1.5, 1.5, 1.9);     // grande roue abandonnée dans la neige
+        trottoir(P, rng, [10.5, 33.5], [22], [22], [22]);
+        P.lum(cx, y + 9, cz - 7, [1, 0.78, 0.45], 2.0, 16);
+        P.lum(cx - 1, y + 18, cz - 7.5, [1, 0.85, 0.55], 1.7, 15);
+        P.lum(cx + 1.7, y + 2.4, cz - 4.4, [1, 0.7, 0.4], 1.2, 8);
+        P.flaque(cx, cz - 5.5, 6.5, [0.45, 0.3, 0.13]); P.flaque(cx + 4.3, cz - 3.4, 2.6, [0.4, 0.26, 0.1]);
+      },
+      construire(L, P, rng, groupe) {
+        const cx = P.horl.x, cz = P.horl.z, y0 = P.sol(cx, cz), w = G.monde(cx, y0, cz, PI), HT = 27;
+        // Repère de la maison : façade vers +z (tournée vers le sud par w), tout est tordu / penché par `def`.
+        const tors = y => 0.55 * clamp(y / HT, 0, 1);
+        const def = v => { const t = clamp(v.y / HT, 0, 1), a = 0.55 * t, c = Math.cos(a), s = Math.sin(a), x = v.x, z = v.z; v.x = x * c - z * s + 2.6 * t * t + Math.sin(t * 7) * 0.45; v.z = x * s + z * c + 1.4 * t * t; };
+        const add = (k, g, m, c, o) => L.get(k).add(typeof g === 'string' ? G.base(g) : g, Object.assign({ m, c, def, w }, o));
+        const maison = new THREE.Group(); maison.position.set(cx, y0, cz); maison.rotation.y = PI; groupe.add(maison);
+        const poser = (o, x, y, z, ry) => { const p = V(x, y, z); def(p); o.position.copy(p); o.rotation.y = (ry || 0) - tors(y); maison.add(o); return o; };
+        const cP = [0.6, 0.58, 0.6], cB = [0.25, 0.18, 0.15], cT = [0.3, 0.24, 0.36], cM1 = rng.p(P.pal.murs), cM2 = rng.p(P.pal.murs), LAITON = [0.52, 0.37, 0.15], CUIVRE = [0.44, 0.22, 0.12];
+        // --- corps : quatre étages empilés de travers, la tête plus large que le cou ---
+        add('pierre', 'boite', G.mat(0, 1.35, 0, 6.0, 5.7, 5.4), cP, { uvm: 'monde', s: 0.5, ao: v => 0.5 + 0.5 * sstep(-0.2, 1.6, v.y) });
+        add('platre', 'boite', G.mat(0, 6.9, 0, 5.3, 5.4, 4.6), cM1, { uvm: 'monde', s: 0.4, ao: v => 1 - 0.3 * sstep(8.9, 9.6, v.y) });
+        add('planche', 'boite', G.mat(0, 11.9, 0, 4.5, 4.6, 4.6), [0.5, 0.38, 0.32], { uvm: 'monde', s: 0.4, ao: v => 1 - 0.4 * sstep(13.2, 14.2, v.y) });
+        add('platre', 'boite', G.mat(0, 16.8, 0, 5.7, 5.2, 5.3), cM2, { uvm: 'monde', s: 0.4, ao: v => 1 - 0.3 * sstep(18.6, 19.4, v.y) });
+        for (const [y, sx, sz, e] of [[9.6, 5.5, 4.8, 0.2], [14.25, 5.95, 5.55, 0.26], [4.3, 5.5, 4.8, 0.16]]) add('bois', 'cube', G.mat(0, y, 0, sx, e, sz), cB, { uvm: 'monde', s: 0.6 });
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) { add('bois', 'boite', G.mat(sx * 2.6, 6.9, sz * 2.25, 0.2, 5.4, 0.2), cB, {}); add('bois', 'boite', G.mat(sx * 2.8, 16.8, sz * 2.6, 0.2, 5.2, 0.2), cB, {}); }
+        for (const sx of [-1, 1]) { add('bois', 'cube', G.mat(sx * 2.67, 6.9, 0, 0.08, 0.16, 6.2, 0.86, 0, 0), cB, {}); add('bois', 'cube', G.mat(sx * 2.67, 6.9, 0, 0.08, 0.16, 6.2, -0.86, 0, 0), cB, {}); }
+        for (const x of [-2.3, -0.9, 0.9, 2.3]) add('bois', 'cube', G.mat(x, 13.85, 2.4, 0.22, 0.7, 0.55, 0.5, 0, 0), cB, {});
+        // --- la fente : le mécanisme à nu, rougeoyant, avec ses rouages en ombres chinoises ---
+        add('emis', 'plan', G.mat(0, 6.55, 2.37, 1.7, 2.7, 1), [1.0, 0.5, 0.14], {}); add('emis', 'plan', G.mat(0, 9.3, 2.37, 1.7, 2.8, 1), [0.8, 0.36, 0.1], {}); add('emis', 'plan', G.mat(0, 12.05, 2.37, 1.7, 2.7, 1), [0.55, 0.22, 0.06], {});
+        for (const sx of [-1, 1]) add('bois', 'boite', G.mat(sx * 0.95, 9.3, 2.4, 0.22, 8.5, 0.2), cB, {});
+        for (const y of [5.1, 13.5]) add('bois', 'cube', G.mat(0, y, 2.4, 2.2, 0.24, 0.24), cB, {});
+        for (const y of [7.2, 9.3, 11.4]) add('unie', 'cube', G.mat(0, y, 2.43, 1.7, 0.07, 0.05), [0.02, 0.02, 0.02], {});
+        for (const [x, y, N, r] of [[-0.25, 6.6, 9, 0.8], [0.4, 8.2, 7, 0.6], [-0.3, 10.5, 10, 0.88], [0.32, 12.2, 6, 0.52]]) { add('unie', roue(N, r, 0), G.mat(x, y, 2.42, 1, 1, 1, 0, 0, x * 3 + y), [0.02, 0.02, 0.02], {}); add('unie', 'cube', G.mat(x, y, 2.42, r * 1.3, r * 0.14, 0.02, 0, 0, y), [0.02, 0.02, 0.02], {}); }
+        G.halo(L, 0, 7.4, 2.9, [0.16, 0.08, 0.025], 6, { def, w }); G.halo(L, 0, 11.2, 2.9, [0.1, 0.05, 0.015], 5, { def, w });
+        // --- porte, fenêtres ---
+        add('bois', 'cube', G.mat(-1.75, 1.3, 2.71, 1.4, 2.5, 0.14), cB.map(v => v * 0.7), {});
+        add('porte', 'plan', G.mat(-1.75, 1.25, 2.79, 1.1, 2.2, 1), [1, 1, 1], {});
+        add('pierre', 'cube', G.mat(-1.75, -0.05, 3.1, 1.9, 0.5, 0.8), [0.5, 0.5, 0.53], { uvm: 'monde' });
+        lanterne(L, -0.85, 2.3, 2.95, 1, [3.2, 2.1, 0.9], { def, w });
+        add('fenetre', 'plan', G.mat(1.55, 2.2, 2.78, 1.1, 1.4, 1), [2.5, 1.6, 0.7], { uvr: [0.5, 0.5, 1, 1] }); add('pierre', 'cube', G.mat(1.55, 1.42, 2.8, 1.4, 0.1, 0.34), cP, {}); add('bois', 'cube', G.mat(1.55, 2.2, 2.72, 1.3, 1.6, 0.08), cB, {});
+        for (const [x, y, z, ry, st] of [[2.72, 6.4, -0.8, PI / 2, 0], [-2.72, 7.6, 0.9, -PI / 2, 2], [2.32, 11.6, 1.55, PI / 2, 1], [0.9, 7.2, -2.37, PI, 0], [-0.7, 11.8, -2.37, PI, 2]])
+          add('fenetre', 'plan', G.mat(x, y, z, 0.85, 1.25, 1, 0, ry, 0), rng() < 0.7 ? P.pal.fenetre(rng) : [0.03, 0.035, 0.05], { uvr: [[0, 0.5, 0.5, 1], [0.5, 0.5, 1, 1], [0, 0, 0.5, 0.5]][st] });
+        // --- à hauteur d'yeux : horloges de parquet oubliées dehors, enseigne en forme de montre ---
+        for (const [x, z, ry, rz, h] of [[0.15, 3.15, 0.15, 0.05, 1], [2.75, 3.3, -0.5, -0.09, 1.12], [-3.05, 3.2, 0.3, 0.07, 0.9]]) {
+          const wc = new THREE.Matrix4().multiplyMatrices(w, G.mat(x, -0.1, z, h, h, h, 0, ry, rz)), cb = [0.3, 0.2, 0.15], a = (k, g, m, c) => L.get(k).add(typeof g === 'string' ? G.base(g) : g, { m, c, w: wc });
+          a('bois', 'cube', G.mat(0, 0.95, 0, 0.5, 1.9, 0.34), cb); a('bois', 'cube', G.mat(0, 2.2, 0, 0.64, 0.64, 0.4), cb); a('bois', F.pyr(), G.mat(0, 2.68, 0, 0.5, 0.34, 0.34), cb);
+          a('cadran', F.disque10(), G.mat(0, 2.2, 0.21, 0.25, 0.25, 1), [1.3, 1.1, 0.8]); a('emis', 'plan', G.mat(0, 1.05, 0.175, 0.2, 1.0, 1), [0.9, 0.45, 0.14]); a('verni', F.boule(), G.mat(0.03, 0.75, 0.19, 0.09, 0.09, 0.03), LAITON);
+        }
+        add('metal', 'cube', G.mat(-1.75, 3.55, 3.0, 0.06, 0.06, 0.7), NOIR, {}); add('metal', 'cube', G.mat(-1.75, 3.33, 3.3, 0.03, 0.4, 0.03), NOIR, {});
+        add('verni', F.tamb(), G.mat(-1.75, 2.75, 3.3, 0.46, 0.46, 0.14), LAITON, {}); add('cadran', F.disque(), G.mat(-1.75, 2.75, 3.38, 0.4, 0.4, 1), [1.4, 1.2, 0.85], {}); add('verni', 'cube', G.mat(-1.75, 3.26, 3.3, 0.14, 0.12, 0.1), LAITON, {});
+        // --- cadrans : trois grands sur la tête, puis une pluie de petits partout ---
+        const demi = y => y < 4.2 ? [3.0, 2.7] : y < 9.6 ? [2.65, 2.3] : y < 14.2 ? [2.25, 2.3] : [2.85, 2.65];
+        const RY = [0, PI / 2, -PI / 2, PI];
+        const cadran = (f, u, y, r, col, aig) => {
+          const [hw, hd] = demi(y), ry = RY[f], cs = Math.cos(ry), sn = Math.sin(ry), prof = (f === 0 || f === 3) ? hd : hw;
+          const px = o => cs * u + sn * (prof + o), pz = o => -sn * u + cs * (prof + o);
+          add('bois', r > 0.7 ? F.tamb() : F.tamb8(), G.mat(px(0.06), y, pz(0.06), r * 1.12, r * 1.12, 0.2, 0, ry, 0), cB, {});
+          add('cadran', r > 0.7 ? F.disque() : F.disque10(), G.mat(px(0.17), y, pz(0.17), r, r, 1, 0, ry, 0), col, {});
+          if (aig) for (const [l, e] of [[r * 0.5, 0.11], [r * 0.78, 0.07]]) { const a = rng() * 6.283, ox = -Math.sin(a) * l / 2, oy = Math.cos(a) * l / 2; add('metal', 'cube', G.mat(px(0.2) + cs * ox, y + oy, pz(0.2) - sn * ox, r * e, l, 0.02, 0, ry, a), [0.05, 0.05, 0.06], {}); }
+          if (r > 0.55 && col[0] > 0.5) { const p = V(px(0.6), y, pz(0.6)); G.halo(L, p.x, p.y, p.z, [col[0] * 0.09, col[1] * 0.08, col[2] * 0.06], r * 4.5, { def, w }); }
+        };
+        const YC = 16.6;
+        cadran(0, 0, YC, 1.8, [1.5, 1.3, 1.0], false); cadran(1, 0, YC, 1.35, [1.2, 1.05, 0.8], true); cadran(2, 0, YC, 1.35, [1.2, 1.05, 0.8], true); cadran(3, 0, YC, 1.35, [0.8, 1.3, 1.1], true);
+        const gr = [[3.1, 9.0, 2.0], [1.81, 11.76, 1.25], [-2.95, 6.4, 1.5], [-1.5, 8.2, 0.9]], poses = [[], [], [], []];
+        for (let e = 0, n = 0; e < 240 && n < 24; e++) {
+          const f = e % 5 === 4 ? 3 : e % 5 >= 2 ? e % 5 - 1 : 0, y = 1.2 + rng() * 17.6, r = rng() < 0.2 ? 0.75 + rng() * 0.3 : 0.28 + rng() * 0.36, [hw, hd] = demi(y), lim = ((f === 0 || f === 3) ? hw : hd) - r - 0.25;
+          if (lim < 0.1) continue; const u = (rng() * 2 - 1) * lim;
+          if (poses[f].some(q => Math.hypot(q[0] - u, q[1] - y) < q[2] + r + 0.14)) continue;
+          if (Math.abs(y - 4.2) < r + 0.2 || Math.abs(y - 9.6) < r + 0.2 || Math.abs(y - 14.2) < r + 0.3 || y + r > 19.2) continue;   // pas à cheval sur deux étages
+          if (Math.hypot(u, y - YC) < r + (f ? 1.6 : 2.1)) continue;
+          if (f === 0 && ((Math.abs(u) < 1.2 + r && y > 4.6 && y < 14) || (u < -0.9 + r && y < 3.0 + r) || (u > 0.75 - r && y < 3.2 + r) || gr.some(q => Math.hypot(q[0] - u, q[1] - y) < q[2] * 0.75 + r))) continue;
+          if (f === 2 && y < 5.2 + r) continue; // l'appentis cache ce bas de mur
+          poses[f].push([u, y, r]); n++;
+          const k = 0.5 + rng() * 0.9, h = rng();
+          cadran(f, u, y, r, h < 0.12 ? [0.14, 0.13, 0.12] : h < 0.27 ? [0.55 * k, 1.35 * k, 1.05 * k] : [1.25 * k, 1.05 * k, 0.78 * k], true);
+        }
+        // --- toit en chapeau de sorcière, étoile de laiton, cheminée, stalactites, guirlandes ---
+        const yT = 19.4, hP = 10.4;
+        const defT = v => { const k = clamp((v.y - yT) / hP, 0, 1); v.x -= Math.pow(k, 2.3) * 4.8; v.z += Math.pow(k, 3) * 1.2; v.y -= Math.pow(k, 4) * 1.9; def(v); };
+        add('bois', 'cube', G.mat(0, yT, 0, 6.5, 0.2, 6.1), cB, {});
+        add('tuiles', F.fleche(), G.mat(0, yT + hP / 2, 0, 4.75, hP, 4.45), cT, { uvm: 'monde', s: 0.55, def: defT });
+        add('metal', 'cone8', G.mat(0, yT + hP + 0.5, 0, 0.06, 1.3, 0.06), NOIR, { def: defT });
+        add('emis', 'ico', G.mat(0, yT + hP + 1.3, 0, 0.3, 0.42, 0.12), [3.4, 2.6, 1.0], { def: defT }); G.halo(L, 0, yT + hP + 1.3, 0, [0.35, 0.26, 0.1], 4, { def: defT, w });
+        add('brique', 'boite', G.mat(-1.7, 21.2, -1.0, 0.75, 4.2, 0.75), [0.8, 0.74, 0.72], { uvm: 'monde', s: 0.6 }); add('pierre', 'cube', G.mat(-1.7, 23.35, -1.0, 1.0, 0.18, 1.0), [0.5, 0.5, 0.5], {});
+        for (let i = 0; i < 26; i++) { const l = 0.25 + rng() * 0.9, f = i % 3, u = (rng() * 2 - 1) * 2.8; add('verni', 'glacon', G.mat(f === 0 ? u : (f === 1 ? 2.95 : -2.95), 14.12 - l / 2, f === 0 ? 2.72 : u * 0.9, 0.05, -l, 0.05), GIVRE, {}); }
+        for (let i = 0; i < 22; i++) { const l = 0.3 + rng() * 1.1, f = i % 3, u = (rng() * 2 - 1) * 3.1; add('verni', 'glacon', G.mat(f === 0 ? u : (f === 1 ? 3.2 : -3.2), yT - 0.1 - l / 2, f === 0 ? 3.0 : u * 0.92, 0.055, -l, 0.055), GIVRE, {}); }
+        G.guirlande(L, [-2.9, 14.05, 2.8], [2.9, 14.05, 2.8], { couleurs: P.pal.guirlande, rng, creux: 0.4, pas: 0.4, def, w });
+        G.guirlande(L, [-3.0, 4.15, 2.75], [3.0, 4.15, 2.75], { couleurs: P.pal.guirlande, rng, creux: 0.3, pas: 0.45, def, w });
+        // --- atelier en appentis (côté x négatif), tuyau de poêle ---
+        add('brique', 'boite', G.mat(-4.3, 1.0, -0.3, 2.9, 5.0, 4.1), [0.82, 0.76, 0.74], { uvm: 'monde', s: 0.5, ao: v => 0.55 + 0.45 * sstep(-0.2, 1.4, v.y) });
+        add('tuiles', 'pignon', G.mat(-4.35, 3.45, -0.3, 3.5, 2.1, 4.7), cT, { uvm: 'monde', s: 0.6 });
+        add('fenetre', 'plan', G.mat(-4.4, 1.9, 1.76, 1.3, 1.3, 1), [2.6, 1.7, 0.7], { uvr: [0, 0.5, 0.5, 1] }); add('pierre', 'cube', G.mat(-4.4, 1.18, 1.82, 1.6, 0.1, 0.3), cP, {});
+        add('metal', 'cyl6', G.mat(-5.1, 5.6, -1.3, 0.16, 4.4, 0.16), [0.22, 0.2, 0.2], { def: v => { v.x += Math.sin(v.y * 1.3) * 0.18; def(v); } });
+        add('metal', 'cone8', G.mat(-5.1, 8.0, -1.3, 0.4, 0.45, 0.4), [0.22, 0.2, 0.2], { def: v => { v.x += Math.sin(v.y * 1.3) * 0.18; def(v); } });
+        for (let i = 0; i < 6; i++) L.get('neige').add(G.base('bosse'), { m: G.mat((rng() * 2 - 1) * 5.5, -0.05, 2.9 + rng() * 0.6, 0.7 + rng() * 0.8, 0.22 + rng() * 0.25, 0.5 + rng() * 0.4), c: [1, 1, 1], uvm: 'monde', w });
+        // --- une grande roue abandonnée, à demi enfouie ---
+        { const m = G.mat(4.6, 0.5, 1.5, 1, 1, 1, -PI / 2 + 0.34, 0, 0.3), c = [0.5, 0.33, 0.24]; L.get('metal').add(roue(20, 1.9, 0.22), { m, c, w }); for (let i = 0; i < 2; i++) L.get('metal').add(G.base('cube'), { m: G.mat(0, 0, 0, 2.7, 0.24, 0.16, 0, 0, i * PI / 2), c, w: new THREE.Matrix4().multiplyMatrices(w, m) }); }
+        // --- ROUAGES qui tournent (pièces à part) ---
+        const roues = [];
+        const mk = (x, y, z, ry, N, r, col, phi, k) => { const L2 = G.Lots(), ep = 0.14 + r * 0.05; L2.get('verni').add(roue(N, r, ep), { c: col }); rayons(L2, 'verni', r, ep, col.map(v => v * 0.8)); const m = poser(maill(L2), x, y, z, ry); if (!ry) add('metal', 'cyl6', G.mat(x, y, z - 0.3, 0.09 + r * 0.03, 0.9, 0.09 + r * 0.03, PI / 2, 0, 0), NOIR, {}); const o = { m, x, y, N, r, phi, k }; roues.push(o); return o; };
+        const engrene = (p, th, N, r, z, col) => { // roue qui s'engrène sur p dans la direction th : phase et vitesse déduites
+          const dA = PI * 2 / p.N, dB = PI * 2 / N, dist = p.r + r - 0.2, fA = (((th - p.phi) / dA) % 1 + 1) % 1;
+          return mk(p.x + Math.cos(th) * dist, p.y + Math.sin(th) * dist, z, 0, N, r, col, th + PI - dB * (0.5 - fA), -p.k * p.N / N);
+        };
+        const rA = mk(3.1, 9.0, 2.62, 0, 22, 2.0, LAITON, 2.0, 1), rB = engrene(rA, 2.0, 14, 1.25, 2.6, CUIVRE); engrene(rB, 2.75, 8, 0.75, 2.62, LAITON);
+        const rD = mk(-2.95, 6.4, 2.62, 0, 16, 1.5, CUIVRE, 0.9, -1.2); engrene(rD, 0.9, 10, 0.9, 2.6, LAITON);
+        mk(2.42, 12.1, -0.4, PI / 2, 12, 1.1, LAITON, 0, 1.6);
+        // --- BALANCIER géant devant la fente ---
+        const Lp = G.Lots();
+        Lp.get('verni').add(G.base('cube'), { m: G.mat(0, -3.8, 0, 0.1, 7.6, 0.06), c: LAITON.map(v => v * 0.8) });
+        Lp.get('verni').add(G.base('sphere'), { m: G.mat(0, -7.6, 0, 0.98, 0.98, 0.17), c: LAITON });
+        Lp.get('cadran').add(F.disque(), { m: G.mat(0, -7.6, 0.18, 0.56, 0.56, 1), c: [1.3, 1.1, 0.8] });
+        Lp.get('verni').add(F.tamb(), { m: G.mat(0, 0, 0, 0.22, 0.22, 0.5), c: CUIVRE });
+        const pend = poser(maill(Lp), 0, 13.75, 3.05, 0);
+        add('bois', 'cube', G.mat(0, 13.85, 2.75, 0.6, 0.4, 0.9), cB, {});
+        // --- aiguilles du grand cadran ---
+        const La = G.Lots(); La.get('metal').add(G.base('cube'), { m: G.mat(0, 0.45, 0, 0.17, 1.05, 0.04), c: [0.04, 0.04, 0.05] }); La.get('metal').add(F.tamb(), { m: G.mat(0, 0, 0, 0.16, 0.16, 0.08), c: [0.04, 0.04, 0.05] });
+        const Lb = G.Lots(); Lb.get('metal').add(G.base('cube'), { m: G.mat(0, 0.68, 0, 0.1, 1.5, 0.04), c: [0.04, 0.04, 0.05] });
+        const aigH = poser(maill(La), 0, YC, 2.86, 0), aigM = poser(maill(Lb), 0, YC, 2.9, 0);
+        // --- COUCOU : une petite porte sous l'avant-toit, un oiseau au bout de sa planche ---
+        add('bois', 'cube', G.mat(0, 18.55, 2.68, 1.25, 1.05, 0.12), cB, {}); add('unie', 'plan', G.mat(0, 18.5, 2.76, 0.92, 0.8, 1), [0.01, 0.01, 0.01], {});
+        add('bois', 'pignon', G.mat(0, 19.0, 2.9, 1.6, 0.5, 0.6), cB, {});
+        for (const sx of [-1, 1]) add('bois', 'cube', G.mat(sx * 0.62, 18.5, 2.95, 0.05, 0.8, 0.44, 0, sx * 0.5, 0), [0.4, 0.14, 0.12], {});
+        const Lc = G.Lots(), cOis = [0.16, 0.22, 0.4];
+        Lc.get('bois').add(G.base('cube'), { m: G.mat(0, -0.3, -1.1, 0.12, 0.08, 2.4), c: cB });
+        Lc.get('verni').add(G.base('sphereB'), { m: G.mat(0, 0, 0, 0.3, 0.3, 0.44), c: cOis });
+        Lc.get('verni').add(G.base('sphereB'), { m: G.mat(0, -0.06, 0.16, 0.25, 0.24, 0.3), c: [0.7, 0.2, 0.14] });
+        Lc.get('verni').add(G.base('sphereB'), { m: G.mat(0, 0.3, 0.3, 0.2, 0.2, 0.2), c: cOis });
+        Lc.get('emis').add(F.pyr(), { m: G.mat(0, 0.28, 0.58, 0.07, 0.26, 0.07, PI / 2, 0, 0), c: [3, 1.6, 0.3] });
+        for (const sx of [-1, 1]) { Lc.get('emis').add(G.base('cube'), { m: G.mat(sx * 0.11, 0.36, 0.44, 0.05, 0.06, 0.05), c: [3, 2.6, 1.2] }); Lc.get('verni').add(G.base('cube'), { m: G.mat(sx * 0.31, 0.03, -0.02, 0.05, 0.26, 0.42, 0, 0, sx * 0.3), c: cOis }); }
+        Lc.get('verni').add(G.base('cube'), { m: G.mat(0, 0.14, -0.48, 0.2, 0.04, 0.4, -0.5, 0, 0), c: cOis });
+        const nid = poser(new THREE.Group(), 0, 18.5, 1.4, 0), bras = maill(Lc); bras.scale.setScalar(1.5); nid.add(bras);
+        let ph = 0, boost = 0, cu = 0, cuT = 14, cuOut = 0, tSon = 30;
+        return [(t, dt, ctx) => {
+          boost += ((ctx.eclat > 0.25 ? 1 : 0) - boost) * Math.min(1, dt * 2.5); ph += dt * (1 + boost * 6);
+          for (let i = 0; i < roues.length; i++) { const r = roues[i]; r.m.rotation.z = r.phi + r.k * ph * 0.28; }
+          pend.rotation.z = Math.sin(t * 1.9) * 0.27;
+          aigM.rotation.z = -ph * 0.4; aigH.rotation.z = -ph * 0.4 / 6 + 1;
+          tSon += dt; cuT -= dt;
+          if (cuOut <= 0 && (ctx.eclat > 0.8 || (cuT <= 0 && ctx.d < 45))) { cuOut = 4.4; cuT = 42; if (tSon > 18 && ctx.d < 45) { tSon = 0; ctx.son('carillon'); } }
+          if (cuOut > 0) cuOut -= dt;
+          const cible = cuOut > 0.6 ? 1 : 0; cu += (cible - cu) * Math.min(1, dt * (cible ? 10 : 3.5));
+          bras.position.z = cu * 3.2; bras.rotation.x = Math.sin(t * 10) * 0.22 * cu;
+        }];
+      },
+    },
+
+    // =====================================================================================================
+    // 2. LE LABYRINTHE DE HOUX — haies de 2,2 m, baies rouges, une dame de pierre au centre qui te suit des yeux
+    // =====================================================================================================
+    labyrinthe: {
+      nom: 'Le Labyrinthe de Houx',
+      desc: 'Des haies qui piquent, des baies qui clignent. Au centre, une dame de pierre lève sa lanterne… et te suit des yeux.',
+      maisons: 0, lampes: 0, sansPlace: true, route: 0.85, humeur: 'ombres', fantomes: true,
+      plan(P, rng) {
+        const N = 11, p = 2.8, o = M - N * p / 2;
+        // H[j][i] = mur au sud de la case (i, j) (j = 0..N) ; W[j][i] = mur à l'ouest de la case (i, j) (i = 0..N)
+        const H = [], W = [], vu = [];
+        for (let j = 0; j <= N; j++) { H.push(new Array(N).fill(true)); W.push(new Array(N + 1).fill(true)); vu.push(new Array(N).fill(false)); }
+        const salle = (i, j) => i >= 4 && i <= 6 && j >= 4 && j <= 6, DI = [0, 0, -1, 1], DJ = [-1, 1, 0, 0];   // directions : 0 sud, 1 nord, 2 ouest, 3 est
+        const mur = (i, j, k, v) => { const T = k < 2 ? H : W, a = k === 1 ? j + 1 : j, b = k === 3 ? i + 1 : i; if (v !== undefined) T[a][b] = v; return T[a][b]; };
+        for (let j = 4; j <= 6; j++) for (let i = 4; i <= 6; i++) { vu[j][i] = true; if (i < 6) mur(i, j, 3, false); if (j < 6) mur(i, j, 1, false); }   // salle centrale 3 × 3
+        mur(5, 0, 0, false); mur(5, 0, 1, false); mur(5, 1, 1, false); vu[0][5] = vu[1][5] = vu[2][5] = true;                                   // entrée sud, vestibule droit
+        const pile = [[5, 2]];
+        while (pile.length) { // labyrinthe parfait (parcours en profondeur), la salle comptant pour un mur plein
+          const [i, j] = pile[pile.length - 1], dirs = [0, 1, 2, 3].filter(k => { const a = i + DI[k], b = j + DJ[k]; return a >= 0 && a < N && b >= 0 && b < N && !vu[b][a]; });
+          if (!dirs.length) { pile.pop(); continue; }
+          const k = rng.p(dirs); mur(i, j, k, false); vu[j + DJ[k]][i + DI[k]] = true; pile.push([i + DI[k], j + DJ[k]]);
+        }
+        mur(5, 6, 1, false);   // la porte de la salle est au nord : il faut en faire le tour
+        for (let n = 0, e = 0; n < 9 && e < 300; e++) { // quelques boucles, pour ne pas tourner en rond trop longtemps
+          const i = rng.i(0, N - 1), j = rng.i(0, N - 1), k = rng.i(0, 3), a = i + DI[k], b = j + DJ[k];
+          if (a < 0 || a >= N || b < 0 || b >= N || salle(i, j) || salle(a, b) || (i === 5 && j < 2) || (a === 5 && b < 2) || !mur(i, j, k)) continue;
+          mur(i, j, k, false); n++;
+        }
+        const chemin = () => { // plus court chemin de l'entrée (5, 0) à la salle, en largeur d'abord
+          const prec = new Map([[5, -1]]), file = [5];
+          while (file.length) {
+            const c = file.shift(), i = c % N, j = (c - i) / N;
+            if (salle(i, j)) { const out = []; for (let q = c; q !== -1; q = prec.get(q)) out.unshift([q % N, (q - q % N) / N]); return out; }
+            for (let k = 0; k < 4; k++) { const a = i + DI[k], b = j + DJ[k]; if (a < 0 || a >= N || b < 0 || b >= N || mur(i, j, k) || prec.has(b * N + a)) continue; prec.set(b * N + a, c); file.push(b * N + a); }
+          }
+          return null;
+        };
+        const poser = () => { // murs voisins fondus en longues haies + vraies collisions
+          const n0 = P.obst.length, out = [];
+          for (let j = 0; j <= N; j++) for (let i = 0, d = -1; i <= N; i++) { const m = i < N && H[j][i]; if (m && d < 0) d = i; if (!m && d >= 0) { out.push({ x: o + (d + i) * p / 2, z: o + j * p, l: (i - d) * p, h: 1 }); d = -1; } }
+          for (let i = 0; i <= N; i++) for (let j = 0, d = -1; j <= N; j++) { const m = j < N && W[j][i]; if (m && d < 0) d = j; if (!m && d >= 0) { out.push({ x: o + i * p, z: o + (d + j) * p / 2, l: (j - d) * p, h: 0 }); d = -1; } }
+          for (const r of out) P.boite(r.x, r.z, r.h ? r.l / 2 + 0.33 : 0.33, r.h ? 0.33 : r.l / 2 + 0.33, 0);
+          return [n0, out];
+        };
+        const centre = c => [o + (c[0] + 0.5) * p, o + (c[1] + 0.5) * p];
+        const praticable = ch => { // on « marche » le chemin : chaque pas doit être libre de toute collision
+          if (!ch) return false; let x = centre(ch[0])[0], z = MONDE.RUE;
+          for (const c of ch) { const [bx, bz] = centre(c), n = Math.ceil(Math.hypot(bx - x, bz - z) / 0.35); for (let k = 1; k <= n; k++) if (!P.libre(x + (bx - x) * k / n, z + (bz - z) * k / n, 0.5)) return false; x = bx; z = bz; }
+          return true;
+        };
+        let ch = chemin(), [n0, runs] = poser();
+        if (!praticable(ch)) { P.obst.length = n0; for (let j = 0; j <= 3; j++) mur(5, j, 1, false); ch = chemin(); runs = poser()[1]; }   // filet de sécurité : couloir droit jusqu'à la salle
+        P.laby = { runs, o, p, ok: praticable(ch), pas: ch.length, bougies: [] };
+        ch.forEach((c, k) => { if (k < 2 || k % 2 || salle(c[0], c[1])) return; const [x, z] = centre(c), b = [x + (k % 4 ? 0.72 : -0.72), z + 0.72]; P.laby.bougies.push(b); if (k % 4 === 0) P.flaque(b[0], b[1], 1.7, [0.3, 0.2, 0.08]); });
+        // salle centrale : la statue, quatre lanternes
+        const y = P.sol(M, M);
+        P.cyl(M, M, 1.5); for (const sx of [-1, 1]) for (const sz of [-1, 1]) P.cyl(M + sx * 3.25, M + sz * 3.25, 0.2);
+        P.lum(M, y + 7.6, M, [1, 0.78, 0.45], 2.2, 18); P.lum(M, P.sol(M, o) + 2.9, o - 0.8, [1, 0.75, 0.4], 1.2, 9);
+        P.flaque(M, M, 6.5, [0.42, 0.29, 0.12]); P.flaque(M, o - 0.6, 3.2, [0.36, 0.24, 0.1]);
+        trottoir(P, rng, [10, 34], [11, 33], [22], [22]);
+      },
+      construire(L, P, rng, groupe) {
+        const { runs, o } = P.laby, sol = P.sol, ROUGE = [2.5, 0.2, 0.15];
+        // --- haies : boîtes bosselées qui suivent le terrain, baies rouges des deux côtés ---
+        for (const r of runs) {
+          const n = Math.max(1, Math.round(r.l / 1.4)), g = forme('haie' + n, () => new THREE.BoxGeometry(1, 1, 1, n, 2, 1)), k = rng(), c = [0.4 + k * 0.1, 0.6 + k * 0.14, 0.45 + k * 0.1];
+          const def = v => {
+            const yy = v.y, sg = (r.h ? v.z - r.z : v.x - r.x) < 0 ? -1 : 1, n1 = NZ.vn(v.x * 0.8 + 3, v.z * 0.8, 31), n2 = NZ.vn(v.x * 2.1, v.z * 2.1 + 9, 32);
+            const e = yy > 1.9 ? -0.1 + (n2 - 0.5) * 0.08 : yy > 0.5 ? 0.1 + (n2 - 0.5) * 0.26 : 0;
+            if (r.h) v.z += sg * e; else v.x += sg * e;
+            v.y = sol(v.x, v.z) - 0.15 + (yy > 1.9 ? yy + (n1 - 0.5) * 0.55 : yy);
+          };
+          L.get('aiguilles').add(g, { m: G.mat(r.x, 1.1, r.z, r.l + 0.7, 2.2, 0.7, 0, r.h ? 0 : PI / 2, 0), c, uvm: 'monde', s: 0.8, ao: v => 0.5 + 0.5 * sstep(0, 1.3, v.y), def });
+          for (let b = Math.round(r.l * 1.2) * 2; b > 0; b--) {
+            const t = (rng() - 0.5) * r.l, yy = 0.35 + rng() * 1.75, off = (b % 2 ? 1 : -1) * (yy > 0.5 && yy < 1.9 ? 0.5 : 0.4), x = r.h ? r.x + t : r.x + off, z = r.h ? r.z + off : r.z + t;
+            G.ampoule(L, x, sol(x, z) + yy - 0.15, z, rng() < 0.1 ? [2.2, 1.7, 0.9] : ROUGE, { rng });
+          }
+        }
+        // --- topiaires aux quatre coins, arche de houx et lanterne à l'entrée ---
+        const c1 = [0.42, 0.64, 0.48];
+        for (const [x, z, h] of [[o, o, 3.4], [C - o, o, 3.0], [o, C - o, 3.2], [C - o, C - o, 3.6], [M - 1.4, o, 2.3], [M + 1.4, o, 2.3]]) {
+          const y = sol(x, z) + 1.85;
+          L.get('aiguilles').add(G.base('cone8'), { m: G.mat(x, y + h / 2, z, h * 0.3, h, h * 0.3), c: c1, uvm: 'monde', s: 0.8, def: v => { v.x += Math.sin((v.y - y) * 1.6 + x) * 0.14; } });
+          L.get('aiguilles').add(F.boule(), { m: G.mat(x, y + h + 0.1, z, 0.42, 0.42, 0.42), c: c1 });
+          G.ampoule(L, x, y + h + 0.62, z, [2.6, 2.0, 0.9], { rng });
+          for (let k = 0; k < 14; k++) { const t = k / 14, a = t * 9 + x, rr = h * 0.31 * (1 - t) + 0.06; G.ampoule(L, x + Math.cos(a) * rr, y + t * h, z + Math.sin(a) * rr, k % 3 ? ROUGE : [2.4, 1.9, 1.0], { rng }); }
+        }
+        const yE = sol(M, o);
+        L.get('aiguilles').add(forme('arche', () => new THREE.BoxGeometry(1, 1, 1, 10, 1, 1)), { m: G.mat(0, 0, o, 1, 1, 0.7), c: c1, uvm: 'monde', s: 0.8, def: v => { const a = v.x * PI * 0.98, R = 1.72 + v.y * 0.5 + NZ.vn(a * 3, v.y * 2, 33) * 0.12; v.x = M + Math.sin(a) * R; v.y = yE + 2.0 + Math.cos(a) * R; } });
+        for (let k = 0; k < 16; k++) { const a = (k / 15 - 0.5) * PI * 0.95; G.ampoule(L, M + Math.sin(a) * 1.75, yE + 2.0 + Math.cos(a) * 1.75, o - 0.42, ROUGE, { rng }); }
+        L.get('metal').add(G.base('cube'), { m: G.mat(M, yE + 3.25, o, 0.03, 0.5, 0.03), c: NOIR }); lanterne(L, M, yE + 2.4, o, 1.3, [3.2, 2.2, 0.9], { halo: 3.4 });
+        // --- lanternes du bon chemin (posées par terre), lanternes de la salle ---
+        for (const [x, z] of P.laby.bougies) lanterne(L, x, sol(x, z) + 0.02, z, 0.8, [3, 1.9, 0.7], { halo: 1.7 });
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const x = M + sx * 3.25, z = M + sz * 3.25, y = sol(x, z); L.get('metal').add(G.base('cyl6'), { m: G.mat(x, y + 0.9, z, 0.05, 1.8, 0.05), c: NOIR }); lanterne(L, x, y + 1.8, z, 1.2, [3.2, 2.2, 0.9], { halo: 2.8 }); }
+        // --- socle et statue : la Dame de Houx (elle tourne lentement pour te faire face) ---
+        const y0 = sol(M, M), PIERRE = [0.5, 0.52, 0.57];
+        L.get('pierre').add(G.base('cyl8'), { m: G.mat(M, y0 + 0.45, M, 1.4, 2.1, 1.4), c: [0.55, 0.55, 0.58], uvm: 'monde', ao: v => 0.55 + 0.45 * sstep(y0, y0 + 1.2, v.y) });
+        L.get('pierre').add(G.base('cyl8'), { m: G.mat(M, y0 + 1.5, M, 1.55, 0.22, 1.55), c: [0.5, 0.5, 0.54] });
+        const L2 = G.Lots(), courbe = v => { v.z += Math.sin(v.y * 0.42) * 0.38 - 0.1; v.x += Math.sin(v.y * 0.8 + 1) * 0.08; };
+        const robe = forme('dame', () => new THREE.LatheGeometry([[1.05, 0], [0.98, 0.5], [0.78, 1.8], [0.6, 3.2], [0.5, 4.3], [0.62, 4.75], [0.66, 5.0], [0.34, 5.35], [0.3, 5.5], [0.46, 5.75], [0.5, 6.15], [0.4, 6.6], [0.16, 6.95], [0.001, 7.05]].map(q => new THREE.Vector2(q[0], q[1])), 12));
+        L2.get('pierre').add(robe, { c: PIERRE, uvm: 'monde', s: 0.5, def: courbe, ao: v => 0.6 + 0.4 * sstep(0, 1.5, v.y) });
+        L2.get('unie').add(G.base('sphereB'), { m: G.mat(0, 6.0, 0.36, 0.3, 0.38, 0.14), c: [0.01, 0.01, 0.012], def: courbe });
+        const bras = forme('dameBras', () => new THREE.TubeGeometry(new THREE.CatmullRomCurve3([V(0.5, 4.85, 0.1), V(0.95, 5.0, 0.75), V(1.0, 5.9, 1.35), V(0.95, 6.75, 1.6)]), 8, 0.2, 6, false));
+        L2.get('pierre').add(bras, { c: PIERRE, uvm: 'monde', s: 0.5, def: courbe });
+        L2.get('pierre').add(F.boule(), { m: G.mat(0.95, 6.8, 1.6, 0.24, 0.24, 0.24), c: PIERRE, def: courbe });
+        L2.get('metal').add(G.base('cube'), { m: G.mat(0.95, 6.3, 1.6, 0.04, 0.7, 0.04), c: NOIR, def: courbe });
+        lanterne(L2, 0.95, 4.85, 1.6, 2.3, [3.4, 2.4, 1.0], { halo: 7.5, def: courbe });
+        L2.get('aiguilles').add(forme('diademe', () => new THREE.TorusGeometry(1, 0.2, 4, 10)), { m: G.mat(0, 6.42, -0.02, 0.5, 0.5, 0.5, PI / 2 - 0.25, 0, 0), c: [0.45, 0.7, 0.5], def: courbe });
+        for (let k = 0; k < 9; k++) { const a = k / 9 * PI * 2, q = V(Math.cos(a) * 0.56, 6.42 + Math.sin(a) * 0.14, -0.02 + Math.sin(a) * 0.54); courbe(q); G.ampoule(L2, q.x, q.y, q.z, ROUGE, { rng }); }
+        const statue = maill(L2); statue.position.set(M, y0 + 1.6, M); statue.rotation.y = PI; groupe.add(statue);
+        const lo = new G.Lot(); for (const sx of [-1, 1]) lo.add(F.boule(), { m: G.mat(sx * 0.115, 6.03, 0.5, 0.06, 0.085, 0.04), def: courbe });
+        const matY = MAT.patch(new THREE.MeshBasicMaterial({ color: new THREE.Color(0.06, 0.19, 0.25), toneMapped: false }), { cle: 'labyYeux' });
+        const gy = lo.geometrie(); gy.boundingSphere.radius += 26; const yeux = new THREE.Mesh(gy, matY); yeux.userData.matPropre = true; statue.add(yeux);
+        let ang = PI, fl = 0, tSon = 30;
+        return [(t, dt, ctx) => {
+          if (ctx.d < 44) { ang += clamp(angDiff(ang, Math.atan2(ctx.jx - M, ctx.jz - M)), -0.45 * dt, 0.45 * dt); statue.rotation.y = ang + Math.sin(t * 0.4) * 0.03; }
+          fl += ((ctx.eclat > 0.2 ? 1 : 0) - fl) * Math.min(1, dt * 4);
+          const k = 0.25 + fl * 5 + (ctx.d < 9 ? 0.7 : 0); matY.color.setRGB(0.25 * k, 0.75 * k, k);
+          tSon += dt; if (ctx.eclat > 0.8 && ctx.d < 14 && tSon > 25) { tSon = 0; ctx.son('apparition'); }
+        }];
+      },
+    },
+  });
+})();
+
+/* ==== 18m_c.js ==== */
+/* ===================== LIEUX — lot C =====================
+   Merveilles : castelet, bibliotheque, orgues, dragon, statues, montgolfiere. Blocs : bonshommes, lavoir, luges. */
+(() => {
+  const C = MONDE.C, M = C / 2, G = GEO;
+  const maill = REPERES_OUTILS.maill;
+  const TAU = Math.PI * 2, NOIR = [0.15, 0.15, 0.17], OR = [0.85, 0.62, 0.22];
+  const _h = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3();
+  // ---- formes maison (calculées une seule fois) ----
+  const formes = {};
+  const forme = (k, f) => { let g = formes[k]; if (!g) { g = formes[k] = f(); if (!g.index) g.setIndex([...Array(g.attributes.position.count).keys()]); } return g; };
+  const gFil = () => forme('fil', () => new THREE.CylinderGeometry(1, 1, 1, 3, 1, true));           // corde (prisme à 3 pans)
+  const gFanion = () => forme('fanion', () => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([-0.5, 0, 0, 0.5, 0, 0, 0, -1, 0], 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1, 0, 0, 1], 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute([0, 1, 1, 1, 0.5, 0], 2)); g.setIndex([0, 2, 1]); return g; });
+  // barre (cylindre) du point a au point b : cordes, perches, montants. o.g = autre forme (axe y, hauteur 1)
+  const barre = (L, mat, a, b, r, c, o) => {
+    _d.set(b[0] - a[0], b[1] - a[1], b[2] - a[2]); const l = _d.length() || 1e-4; _d.multiplyScalar(1 / l); _q.setFromUnitVectors(_h, _d);
+    const m = new THREE.Matrix4().compose(_p.set((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2), _q, _s.set(r, l, r));
+    L.get(mat).add((o && o.g) || G.base('cyl6'), Object.assign({ m, c }, o));
+  };
+  // corde en chaînette de a à b, garnie de fanions triangulaires
+  const fanions = (L, a, b, o) => {
+    const n = Math.max(3, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) / (o.pas || 0.8))), ry = -Math.atan2(b[2] - a[2], b[0] - a[0]), k = o.taille || 0.5;
+    let p0 = a;
+    for (let i = 1; i <= n; i++) {
+      const t = i / n, p1 = [lerp(a[0], b[0], t), lerp(a[1], b[1], t) - Math.sin(t * Math.PI) * (o.creux || 0.6), lerp(a[2], b[2], t)];
+      barre(L, 'unie', p0, p1, 0.02, [0.12, 0.1, 0.1], { w: o.w, g: gFil() });
+      L.get('tissu').add(gFanion(), { m: G.mat((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2 - 0.02, (p0[2] + p1[2]) / 2, k, k * 1.4, 1, o.rng.r(-0.25, 0.25), ry, o.rng.r(-0.12, 0.12)), c: o.couleurs[i % o.couleurs.length], w: o.w });
+      p0 = p1;
+    }
+  };
+  // matière lumineuse sur mesure (couleur des sommets × mat.color, qu'on anime)
+  const matLueur = (cle, o) => MAT.patch(new THREE.MeshBasicMaterial(Object.assign({ vertexColors: true, toneMapped: false }, o)), { cle });
+  // maillage d'un lot avec une matière sur mesure
+  const maillage = (lot, mat) => { const g = lot.geometrie(); g.boundingSphere.radius += 26; const m = new THREE.Mesh(g, mat); m.userData.matPropre = true; return m; };
+
+  Object.assign(REPERES, {
+    /* ---------- 1. LE CASTELET DES PANTINS : théâtre de marionnettes géant, pantins qui dansent au bout de leurs fils ---------- */
+    castelet: {
+      nom: 'Le Castelet des Pantins', desc: 'Personne ne tire les fils, et pourtant ils dansent. Lève ta lanterne : ils adorent avoir un public.',
+      maisons: [0, 0.5, 0.35, 0.35], humeur: 'ombres',
+      plan(P, rng) {
+        const zc = M + 4, y = P.sol(M, zc);
+        P.boite(M, zc, 7, 3.4, 0);
+        for (const sx of [-1, 1]) P.cyl(M + sx * 8.3, zc - 3.6, 0.25);
+        P.lum(M, y + 3.4, zc - 4.8, [1, 0.72, 0.4], 2, 14);        // rampe
+        P.lum(M, y + 8.6, zc - 0.3, [0.75, 0.5, 1], 1.3, 12);       // contre-jour violet dans la cage de scène
+        P.flaque(M, zc - 5.6, 6.5, [0.5, 0.33, 0.14]);
+        for (const [dx, dz] of [[-4.6, -10], [4.6, -10], [-5.2, -13.4], [5.2, -13.4]]) { P.bancs.push({ x: M + dx, z: zc + dz, a: (dx > 0 ? -0.12 : 0.12) }); P.cyl(M + dx, zc + dz, 0.8, 0.9); }
+      },
+      construire(L, P, rng, groupe) {
+        const zc = M + 4, y0 = P.sol(M, zc), w = G.monde(M, y0, zc, 0);
+        const VIOLET = [0.42, 0.21, 0.4], ROUGE = [0.62, 0.07, 0.1];
+        const tord = v => { const k = clamp(v.y / 14, 0, 1); v.x += k * k * 1.0 + Math.sin(v.y * 0.5) * 0.1; v.z -= k * k * 0.45; };
+        // --- estrade ---
+        L.get('planche').add(G.base('cube'), { m: G.mat(0, 0, 0, 13.6, 3, 6.6), c: [0.4, 0.28, 0.25], uvm: 'monde', s: 0.5, w, ao: v => 0.5 + 0.5 * sstep(0, 1.4, v.y) });
+        L.get('verni').add(G.base('cube'), { m: G.mat(0, 1.47, -3.32, 13.8, 0.16, 0.16), c: OR, w });
+        for (let i = 0; i < 7; i++) L.get('verni').add(G.base('ico'), { m: G.mat(-5.4 + i * 1.8, 0.82, -3.31, 0.34, 0.46, 0.05), c: i % 2 ? OR : [0.6, 0.1, 0.12], w });
+        // --- piliers penchés, chapiteaux dorés, flèches tordues ---
+        for (const sx of [-1, 1]) {
+          const dp = v => { const k = clamp((v.y - 1.5) / 9, 0, 1); v.x += sx * k * k * 0.45; tord(v); };
+          L.get('planche').add(G.base('boite'), { m: G.mat(sx * 5.95, 6, -2.5, 1.3, 9, 1.3), c: VIOLET, uvm: 'monde', s: 0.6, def: dp, w });
+          L.get('verni').add(G.base('cube'), { m: G.mat(sx * 5.95, 1.75, -2.5, 1.6, 0.5, 1.6), c: OR, def: dp, w });
+          L.get('verni').add(G.base('cube'), { m: G.mat(sx * 5.95, 10.65, -2.5, 1.7, 0.36, 1.7), c: OR, def: dp, w });
+          L.get('verni').add(G.base('sphere'), { m: G.mat(sx * 5.95, 11.25, -2.5, 0.5, 0.5, 0.5), c: [0.6, 0.1, 0.12], def: dp, w });
+          L.get('verni').add(G.base('cone8'), { m: G.mat(sx * 5.95, 12.6, -2.5, 0.3, 2.2, 0.3), c: OR, def: v => { const k = clamp((v.y - 11.5) / 2.2, 0, 1); v.x += sx * k * k * k * 0.9; dp(v); }, w });
+          G.guirlande(L, [sx * 5.22, 1.9, -3.22], [sx * 5.22, 10.3, -3.22], { couleurs: [[3, 2.2, 1], [3, 1.3, 0.5]], rng, creux: 0.001, pas: 0.6, def: dp, w });
+        }
+        // --- linteau, fronton de travers, emblème ---
+        const dg = v => { const k = clamp((v.y - 11.65) / 3.4, 0, 1); v.x -= k * k * 1.7; tord(v); };
+        L.get('planche').add(G.base('cube'), { m: G.mat(0, 11, -2.5, 13.4, 1.3, 1.5), c: [0.36, 0.18, 0.34], uvm: 'monde', s: 0.6, def: tord, w });
+        L.get('planche').add(G.base('pignon'), { m: G.mat(0, 11.65, -2.5, 12.8, 3.4, 1.3), c: VIOLET, uvm: 'monde', s: 0.6, def: dg, w });
+        for (const sx of [-1, 1]) barre(L, 'verni', [sx * 6.45, 11.68, -3.2], [0, 15.1, -3.2], 0.1, OR, { def: dg, w });
+        L.get('verni').add(forme('croissant', () => new THREE.TorusGeometry(1, 0.2, 5, 14, Math.PI * 1.2)), { m: G.mat(-0.3, 12.75, -3.2, 0.62, 0.62, 0.5, 0, 0, 1.2), c: OR, def: dg, w });
+        { const e = new THREE.Vector3(-0.2, 12.8, -3.24); dg(e); L.get('emis').add(G.base('ico'), { m: G.mat(e.x, e.y, e.z, 0.2, 0.2, 0.06), c: [3, 2.4, 1.1], w }); G.halo(L, e.x, e.y, e.z - 0.1, [0.3, 0.22, 0.1], 2.6, { w }); }
+        const pointe = new THREE.Vector3(0, 15.05, -2.5); dg(pointe);
+        L.get('verni').add(G.base('sphere'), { m: G.mat(pointe.x, pointe.y + 0.2, pointe.z, 0.32, 0.32, 0.32), c: OR, w });
+        G.guirlande(L, [-5.3, 10.32, -3.3], [5.3, 10.32, -3.3], { couleurs: [[3, 2.2, 1], [3, 1.3, 0.5]], rng, creux: 0.001, pas: 0.5, def: tord, w });
+        // --- cage de scène : fond peint (lune, étoiles, collines), côtés, toit ---
+        L.get('planche').add(G.base('cube'), { m: G.mat(0, 6.3, 2.95, 12.8, 9.7, 0.3), c: [0.17, 0.15, 0.28], uvm: 'monde', s: 0.5, def: tord, w });
+        for (const sx of [-1, 1]) L.get('planche').add(G.base('cube'), { m: G.mat(sx * 6.3, 6.3, 0.3, 0.3, 9.7, 5.6), c: [0.3, 0.16, 0.3], uvm: 'monde', s: 0.5, def: tord, w });
+        L.get('planche').add(G.base('cube'), { m: G.mat(0, 11.3, 0.3, 13.2, 0.35, 6.2), c: [0.3, 0.16, 0.3], uvm: 'monde', s: 0.5, def: tord, w });
+        L.get('emis').add(G.base('cyl16'), { m: G.mat(2.7, 8.3, 2.76, 1.15, 0.03, 1.15, Math.PI / 2, 0, 0), c: [0.8, 0.72, 0.45], def: tord, w });
+        L.get('unie').add(G.base('cyl16'), { m: G.mat(3.2, 8.55, 2.72, 1.0, 0.03, 1.0, Math.PI / 2, 0, 0), c: [0.1, 0.09, 0.17], def: tord, w });
+        for (let i = 0; i < 16; i++) { const k = 0.05 + rng() * 0.07; L.get('emis').add(G.base('ico'), { m: G.mat(rng.r(-5.6, 5.6), rng.r(4.6, 10), 2.74, k, k, 0.02, 0, 0, rng() * 3), c: [1.3, 1.2, 0.8], def: tord, w }); }
+        for (const [hx, hr, hh] of [[-3.6, 3.4, 2.6], [1.2, 4.2, 1.9], [4.6, 2.6, 3.1]]) L.get('unie').add(G.base('cone8'), { m: G.mat(hx, 1.5 + hh / 2, 2.7, hr, hh, 0.12), c: [0.09, 0.08, 0.15], w });
+        // --- rideaux à plis et lambrequin festonné ---
+        const gRid = forme('rideau', () => new THREE.PlaneGeometry(1, 1, 14, 8));
+        for (const sx of [-1, 1]) L.get('tissu').add(gRid, { c: ROUGE, def: (v, n) => {
+          const u = v.x + 0.5, t = v.y + 0.5, larg = t > 0.36 ? lerp(1.0, 3.4, sstep(0.36, 1, t)) : lerp(1.0, 1.9, sstep(0.36, 0, t)), amp = 0.17 * (0.4 + larg / 3.4);
+          n.set(-sx * Math.cos(u * 17) * 17 * amp / larg, 0, -1).normalize();
+          v.set(sx * (5.3 - u * larg), 1.5 + t * 8.9, -2.3 + Math.sin(u * 17) * amp + u * 0.15); tord(v);
+        }, w });
+        for (const sx of [-1, 1]) L.get('verni').add(G.base('tore'), { m: G.mat(sx * 4.75, 4.72, -2.3, 0.45, 0.2, 0.36, Math.PI / 2, 0, 0), c: OR, def: tord, w });
+        L.get('tissu').add(forme('lambrequin', () => new THREE.PlaneGeometry(1, 1, 30, 3)), { c: [0.5, 0.05, 0.09], def: (v, n) => {
+          const u = v.x + 0.5, t = v.y + 0.5; n.set(0, 0, -1);
+          v.set(lerp(-5.35, 5.35, u), 10.42 - (1 - t) * (0.95 + 0.75 * Math.abs(Math.sin(u * Math.PI * 5))), -2.62 + Math.sin(u * 44) * 0.06); tord(v);
+        }, w });
+        for (let i = 0; i < 5; i++) { const e = new THREE.Vector3(lerp(-5.35, 5.35, (i + 0.5) / 5), 8.6, -2.64); tord(e); L.get('verni').add(G.base('ico'), { m: G.mat(e.x, e.y, e.z, 0.12, 0.2, 0.12), c: OR, w }); }
+        // --- rampe : feux de la scène ---
+        for (let i = 0; i < 7; i++) {
+          const x = -4.8 + i * 1.6;
+          L.get('metal').add(G.base('bosse'), { m: G.mat(x, 1.66, -3.05, 0.3, 0.3, 0.3, -2.2, 0, 0), c: [0.45, 0.33, 0.16], w });
+          L.get('emis').add(G.base('sphereB'), { m: G.mat(x, 1.7, -2.96, 0.09, 0.09, 0.09), c: [3.2, 2.3, 1], w });
+          G.halo(L, x, 1.75, -3.0, [0.3, 0.2, 0.08], 1.6, { w });
+        }
+        // --- mâts et guirlandes de fanions ---
+        const cf = [[0.62, 0.14, 0.14], [0.75, 0.58, 0.2], [0.2, 0.42, 0.46], [0.5, 0.24, 0.55], [0.8, 0.78, 0.7]];
+        for (const sx of [-1, 1]) {
+          const px = M + sx * 8.3, pz = zc - 3.6, yp = P.sol(px, pz), haut = [px + sx * 0.7, yp + 7.6, pz];
+          barre(L, 'bois', [px, yp - 1, pz], haut, 0.09, [0.4, 0.3, 0.24], {});
+          L.get('verni').add(G.base('sphereB'), { m: G.mat(haut[0], haut[1] + 0.1, haut[2], 0.2, 0.2, 0.2), c: OR });
+          fanions(L, haut, [M + pointe.x, y0 + pointe.y + 0.3, zc + pointe.z - 0.2], { couleurs: cf, rng, creux: 1.1 });
+          fanions(L, haut, [px + sx * 3, P.sol(px + sx * 3, pz - 7) + 3.4, pz - 7], { couleurs: cf, rng, creux: 0.7 });
+          barre(L, 'bois', [px + sx * 3, P.sol(px + sx * 3, pz - 7) - 0.6, pz - 7], [px + sx * 3, P.sol(px + sx * 3, pz - 7) + 3.5, pz - 7], 0.07, [0.4, 0.3, 0.24], {});
+        }
+        // --- les pantins ---
+        const matYeux = matLueur('pantinYeux'), matFil = MAT.patch(new THREE.LineBasicMaterial({ color: 0x9a917c }), { cle: 'pantinFil' });
+        const PEAU = [0.8, 0.66, 0.5], SOMBRE = [0.07, 0.06, 0.08];
+        const pantin = (s, style, c1, c2, yc) => {
+          const g = new THREE.Group(), B = G.Lots(), V = B.get('verni'), Y = new G.Lot();
+          V.add(G.base('tronc'), { m: G.mat(0, 0, 0, 0.52 * s, 1.25 * s, 0.34 * s, Math.PI, 0, 0), c: c1 });
+          V.add(G.base('sphereB'), { m: G.mat(0, -0.72 * s, 0, 0.34 * s, 0.27 * s, 0.28 * s), c: c2 });
+          for (let i = 0; i < 3; i++) V.add(G.base('ico'), { m: G.mat(0, (0.3 - i * 0.3) * s, (0.33 - i * 0.03) * s, 0.06 * s, 0.06 * s, 0.04 * s), c: OR });
+          V.add(G.base('cone12'), { m: G.mat(0, 0.68 * s, 0, 0.5 * s, 0.16 * s, 0.5 * s), c: [0.85, 0.82, 0.75] });
+          V.add(G.base('cyl6'), { m: G.mat(0, 0.8 * s, 0, 0.09 * s, 0.3 * s, 0.09 * s), c: PEAU });
+          V.add(G.base('sphere'), { m: G.mat(0, 1.28 * s, 0, 0.4 * s, 0.46 * s, 0.4 * s), c: PEAU });
+          V.add(G.base('cone8'), { m: G.mat(0, 1.26 * s, 0.6 * s, 0.07 * s, 0.5 * s, 0.07 * s, Math.PI / 2, 0, 0), c: [0.78, 0.42, 0.32] });
+          V.add(G.base('cube'), { m: G.mat(0, 1.1 * s, 0.375 * s, 0.26 * s, 0.035 * s, 0.03 * s), c: SOMBRE });
+          for (const sx of [-1, 1]) {
+            V.add(G.base('cube'), { m: G.mat(sx * 0.13 * s, 0.99 * s, 0.31 * s, 0.02 * s, 0.24 * s, 0.03 * s), c: SOMBRE });
+            V.add(G.base('cyl6'), { m: G.mat(sx * 0.23 * s, 1.2 * s, 0.32 * s, 0.085 * s, 0.02 * s, 0.085 * s, Math.PI / 2 - 0.2, sx * 0.5, 0), c: [0.72, 0.18, 0.18] });
+            V.add(G.base('cube'), { m: G.mat(sx * 0.15 * s, 1.47 * s, 0.355 * s, 0.17 * s, 0.035 * s, 0.03 * s, 0, 0, sx * (style === 1 ? 0.4 : -0.35)), c: SOMBRE });
+            Y.add(G.base('sphereB'), { m: G.mat(sx * 0.15 * s, 1.37 * s, 0.355 * s, 0.062 * s, 0.062 * s, 0.04 * s), c: [1, 0.85, 0.5] });
+            V.add(G.base('sphereB'), { m: G.mat(sx * 0.56 * s, 0.5 * s, 0, 0.17 * s, 0.17 * s, 0.17 * s), c: c2 });
+          }
+          if (style === 0) { // bouffon : bonnet à deux cornes et grelots
+            for (const sx of [-1, 1]) { V.add(G.base('cone8'), { m: G.mat(sx * 0.36 * s, 1.84 * s, 0, 0.2 * s, 0.8 * s, 0.2 * s, 0, 0, -sx * 0.8), c: sx > 0 ? c1 : c2 }); V.add(G.base('ico'), { m: G.mat(sx * 0.66 * s, 2.13 * s, 0, 0.08 * s, 0.08 * s, 0.08 * s), c: OR }); }
+          } else if (style === 1) { // monsieur maigre : haut-de-forme de travers
+            V.add(G.base('cyl12'), { m: G.mat(0, 1.68 * s, 0, 0.52 * s, 0.05 * s, 0.52 * s, 0, 0, 0.12), c: SOMBRE });
+            V.add(G.base('cyl8'), { m: G.mat(0.06 * s, 2.15 * s, 0, 0.3 * s, 0.95 * s, 0.3 * s, 0, 0, 0.12), c: SOMBRE, def: v => { v.x += Math.pow(clamp((v.y - 1.7 * s) / s, 0, 1), 2) * 0.25 * s; } });
+            V.add(G.base('cyl8'), { m: G.mat(0.03 * s, 1.78 * s, 0, 0.315 * s, 0.14 * s, 0.315 * s, 0, 0, 0.12), c: c2 });
+          } else { // poupée : chapeau pointu à pompon, jupe en cloche
+            V.add(G.base('cone8'), { m: G.mat(0, 2.2 * s, 0, 0.34 * s, 1.1 * s, 0.34 * s), c: c2, def: v => { const k = clamp((v.y - 1.65 * s) / (1.1 * s), 0, 1); v.x -= k * k * 0.5 * s; } });
+            V.add(G.base('sphereB'), { m: G.mat(-0.5 * s, 2.72 * s, 0, 0.1 * s, 0.1 * s, 0.1 * s), c: OR });
+            V.add(G.base('cone12'), { m: G.mat(0, -0.62 * s, 0, 0.95 * s, 1.0 * s, 0.95 * s), c: c2 });
+          }
+          // croix d'attelle et sa corde
+          const BR = [0.3, 0.2, 0.14];
+          V.add(G.base('cube'), { m: G.mat(0, yc, 0, 2.9 * s, 0.09, 0.14), c: BR }); V.add(G.base('cube'), { m: G.mat(0, yc, 0.42 * s, 0.14, 0.09, 1.3 * s), c: BR });
+          V.add(gFil(), { m: G.mat(0, yc + 1.2, 0, 0.025, 2.4, 0.025), c: BR });
+          const corps = maill(B); g.add(corps);
+          const yeux = maillage(Y, matYeux); g.add(yeux);
+          const membre = (haut, x, y) => {
+            const U = G.Lots(), F = G.Lots(), l1 = (haut ? 0.76 : 0.84) * s, r = (haut ? 0.1 : 0.13) * s;
+            U.get('verni').add(G.base('cyl6'), { m: G.mat(0, -l1 / 2, 0, r, l1, r), c: haut ? c1 : c2 });
+            U.get('verni').add(G.base('sphereB'), { m: G.mat(0, -l1, 0, r * 1.15, r * 1.15, r * 1.15), c: haut ? c2 : c1 });
+            F.get('verni').add(G.base('cyl6'), { m: G.mat(0, -l1 / 2, 0, r * 0.85, l1, r * 0.85), c: haut ? c1 : c2 });
+            if (haut) { F.get('verni').add(G.base('cone8'), { m: G.mat(0, -l1 * 0.86, 0, r * 1.7, 0.2 * s, r * 1.7), c: [0.85, 0.82, 0.75] }); F.get('verni').add(G.base('sphereB'), { m: G.mat(0, -l1 - 0.06 * s, 0, 0.13 * s, 0.17 * s, 0.1 * s), c: PEAU }); }
+            else F.get('verni').add(G.base('cone8'), { m: G.mat(0, -l1 - 0.04 * s, 0.2 * s, 0.13 * s, 0.62 * s, 0.11 * s, Math.PI / 2, 0, 0), c: c1 });
+            const a = maill(U), b = maill(F); a.position.set(x * s, y * s, 0); b.position.set(0, -l1, 0); a.add(b); g.add(a);
+            return [a, b];
+          };
+          const bras = [membre(true, -0.56, 0.5), membre(true, 0.56, 0.5)], jambes = [membre(false, -0.22, -0.8), membre(false, 0.22, -0.8)];
+          // fils : tête, mains, genoux
+          const pos = new Float32Array(30), gl = new THREE.BufferGeometry();
+          pos.set([0, yc, 0, 0, 1.74 * s, 0, -1.4 * s, yc, 0, 0, 0, 0, 1.4 * s, yc, 0, 0, 0, 0, -0.07, yc, 1.0 * s, 0, 0, 0, 0.07, yc, 1.0 * s, 0, 0, 0]);
+          gl.setAttribute('position', new THREE.BufferAttribute(pos, 3)); gl.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 2, 0), 40);
+          const fils = new THREE.LineSegments(gl, matFil); fils.userData.matPropre = true; g.add(fils);
+          return { g, bras, jambes, pos, attr: gl.attributes.position, s };
+        };
+        const troupe = [];
+        const distrib = [[-3.2, -0.5, 0.86, 1, [0.16, 0.2, 0.32], [0.55, 0.5, 0.42]], [0, -1.3, 1.06, 0, [0.6, 0.1, 0.12], [0.75, 0.58, 0.18]], [3.3, -0.3, 0.92, 2, [0.2, 0.42, 0.4], [0.5, 0.2, 0.5]]];
+        distrib.forEach(([x, z, s, style, c1, c2], i) => {
+          const yb = 1.5 + 0.3 + 2.6 * s, o = pantin(s, style, c1, c2, 9.95 - yb);
+          o.x = M + x; o.z = zc + z; o.y = y0 + yb; o.ph = i * 2.1; o.yaw = Math.PI;
+          o.g.position.set(o.x, o.y, o.z); o.g.rotation.y = Math.PI; groupe.add(o.g); troupe.push(o);
+        });
+        let k = 0, tenue = 0, tMus = 0;
+        return [(t, dt, ctx) => {
+          if (ctx.d > 75) return;
+          if (ctx.eclat > 0.5) tenue = 4.2; else tenue -= dt;
+          const cible = tenue > 0 ? 1 : 0; k += (cible - k) * Math.min(1, dt * (cible ? 8 : 1.1));
+          tMus -= dt; if (ctx.d < 15 && tMus <= 0) { tMus = 50; ctx.son('boite_a_musique'); }
+          const e = 0.45 + 2.6 * k; matYeux.color.setRGB(e, e, e);
+          for (let i = 0; i < troupe.length; i++) {
+            const o = troupe[i], s = o.s, ph = t * 1.5 + o.ph, d = 1 - k, sn = Math.sin(ph);
+            const yawD = Math.PI + 0.5 * Math.sin(t * 0.45 + o.ph * 1.7), yawT = Math.atan2(ctx.jx - o.x, ctx.jz - o.z);
+            o.g.rotation.y = yawD + angDiff(yawD, yawT) * k;
+            o.g.rotation.z = 0.09 * Math.sin(ph * 0.5) * d + (i % 2 ? -0.13 : 0.13) * k;
+            o.g.position.y = o.y + 0.16 * s * Math.abs(sn) * d;
+            for (let j = 0; j < 2; j++) {
+              const sx = j ? 1 : -1, sj = Math.sin(ph + j * 2.2);
+              const a1 = lerp(0.1, 1.0 + 0.75 * sj, d), a2 = lerp(0.08, 0.55 + 0.6 * Math.sin(ph * 2 + j * 1.3), d);
+              o.bras[j][0].rotation.z = sx * a1; o.bras[j][1].rotation.z = sx * a2;
+              const l1 = 0.76 * s, l2 = 0.82 * s, q = 6 + j * 6;
+              o.pos[q + 3] = sx * (0.56 * s + l1 * Math.sin(a1) + l2 * Math.sin(a1 + a2)); o.pos[q + 4] = 0.5 * s - l1 * Math.cos(a1) - l2 * Math.cos(a1 + a2);
+              const leve = Math.max(0, j ? sn : -sn), b1 = lerp(0.04, 0.12 + 0.55 * leve, d), b2 = lerp(-0.02, -0.15 - 0.8 * leve, d), l3 = 0.84 * s, q2 = 18 + j * 6;
+              o.jambes[j][0].rotation.z = sx * b1; o.jambes[j][1].rotation.z = sx * b2;
+              o.pos[q2 + 3] = sx * (0.22 * s + l3 * Math.sin(b1)); o.pos[q2 + 4] = -0.8 * s - l3 * Math.cos(b1); o.pos[q2 + 5] = 0.1 * s;
+            }
+            o.attr.needsUpdate = true;
+          }
+        }];
+      },
     },
   });
 })();

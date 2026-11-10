@@ -190,7 +190,7 @@ const MONDE = (() => {
       const t = (i + 0.5) / nLampes * (C - 10) + 5 + (rng() - 0.5) * 3, off = RUE + 0.35;
       const x = axe === 'x' ? t : (rue === 0 ? off : C - off), z = axe === 'x' ? (rue === 0 ? off : C - off) : t;
       const ang = axe === 'x' ? (rue === 0 ? Math.PI / 2 : -Math.PI / 2) : (rue === 0 ? Math.PI : 0);
-      if (!P.libre(x, z, 0.4)) continue;
+      if (!P.libre(x, z, 0.4) || (P.rep && axe === 'x' && rue === 0 && Math.abs(t - C / 2) < 5)) continue; // jamais de lampadaire dans l'entrée d'une merveille
       ajLampe(P, x, z, ang, pal.lampe);
     }
     // --- guirlandes tendues au-dessus des rues SUD et OUEST (chaque rue touche deux parcelles : une seule la décore) ---

@@ -224,5 +224,128 @@
         }];
       },
     },
+
+    // =====================================================================================================
+    // 2. LE LABYRINTHE DE HOUX — haies de 2,2 m, baies rouges, une dame de pierre au centre qui te suit des yeux
+    // =====================================================================================================
+    labyrinthe: {
+      nom: 'Le Labyrinthe de Houx',
+      desc: 'Des haies qui piquent, des baies qui clignent. Au centre, une dame de pierre lève sa lanterne… et te suit des yeux.',
+      maisons: 0, lampes: 0, sansPlace: true, route: 0.85, humeur: 'ombres', fantomes: true,
+      plan(P, rng) {
+        const N = 11, p = 2.8, o = M - N * p / 2;
+        // H[j][i] = mur au sud de la case (i, j) (j = 0..N) ; W[j][i] = mur à l'ouest de la case (i, j) (i = 0..N)
+        const H = [], W = [], vu = [];
+        for (let j = 0; j <= N; j++) { H.push(new Array(N).fill(true)); W.push(new Array(N + 1).fill(true)); vu.push(new Array(N).fill(false)); }
+        const salle = (i, j) => i >= 4 && i <= 6 && j >= 4 && j <= 6, DI = [0, 0, -1, 1], DJ = [-1, 1, 0, 0];   // directions : 0 sud, 1 nord, 2 ouest, 3 est
+        const mur = (i, j, k, v) => { const T = k < 2 ? H : W, a = k === 1 ? j + 1 : j, b = k === 3 ? i + 1 : i; if (v !== undefined) T[a][b] = v; return T[a][b]; };
+        for (let j = 4; j <= 6; j++) for (let i = 4; i <= 6; i++) { vu[j][i] = true; if (i < 6) mur(i, j, 3, false); if (j < 6) mur(i, j, 1, false); }   // salle centrale 3 × 3
+        mur(5, 0, 0, false); mur(5, 0, 1, false); mur(5, 1, 1, false); vu[0][5] = vu[1][5] = vu[2][5] = true;                                   // entrée sud, vestibule droit
+        const pile = [[5, 2]];
+        while (pile.length) { // labyrinthe parfait (parcours en profondeur), la salle comptant pour un mur plein
+          const [i, j] = pile[pile.length - 1], dirs = [0, 1, 2, 3].filter(k => { const a = i + DI[k], b = j + DJ[k]; return a >= 0 && a < N && b >= 0 && b < N && !vu[b][a]; });
+          if (!dirs.length) { pile.pop(); continue; }
+          const k = rng.p(dirs); mur(i, j, k, false); vu[j + DJ[k]][i + DI[k]] = true; pile.push([i + DI[k], j + DJ[k]]);
+        }
+        mur(5, 6, 1, false);   // la porte de la salle est au nord : il faut en faire le tour
+        for (let n = 0, e = 0; n < 9 && e < 300; e++) { // quelques boucles, pour ne pas tourner en rond trop longtemps
+          const i = rng.i(0, N - 1), j = rng.i(0, N - 1), k = rng.i(0, 3), a = i + DI[k], b = j + DJ[k];
+          if (a < 0 || a >= N || b < 0 || b >= N || salle(i, j) || salle(a, b) || (i === 5 && j < 2) || (a === 5 && b < 2) || !mur(i, j, k)) continue;
+          mur(i, j, k, false); n++;
+        }
+        const chemin = () => { // plus court chemin de l'entrée (5, 0) à la salle, en largeur d'abord
+          const prec = new Map([[5, -1]]), file = [5];
+          while (file.length) {
+            const c = file.shift(), i = c % N, j = (c - i) / N;
+            if (salle(i, j)) { const out = []; for (let q = c; q !== -1; q = prec.get(q)) out.unshift([q % N, (q - q % N) / N]); return out; }
+            for (let k = 0; k < 4; k++) { const a = i + DI[k], b = j + DJ[k]; if (a < 0 || a >= N || b < 0 || b >= N || mur(i, j, k) || prec.has(b * N + a)) continue; prec.set(b * N + a, c); file.push(b * N + a); }
+          }
+          return null;
+        };
+        const poser = () => { // murs voisins fondus en longues haies + vraies collisions
+          const n0 = P.obst.length, out = [];
+          for (let j = 0; j <= N; j++) for (let i = 0, d = -1; i <= N; i++) { const m = i < N && H[j][i]; if (m && d < 0) d = i; if (!m && d >= 0) { out.push({ x: o + (d + i) * p / 2, z: o + j * p, l: (i - d) * p, h: 1 }); d = -1; } }
+          for (let i = 0; i <= N; i++) for (let j = 0, d = -1; j <= N; j++) { const m = j < N && W[j][i]; if (m && d < 0) d = j; if (!m && d >= 0) { out.push({ x: o + i * p, z: o + (d + j) * p / 2, l: (j - d) * p, h: 0 }); d = -1; } }
+          for (const r of out) P.boite(r.x, r.z, r.h ? r.l / 2 + 0.33 : 0.33, r.h ? 0.33 : r.l / 2 + 0.33, 0);
+          return [n0, out];
+        };
+        const centre = c => [o + (c[0] + 0.5) * p, o + (c[1] + 0.5) * p];
+        const praticable = ch => { // on « marche » le chemin : chaque pas doit être libre de toute collision
+          if (!ch) return false; let x = centre(ch[0])[0], z = MONDE.RUE;
+          for (const c of ch) { const [bx, bz] = centre(c), n = Math.ceil(Math.hypot(bx - x, bz - z) / 0.35); for (let k = 1; k <= n; k++) if (!P.libre(x + (bx - x) * k / n, z + (bz - z) * k / n, 0.5)) return false; x = bx; z = bz; }
+          return true;
+        };
+        let ch = chemin(), [n0, runs] = poser();
+        if (!praticable(ch)) { P.obst.length = n0; for (let j = 0; j <= 3; j++) mur(5, j, 1, false); ch = chemin(); runs = poser()[1]; }   // filet de sécurité : couloir droit jusqu'à la salle
+        P.laby = { runs, o, p, ok: praticable(ch), pas: ch.length, bougies: [] };
+        ch.forEach((c, k) => { if (k < 2 || k % 2 || salle(c[0], c[1])) return; const [x, z] = centre(c), b = [x + (k % 4 ? 0.72 : -0.72), z + 0.72]; P.laby.bougies.push(b); if (k % 4 === 0) P.flaque(b[0], b[1], 1.7, [0.3, 0.2, 0.08]); });
+        // salle centrale : la statue, quatre lanternes
+        const y = P.sol(M, M);
+        P.cyl(M, M, 1.5); for (const sx of [-1, 1]) for (const sz of [-1, 1]) P.cyl(M + sx * 3.25, M + sz * 3.25, 0.2);
+        P.lum(M, y + 7.6, M, [1, 0.78, 0.45], 2.2, 18); P.lum(M, P.sol(M, o) + 2.9, o - 0.8, [1, 0.75, 0.4], 1.2, 9);
+        P.flaque(M, M, 6.5, [0.42, 0.29, 0.12]); P.flaque(M, o - 0.6, 3.2, [0.36, 0.24, 0.1]);
+        trottoir(P, rng, [10, 34], [11, 33], [22], [22]);
+      },
+      construire(L, P, rng, groupe) {
+        const { runs, o } = P.laby, sol = P.sol, ROUGE = [2.5, 0.2, 0.15];
+        // --- haies : boîtes bosselées qui suivent le terrain, baies rouges des deux côtés ---
+        for (const r of runs) {
+          const n = Math.max(1, Math.round(r.l / 1.4)), g = forme('haie' + n, () => new THREE.BoxGeometry(1, 1, 1, n, 2, 1)), k = rng(), c = [0.4 + k * 0.1, 0.6 + k * 0.14, 0.45 + k * 0.1];
+          const def = v => {
+            const yy = v.y, sg = (r.h ? v.z - r.z : v.x - r.x) < 0 ? -1 : 1, n1 = NZ.vn(v.x * 0.8 + 3, v.z * 0.8, 31), n2 = NZ.vn(v.x * 2.1, v.z * 2.1 + 9, 32);
+            const e = yy > 1.9 ? -0.1 + (n2 - 0.5) * 0.08 : yy > 0.5 ? 0.1 + (n2 - 0.5) * 0.26 : 0;
+            if (r.h) v.z += sg * e; else v.x += sg * e;
+            v.y = sol(v.x, v.z) - 0.15 + (yy > 1.9 ? yy + (n1 - 0.5) * 0.55 : yy);
+          };
+          L.get('aiguilles').add(g, { m: G.mat(r.x, 1.1, r.z, r.l + 0.7, 2.2, 0.7, 0, r.h ? 0 : PI / 2, 0), c, uvm: 'monde', s: 0.8, ao: v => 0.5 + 0.5 * sstep(0, 1.3, v.y), def });
+          for (let b = Math.round(r.l * 1.2) * 2; b > 0; b--) {
+            const t = (rng() - 0.5) * r.l, yy = 0.35 + rng() * 1.75, off = (b % 2 ? 1 : -1) * (yy > 0.5 && yy < 1.9 ? 0.5 : 0.4), x = r.h ? r.x + t : r.x + off, z = r.h ? r.z + off : r.z + t;
+            G.ampoule(L, x, sol(x, z) + yy - 0.15, z, rng() < 0.1 ? [2.2, 1.7, 0.9] : ROUGE, { rng });
+          }
+        }
+        // --- topiaires aux quatre coins, arche de houx et lanterne à l'entrée ---
+        const c1 = [0.42, 0.64, 0.48];
+        for (const [x, z, h] of [[o, o, 3.4], [C - o, o, 3.0], [o, C - o, 3.2], [C - o, C - o, 3.6], [M - 1.4, o, 2.3], [M + 1.4, o, 2.3]]) {
+          const y = sol(x, z) + 1.85;
+          L.get('aiguilles').add(G.base('cone8'), { m: G.mat(x, y + h / 2, z, h * 0.3, h, h * 0.3), c: c1, uvm: 'monde', s: 0.8, def: v => { v.x += Math.sin((v.y - y) * 1.6 + x) * 0.14; } });
+          L.get('aiguilles').add(F.boule(), { m: G.mat(x, y + h + 0.1, z, 0.42, 0.42, 0.42), c: c1 });
+          G.ampoule(L, x, y + h + 0.62, z, [2.6, 2.0, 0.9], { rng });
+          for (let k = 0; k < 14; k++) { const t = k / 14, a = t * 9 + x, rr = h * 0.31 * (1 - t) + 0.06; G.ampoule(L, x + Math.cos(a) * rr, y + t * h, z + Math.sin(a) * rr, k % 3 ? ROUGE : [2.4, 1.9, 1.0], { rng }); }
+        }
+        const yE = sol(M, o);
+        L.get('aiguilles').add(forme('arche', () => new THREE.BoxGeometry(1, 1, 1, 10, 1, 1)), { m: G.mat(0, 0, o, 1, 1, 0.7), c: c1, uvm: 'monde', s: 0.8, def: v => { const a = v.x * PI * 0.98, R = 1.72 + v.y * 0.5 + NZ.vn(a * 3, v.y * 2, 33) * 0.12; v.x = M + Math.sin(a) * R; v.y = yE + 2.0 + Math.cos(a) * R; } });
+        for (let k = 0; k < 16; k++) { const a = (k / 15 - 0.5) * PI * 0.95; G.ampoule(L, M + Math.sin(a) * 1.75, yE + 2.0 + Math.cos(a) * 1.75, o - 0.42, ROUGE, { rng }); }
+        L.get('metal').add(G.base('cube'), { m: G.mat(M, yE + 3.25, o, 0.03, 0.5, 0.03), c: NOIR }); lanterne(L, M, yE + 2.4, o, 1.3, [3.2, 2.2, 0.9], { halo: 3.4 });
+        // --- lanternes du bon chemin (posées par terre), lanternes de la salle ---
+        for (const [x, z] of P.laby.bougies) lanterne(L, x, sol(x, z) + 0.02, z, 0.8, [3, 1.9, 0.7], { halo: 1.7 });
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const x = M + sx * 3.25, z = M + sz * 3.25, y = sol(x, z); L.get('metal').add(G.base('cyl6'), { m: G.mat(x, y + 0.9, z, 0.05, 1.8, 0.05), c: NOIR }); lanterne(L, x, y + 1.8, z, 1.2, [3.2, 2.2, 0.9], { halo: 2.8 }); }
+        // --- socle et statue : la Dame de Houx (elle tourne lentement pour te faire face) ---
+        const y0 = sol(M, M), PIERRE = [0.5, 0.52, 0.57];
+        L.get('pierre').add(G.base('cyl8'), { m: G.mat(M, y0 + 0.45, M, 1.4, 2.1, 1.4), c: [0.55, 0.55, 0.58], uvm: 'monde', ao: v => 0.55 + 0.45 * sstep(y0, y0 + 1.2, v.y) });
+        L.get('pierre').add(G.base('cyl8'), { m: G.mat(M, y0 + 1.5, M, 1.55, 0.22, 1.55), c: [0.5, 0.5, 0.54] });
+        const L2 = G.Lots(), courbe = v => { v.z += Math.sin(v.y * 0.42) * 0.38 - 0.1; v.x += Math.sin(v.y * 0.8 + 1) * 0.08; };
+        const robe = forme('dame', () => new THREE.LatheGeometry([[1.05, 0], [0.98, 0.5], [0.78, 1.8], [0.6, 3.2], [0.5, 4.3], [0.62, 4.75], [0.66, 5.0], [0.34, 5.35], [0.3, 5.5], [0.46, 5.75], [0.5, 6.15], [0.4, 6.6], [0.16, 6.95], [0.001, 7.05]].map(q => new THREE.Vector2(q[0], q[1])), 12));
+        L2.get('pierre').add(robe, { c: PIERRE, uvm: 'monde', s: 0.5, def: courbe, ao: v => 0.6 + 0.4 * sstep(0, 1.5, v.y) });
+        L2.get('unie').add(G.base('sphereB'), { m: G.mat(0, 6.0, 0.36, 0.3, 0.38, 0.14), c: [0.01, 0.01, 0.012], def: courbe });
+        const bras = forme('dameBras', () => new THREE.TubeGeometry(new THREE.CatmullRomCurve3([V(0.5, 4.85, 0.1), V(0.95, 5.0, 0.75), V(1.0, 5.9, 1.35), V(0.95, 6.75, 1.6)]), 8, 0.2, 6, false));
+        L2.get('pierre').add(bras, { c: PIERRE, uvm: 'monde', s: 0.5, def: courbe });
+        L2.get('pierre').add(F.boule(), { m: G.mat(0.95, 6.8, 1.6, 0.24, 0.24, 0.24), c: PIERRE, def: courbe });
+        L2.get('metal').add(G.base('cube'), { m: G.mat(0.95, 6.3, 1.6, 0.04, 0.7, 0.04), c: NOIR, def: courbe });
+        lanterne(L2, 0.95, 4.85, 1.6, 2.3, [3.4, 2.4, 1.0], { halo: 7.5, def: courbe });
+        L2.get('aiguilles').add(forme('diademe', () => new THREE.TorusGeometry(1, 0.2, 4, 10)), { m: G.mat(0, 6.42, -0.02, 0.5, 0.5, 0.5, PI / 2 - 0.25, 0, 0), c: [0.45, 0.7, 0.5], def: courbe });
+        for (let k = 0; k < 9; k++) { const a = k / 9 * PI * 2, q = V(Math.cos(a) * 0.56, 6.42 + Math.sin(a) * 0.14, -0.02 + Math.sin(a) * 0.54); courbe(q); G.ampoule(L2, q.x, q.y, q.z, ROUGE, { rng }); }
+        const statue = maill(L2); statue.position.set(M, y0 + 1.6, M); statue.rotation.y = PI; groupe.add(statue);
+        const lo = new G.Lot(); for (const sx of [-1, 1]) lo.add(F.boule(), { m: G.mat(sx * 0.115, 6.03, 0.5, 0.06, 0.085, 0.04), def: courbe });
+        const matY = MAT.patch(new THREE.MeshBasicMaterial({ color: new THREE.Color(0.06, 0.19, 0.25), toneMapped: false }), { cle: 'labyYeux' });
+        const gy = lo.geometrie(); gy.boundingSphere.radius += 26; const yeux = new THREE.Mesh(gy, matY); yeux.userData.matPropre = true; statue.add(yeux);
+        let ang = PI, fl = 0, tSon = 30;
+        return [(t, dt, ctx) => {
+          if (ctx.d < 44) { ang += clamp(angDiff(ang, Math.atan2(ctx.jx - M, ctx.jz - M)), -0.45 * dt, 0.45 * dt); statue.rotation.y = ang + Math.sin(t * 0.4) * 0.03; }
+          fl += ((ctx.eclat > 0.2 ? 1 : 0) - fl) * Math.min(1, dt * 4);
+          const k = 0.25 + fl * 5 + (ctx.d < 9 ? 0.7 : 0); matY.color.setRGB(0.25 * k, 0.75 * k, k);
+          tSon += dt; if (ctx.eclat > 0.8 && ctx.d < 14 && tSon > 25) { tSon = 0; ctx.son('apparition'); }
+        }];
+      },
+    },
   });
 })();

@@ -50,9 +50,9 @@ const PARCELLE = (() => {
   // ---- petits modèles propres aux quartiers ----
   function bonhomme(L, w, rng) {
     const blanc = [0.95, 0.95, 1];
-    L.get('unie').add(GEO.base('sphere'), { m: GEO.mat(0, 0.45, 0, 0.55, 0.5, 0.55), c: blanc, w });
-    L.get('unie').add(GEO.base('sphere'), { m: GEO.mat(0.04, 1.12, 0, 0.4, 0.38, 0.4), c: blanc, w });
-    L.get('unie').add(GEO.base('sphere'), { m: GEO.mat(0.1, 1.62, 0.02, 0.27, 0.28, 0.27, 0, 0, 0.2), c: blanc, w });
+    L.get('unie').add(GEO.base('sphereB'), { m: GEO.mat(0, 0.45, 0, 0.55, 0.5, 0.55), c: blanc, w });
+    L.get('unie').add(GEO.base('sphereB'), { m: GEO.mat(0.04, 1.12, 0, 0.4, 0.38, 0.4), c: blanc, w });
+    L.get('unie').add(GEO.base('sphereB'), { m: GEO.mat(0.1, 1.62, 0.02, 0.27, 0.28, 0.27, 0, 0, 0.2), c: blanc, w });
     L.get('unie').add(GEO.base('cone8'), { m: GEO.mat(0.12, 1.62, 0.42, 0.05, 0.4, 0.05, Math.PI / 2, 0, 0), c: [1, 0.4, 0.05], w });
     L.get('emis').add(GEO.base('sphereB'), { m: GEO.mat(0.02, 1.7, 0.24, 0.04, 0.04, 0.03), c: [2.5, 0.4, 0.2], w });
     L.get('emis').add(GEO.base('sphereB'), { m: GEO.mat(0.2, 1.72, 0.22, 0.04, 0.04, 0.03), c: [2.5, 0.4, 0.2], w });
