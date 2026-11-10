@@ -42,6 +42,17 @@ le « ça vire fou » et l'équilibrage d'un clicker étaient demandés POUR CE 
    Modèle éprouvé : `_dev/labo/src/js/27_musique.js` (séquenceur avec planification en avance, fondu entre étapes,
    coupure en arrière-plan) et `25_audio.js` (bruitages ; clic qui change selon l'étape et monte en combo).
 
+9. **« Expérience » ≠ « jeu ».** Quand il demande une expérience, une promenade, une ambiance (« I didn't want a game, I
+   wanted an experience »), ne PAS ajouter de mécaniques de jeu (jauges, monnaie, quêtes, boutique, boutons partout) :
+   presque aucune interface, de la beauté, des surprises. En cas de doute sur ce point, lui poser LA question avant.
+10. **Jamais deux fois la même chose.** Il repère tout de suite la répétition (« crossed paths with the same thing like 5
+   times »). Pour tout contenu généré : beaucoup de variantes, et une règle qui EMPÊCHE la répétition proche (pioche
+   sans remise, motif sans voisins identiques), vérifiée par test.
+11. **Qualité perçue d'abord** : s'il demande du « photoréaliste » ou du beau, utiliser dès le départ de VRAIES matières
+   (textures photo libres CC0, ex. Poly Haven) et de VRAIS instruments (FluidSynth + banque de sons, rendu en MP3) —
+   la musique synthétisée en direct et les textures peintes à la main ont été jugées « shit » et « ugly ». Dire
+   honnêtement ce qu'un navigateur d'iPhone ne peut pas atteindre. Voir `references/noelombre.md`.
+
 ## 2. Lui parler
 - Français **québécois** : « tantôt », « tannant », « pèse » (= appuie). Répondre simplement, chaleureusement, en
   le tutoyant, sans jargon (pas de « branche », « commit SHA », « viewport », « data URI » sans explication).

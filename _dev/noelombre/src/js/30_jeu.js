@@ -39,6 +39,7 @@ const JEU = (() => {
   function regardRue(x, z) { const jc = MONDE.jacob(x, z); return Math.atan2(-jc[0], -jc[2]); }
   function valider(s) {
     const d = etatInitial();
+    for (const k in s) if (!(k in d)) delete s[k]; // restes de l'ancienne version « jeu » (bonbons, quêtes…) : on n'en garde rien
     for (const k of ['x', 'y', 'z', 'yaw', 'pitch', 'graine']) if (!Number.isFinite(s[k])) s[k] = d[k];
     for (const k of ['stats', 'reg']) s[k] = Object.assign({}, d[k], s[k] && typeof s[k] === 'object' ? s[k] : {});
     for (const k of ['sites', 'sitesVus', 'lanternes']) if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = d[k];

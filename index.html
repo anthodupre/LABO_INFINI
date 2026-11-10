@@ -15126,14 +15126,16 @@ const TEX = (() => {
 
   T.creer = function (Q) {
     const N = Q >= 2 ? 512 : 256, n = N >= 512 ? 256 : 128;
+    // les matières qui ont une PHOTO (04_photos.js) n'ont besoin que d'une petite texture d'attente
+    const ph = typeof PHOTOS !== 'undefined', pN = ph ? 64 : N, pn = ph ? 64 : n;
     // --- neige : grain fin, congères douces, quelques cristaux qui brillent
-    T.neige = peindre(N, (u, v) => {
+    T.neige = peindre(pN, (u, v) => {
       const big = pfbm(u * 4, v * 4, 4, 11, 4), fin = pfbm(u * 32, v * 32, 32, 12, 2);
       const g = 0.86 + big * 0.08 + fin * 0.05, spark = NZ.h2(Math.floor(u * N), Math.floor(v * N), 99) > 0.996 ? 0.08 : 0;
       return [g * 0.93 + spark, g * 0.96 + spark, g + spark, big * 1.4 + fin * 0.6];
     }, 2.2);
     // --- pavés : pierres arrondies, joints remplis de neige
-    T.pave = peindre(N, (u, v) => {
+    T.pave = peindre(pN, (u, v) => {
       const [e, id] = vor(u * 8, v * 8, 8, 21), bump = pfbm(u * 24, v * 24, 24, 22, 3);
       const joint = sstep(0.02, 0.14, e), neige = 1 - sstep(0.0, 0.1, e - bump * 0.05);
       const base = 0.17 + id * 0.16 + bump * 0.08;
@@ -15141,20 +15143,20 @@ const TEX = (() => {
       return [r, g, b, joint * 1.2 + bump * 0.3];
     }, 3.5);
     // --- plâtre : taches, coulures, fissures
-    T.platre = peindre(n, (u, v) => {
+    T.platre = peindre(pn, (u, v) => {
       const a = pfbm(u * 6, v * 6, 6, 31, 5), coul = pfbm(u * 20, v * 2, 20, 32, 3), fis = Math.abs(pfbm(u * 5, v * 5, 5, 33, 4) - 0.5) < 0.012 ? -0.25 : 0;
       const g = 0.62 + a * 0.25 - coul * 0.12 * v + fis;
       return [g, g * 0.97, g * 0.93, a + fis * 2];
     }, 2.5);
     // --- planches verticales
-    T.planche = peindre(n, (u, v) => {
+    T.planche = peindre(pn, (u, v) => {
       const k = Math.floor(u * 6), x = u * 6 - k, gap = x < 0.05 || x > 0.97 ? 1 : 0;
       const grain = pfbm(u * 6 + k * 0.37, v * 40, 40, 41 + k, 3), noeud = pfbm(u * 12, v * 12, 12, 47, 2);
       const g = (0.5 + grain * 0.25 + NZ.h2(k, 0, 42) * 0.12) * (gap ? 0.25 : 1) - (noeud > 0.78 ? 0.15 : 0);
       return [g, g * 0.82, g * 0.66, gap ? 0 : 0.6 + grain * 0.3];
     }, 3);
     // --- briques
-    T.brique = peindre(n, (u, v) => {
+    T.brique = peindre(pn, (u, v) => {
       const row = Math.floor(v * 16), off = row % 2 ? 0.5 : 0, bx = u * 6 + off, col = Math.floor(bx);
       const fx = bx - col, fy = v * 16 - row, mortier = fx < 0.06 || fy < 0.12;
       const id = NZ.h2(((col % 6) + 6) % 6, row, 51), gr = pfbm(u * 30, v * 30, 30, 52, 2);
@@ -15162,7 +15164,7 @@ const TEX = (() => {
       return [0.42 + id * 0.18 + gr * 0.1, 0.2 + id * 0.08 + gr * 0.06, 0.18 + gr * 0.05, 0.8 + gr * 0.3];
     }, 3);
     // --- tuiles en écailles (toits gothiques)
-    T.tuiles = peindre(n, (u, v) => {
+    T.tuiles = peindre(pn, (u, v) => {
       const rows = 10, cols = 8, row = Math.floor(v * rows), off = row % 2 ? 0.5 : 0;
       const x = u * cols + off, col = Math.floor(x), fx = x - col - 0.5, fy = v * rows - row;
       const r = Math.hypot(fx, (1 - fy) * 0.9), bord = sstep(0.42, 0.5, r), id = NZ.h2(((col % cols) + cols) % cols, row, 61);
@@ -15170,7 +15172,7 @@ const TEX = (() => {
       return [g, g * 0.95, g * 1.02, (1 - bord) * fy + gr * 0.2];
     }, 4);
     // --- écorce
-    T.ecorce = peindre(n, (u, v) => {
+    T.ecorce = peindre(pn, (u, v) => {
       const s = pfbm(u * 10, v * 2, 10, 71, 4), fis = sstep(0.35, 0.5, Math.abs(pn(u * 14, v * 3, 14, 72) - 0.5) * 2);
       const g = 0.25 + s * 0.25 - fis * 0.12;
       return [g, g * 0.85, g * 0.75, s - fis];
@@ -17949,6 +17951,7 @@ const JEU = (() => {
   function regardRue(x, z) { const jc = MONDE.jacob(x, z); return Math.atan2(-jc[0], -jc[2]); }
   function valider(s) {
     const d = etatInitial();
+    for (const k in s) if (!(k in d)) delete s[k]; // restes de l'ancienne version « jeu » (bonbons, quêtes…) : on n'en garde rien
     for (const k of ['x', 'y', 'z', 'yaw', 'pitch', 'graine']) if (!Number.isFinite(s[k])) s[k] = d[k];
     for (const k of ['stats', 'reg']) s[k] = Object.assign({}, d[k], s[k] && typeof s[k] === 'object' ? s[k] : {});
     for (const k of ['sites', 'sitesVus', 'lanternes']) if (!s[k] || typeof s[k] !== 'object' || Array.isArray(s[k])) s[k] = d[k];
