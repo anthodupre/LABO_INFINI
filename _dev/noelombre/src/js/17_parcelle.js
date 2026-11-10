@@ -8,7 +8,7 @@ const PARCELLE = (() => {
   let matFeu = null, matFumee = null;
   function matsParticules() {
     if (matFeu) return;
-    const vs = (montee, taille, vie) => `uniform float uCourbe; uniform vec2 uCentre; uniform float uTemps; uniform float uEchelle; attribute float graine; varying float vT;
+    const vs = (montee, taille, vie) => MAT.MONDE_GLSL + `uniform float uEchelle; attribute float graine; varying float vT;
       #include <fog_pars_vertex>
       void main(){ float t = fract(uTemps * ${vie} + graine); vT = t; vec3 transformed = position;
         transformed.x += sin(graine * 41.0 + uTemps * 1.3) * 0.18 * t + (t * t) * ${montee === 'fumee' ? '1.4' : '0.0'};
@@ -18,11 +18,11 @@ const PARCELLE = (() => {
         gl_PointSize = ${taille} * uEchelle / max(1.0, -mvPosition.z);
         #include <fog_vertex>
       }`;
-    const COURBE_PART = `vec4 wPos = modelMatrix * vec4(transformed, 1.0); vec2 dC = wPos.xz - uCentre; wPos.y -= dot(dC, dC) * uCourbe; vec4 mvPosition = viewMatrix * wPos; gl_Position = projectionMatrix * mvPosition;`;
+    const COURBE_PART = MAT.PROJ_GLSL;
     const U = MAT.U;
     const mk = (v, f, tex, add) => {
       const m = new THREE.ShaderMaterial({ uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { tex: { value: tex }, uEchelle: { value: 300 } }]), vertexShader: v, fragmentShader: f, transparent: true, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending, fog: true, toneMapped: false });
-      m.uniforms.uCourbe = U.uCourbe; m.uniforms.uCentre = U.uCentre; m.uniforms.uTemps = U.uTemps; m.uniforms.tex.value = tex; return m;
+      m.uniforms.uCourbe = U.uCourbe; m.uniforms.uCentre = U.uCentre; m.uniforms.uTemps = U.uTemps; m.uniforms.uEchelle = U.uEchelle; m.uniforms.tex.value = tex; return m;
     };
     matFeu = mk(vs('feu', '0.5', '1.15'), `uniform sampler2D tex; varying float vT;
       #include <fog_pars_fragment>
@@ -37,13 +37,13 @@ const PARCELLE = (() => {
       }`, TEX.lueur, false);
     X.matFeu = matFeu; X.matFumee = matFumee;
   }
-  X.echelleParticules = v => { matsParticules(); matFeu.uniforms.uEchelle.value = v; matFumee.uniforms.uEchelle.value = v; };
+  X.echelleParticules = v => { MAT.U.uEchelle.value = v; };
   function points(src, n, mat) {
     const pos = [], gr = [];
     for (const p of src) for (let i = 0; i < n; i++) { pos.push(p.x + (Math.random() - 0.5) * 0.3, p.y, p.z + (Math.random() - 0.5) * 0.3); gr.push(i / n + Math.random() * 0.05); }
     if (!pos.length) return null;
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('graine', new THREE.Float32BufferAttribute(gr, 1));
-    g.computeBoundingSphere(); g.boundingSphere.radius += 12;
+    g.computeBoundingSphere(); g.boundingSphere.radius += 26;
     const o = new THREE.Points(g, mat); o.renderOrder = 5; return o;
   }
 
@@ -103,7 +103,8 @@ const PARCELLE = (() => {
     const pos = g.attributes.position, nrm = g.attributes.normal, uv = g.attributes.uv, n = pos.count;
     const route = new Float32Array(n), col = new Float32Array(n * 3);
     const tq = { bourg: [1, 1, 1], citrouilles: [0.98, 0.95, 0.92], sapins: [0.93, 0.97, 0.95], cimetiere: [0.86, 0.92, 1], lac: [0.92, 0.96, 1], foire: [1, 0.97, 0.97] }[P.q];
-    const plaza = P.place && P.rep !== 'colline' && P.rep !== 'kiosque';
+    const plaza = P.place;
+    const boites = P.maisons.map(H => ({ x: H.x, z: H.z, c: Math.cos(H.ang), s: Math.sin(H.ang), hx: H.w / 2, hz: H.d / 2 }));
     for (let i = 0; i < n; i++) {
       const x = pos.getX(i), z = pos.getZ(i), y = sol(x, z); pos.setY(i, y);
       const e = 0.4, dx = sol(x + e, z) - sol(x - e, z), dz = sol(x, z + e) - sol(x, z - e), l = Math.hypot(dx, 2 * e, dz);
@@ -114,10 +115,12 @@ const PARCELLE = (() => {
       if (plaza) r = Math.max(r, (1 - sstep(10.5, 13.5, Math.hypot(x - C / 2, z - C / 2))) * 0.85);
       route[i] = r;
       const v = 0.94 + NZ.vn((P.X0 + x) * 0.08, (P.Z0 + z) * 0.08, 4) * 0.08;
-      col[i * 3] = tq[0] * v; col[i * 3 + 1] = tq[1] * v; col[i * 3 + 2] = tq[2] * v;
+      let ao = 1; // ombre de contact au pied des maisons
+      for (const b of boites) { const dx = x - b.x, dz = z - b.z; if (Math.abs(dx) > 9 || Math.abs(dz) > 9) continue; const lx = Math.abs(dx * b.c - dz * b.s) - b.hx, lz = Math.abs(dx * b.s + dz * b.c) - b.hz; const d = lx < 0 && lz < 0 ? 0 : Math.hypot(Math.max(lx, 0), Math.max(lz, 0)); ao = Math.min(ao, 0.5 + 0.5 * sstep(0, 1.7, d)); }
+      col[i * 3] = tq[0] * v * ao; col[i * 3 + 1] = tq[1] * v * ao; col[i * 3 + 2] = tq[2] * v * ao;
     }
     g.setAttribute('route', new THREE.BufferAttribute(route, 1)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.computeBoundingSphere(); g.boundingSphere.radius += 12;
+    g.computeBoundingSphere(); g.boundingSphere.radius += 26;
     const msol = new THREE.Mesh(g, MAT.sol); msol.receiveShadow = true; groupe.add(msol);
 
     // ---- maisons ----
@@ -128,7 +131,7 @@ const PARCELLE = (() => {
       const o = GEO.maison(L, H, w, r2, P.pal);
       const c = Math.cos(H.ang), s = Math.sin(H.ang);
       for (const f of o.flaques) flaquesM.push({ x: H.x + c * f.x + s * f.z, z: H.z - s * f.x + c * f.z, r: f.r, c: f.c });
-      if (!H.lumOk) { H.lumOk = true; for (const l of o.lumieres) P.lumieres.push({ x: H.x + c * l.x + s * l.z, y: H.y + l.y, z: H.z - s * l.x + c * l.z, c: l.c.map(v => Math.min(1, v / 2.4)), i: l.i, r: l.r, chaleur: l.chaleur }); }
+      if (!H.lumOk) { H.lumOk = true; for (const l of o.lumieres) P.lumieres.push({ x: H.x + c * l.x + s * l.z, y: H.y + l.y, z: H.z - s * l.x + c * l.z, c: l.c, i: l.i, r: l.r }); }
       if (o.cheminee && r2() < 0.6) { const ch = o.cheminee; const v = new THREE.Vector3(ch.x, ch.y, ch.z); v.applyMatrix4(w); fumees.push({ x: v.x, y: v.y, z: v.z }); }
     }
     // ---- lampadaires ----
@@ -154,22 +157,14 @@ const PARCELLE = (() => {
       L.get('glace').add(GEOprep(gi), { m: GEO.mat(P.lac.x, sol(P.lac.x, P.lac.z) + 0.03, P.lac.z, 1, 1, 1), c: [1, 1, 1], uvm: 'monde', s: 0.12 });
     }
     // ---- repère ----
-    if (P.rep) { const r = REPERES[P.rep].construire(L, P, rng, groupe, Q); if (r) anims.push(...r); }
+    { const r = REPERES[P.type].construire(L, P, rng, groupe, Q); if (r) anims.push(...r); }
     // ---- flaques de lumière (posées sur le relief) ----
     const pl = GEO.base('plan9');
     for (const f of P.flaques.concat(flaquesM)) {
       L.get('flaque').add(pl, { m: GEO.mat(f.x, 0, f.z, f.r * 2, f.r * 2, 1, -Math.PI / 2, 0, 0), c: f.c, def: v => { v.y = sol(v.x, v.z) + 0.05; } });
     }
     // ---- maillages ----
-    for (const k in L.tous) {
-      const lot = L.tous[k], geo = lot.geometrie(k === 'ampoules' ? 'phase' : null); if (!geo) continue;
-      geo.boundingSphere.radius += 12;
-      const mat = MAT[k]; if (!mat) throw new Error('matière inconnue ' + k);
-      const m = new THREE.Mesh(geo, mat); m.name = k;
-      if (k !== 'flaque' && k !== 'ampoules' && k !== 'fenetre' && k !== 'emis') { m.castShadow = Q >= 2; m.receiveShadow = true; }
-      if (k === 'flaque') m.renderOrder = 2;
-      groupe.add(m);
-    }
+    for (const k in L.tous) { const m = GEO.maillage(k, L.tous[k], Q >= 1); if (m) groupe.add(m); }
     // ---- flammes et fumées ----
     const pf = points(P.feux.map(f => ({ x: f.x, y: sol(f.x, f.z) + 0.85, z: f.z })), Q >= 1 ? 18 : 10, matFeu); if (pf) groupe.add(pf);
     const pfu = points(fumees, 9, matFumee); if (pfu) groupe.add(pfu);

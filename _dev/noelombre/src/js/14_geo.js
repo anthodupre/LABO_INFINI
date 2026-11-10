@@ -26,6 +26,10 @@ const GEO = (() => {
       case 'sphereB': g = new THREE.SphereGeometry(1, 8, 6); break;
       case 'ico': g = new THREE.OctahedronGeometry(1, 0); break;
       case 'plan': g = new THREE.PlaneGeometry(1, 1); break;
+      case 'pt': g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0], 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute([0, 1, 0], 3)); g.setIndex([0]); break; // un seul sommet (ampoules, halos)
+      case 'bosse': g = new THREE.SphereGeometry(1, 7, 4, 0, Math.PI * 2, 0, Math.PI / 2); break; // congère (demi-sphère)
+      case 'dalle': g = new THREE.BoxGeometry(1, 1, 1, 6, 1, 4); break; // couche de neige d'un toit (assez de sommets pour onduler)
+      case 'tronc': g = new THREE.CylinderGeometry(0.62, 1, 1, 7, 1); break; // branche qui s'affine
       case 'plan9': g = new THREE.PlaneGeometry(1, 1, 4, 4); break;
       case 'tore': g = new THREE.TorusGeometry(1, 0.32, 6, 16); break;
       case 'couronne': g = new THREE.TorusGeometry(1, 0.26, 7, 18); break;
@@ -58,7 +62,8 @@ const GEO = (() => {
   // ---- Lot : accumule des pièces pour une matière ----
   function Lot(attrsExtra) { this.p = []; this.n = []; this.u = []; this.c = []; this.i = []; this.x = attrsExtra ? [] : null; this.nv = 0; }
   // o : { m: Matrix4 locale, c: [r,g,b], uvm: 'monde' (UV en mètres) | undefined, s: échelle UV (rép./m),
-  //       uvr: [u0,v0,u1,v1] (case d'atlas), def: fonction(Vector3) déformation, w: Matrix4 monde, x: valeur d'attribut extra }
+  //       uvr: [u0,v0,u1,v1] (case d'atlas), uve: [ku, kv] (échelle des UV d'origine), def: fonction(Vector3) déformation,
+  //       w: Matrix4 monde, x: valeur d'attribut extra, ao: fonction(Vector3 local) -> facteur d'ombre (0..1) }
   Lot.prototype.add = function (geo, o) {
     const P = geo.attributes.position.array, N = geo.attributes.normal.array, UV = geo.attributes.uv.array, I = geo.index.array;
     const m = o.m, w = o.w, c = o.c || [1, 1, 1], s = o.s || 0.5, base0 = this.nv, def = o.def, uvr = o.uvr;
@@ -73,9 +78,11 @@ const GEO = (() => {
         const ax = Math.abs(_n.x), ay = Math.abs(_n.y), az = Math.abs(_n.z);
         if (ay > ax && ay > az) { u = _v.x * s; v = _v.z * s; } else if (ax > az) { u = _v.z * s; v = _v.y * s; } else { u = _v.x * s; v = _v.y * s; }
       } else if (uvr) { u = uvr[0] + (uvr[2] - uvr[0]) * u; v = uvr[1] + (uvr[3] - uvr[1]) * v; }
+      else if (o.uve) { u *= o.uve[0]; v *= o.uve[1]; }
+      const ka = o.ao ? o.ao(_v) : 1;
       if (def) def(_v, _n);
       if (w) { _v.applyMatrix4(w); _n.applyMatrix3(wn).normalize(); }
-      this.p.push(_v.x, _v.y, _v.z); this.n.push(_n.x, _n.y, _n.z); this.u.push(u, v); this.c.push(c[0], c[1], c[2]);
+      this.p.push(_v.x, _v.y, _v.z); this.n.push(_n.x, _n.y, _n.z); this.u.push(u, v); this.c.push(c[0] * ka, c[1] * ka, c[2] * ka);
       if (this.x) this.x.push(o.x || 0);
     }
     for (let k = 0; k < I.length; k++) this.i.push(I[k] + base0);
@@ -94,6 +101,17 @@ const GEO = (() => {
     return g;
   };
   G.Lot = Lot;
+  // Maillage d'un lot : Points pour les ampoules (attribut phase) et les halos (attribut taille), Mesh sinon
+  G.maillage = function (k, lot, ombres) {
+    const pts = k === 'ampoules' || k === 'halos', geo = lot.geometrie(k === 'ampoules' ? 'phase' : k === 'halos' ? 'taille' : null); if (!geo) return null;
+    geo.boundingSphere.radius += 26; // le monde est tordu et courbé par le shader : marge pour ne pas couper à tort
+    const mat = MAT[k]; if (!mat) throw new Error('matière inconnue : ' + k);
+    const m = pts ? new THREE.Points(geo, mat) : new THREE.Mesh(geo, mat); m.name = k;
+    if (pts) m.renderOrder = k === 'halos' ? 4 : 3;
+    else if (k === 'flaque') m.renderOrder = 2;
+    else if (k !== 'fenetre' && k !== 'emis' && k !== 'cadran') { m.castShadow = !!ombres && k !== 'neige'; m.receiveShadow = true; }
+    return m;
+  };
   // Ensemble de lots d'une parcelle (un par matière)
   G.Lots = function () { const L = {}; return { get: (k, extra) => L[k] || (L[k] = new Lot(extra)), tous: L }; };
 
@@ -105,109 +123,20 @@ const GEO = (() => {
   // ---- guirlande : ampoules le long d'un segment, avec un léger creux (chaînette) ----
   G.guirlande = function (L, a, b, o) {
     const n = Math.max(2, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) / (o.pas || 0.45)));
-    const ico = G.base('ico'), cols = o.couleurs, r = o.r || 0.065;
+    const pt = G.base('pt'), cols = o.couleurs;
     for (let i = 0; i <= n; i++) {
       const t = i / n, sag = Math.sin(t * Math.PI) * (o.creux || 0.18);
       const x = lerp(a[0], b[0], t), y = lerp(a[1], b[1], t) - sag, z = lerp(a[2], b[2], t);
       const c = cols[(o.idx = (o.idx || 0) + 1) % cols.length];
-      L.get('ampoules', true).add(ico, { m: G.mat(x, y, z, r, r * 1.3, r), c, def: o.def, w: o.w, x: o.rng ? o.rng() : Math.random() });
+      L.get('ampoules', true).add(pt, { m: G.mat(x, y, z, 1, 1, 1), c, def: o.def, w: o.w, x: o.rng ? o.rng() : Math.random() });
     }
   };
 
-  // ---- MAISON TORDUE ----
-  // h : { w, d, etages, hE, toit:'pignon'|'pointe'|'tour', couleurs, torsion, courbe:[bx,bz], fenetres, mur:'platre'|'planche'|'brique' }
-  // renvoie { lumieres:[{x,y,z,...}], porte:{x,z} } en coordonnées locales de la maison
-  G.maison = function (L, h, w, rng, pal) {
-    const W = h.w, D = h.d, nE = h.etages, hE = h.hE, Htot = nE * hE + h.hToit;
-    const tw = h.torsion, bx = h.courbe[0], bz = h.courbe[1];
-    const def = v => { // torsion + courbure selon la hauteur (tout le bâtiment, fenêtres comprises)
-      const t = Math.max(0, v.y) / Htot, a = tw * t, c = Math.cos(a), s = Math.sin(a), x = v.x, z = v.z;
-      v.x = x * c - z * s + bx * t * t * Htot * 0.08; v.z = x * s + z * c + bz * t * t * Htot * 0.08;
-    };
-    const out = { lumieres: [], flaques: [] };
-    const matMur = h.mur, cMur = h.cMur, cBois = h.cBois, cToit = h.cToit;
-    // fondation de pierre (descend sous le sol pour les pentes)
-    L.get('pierre').add(G.base('cube'), { m: G.mat(0, -1.1, 0, W + 0.3, 2.6, D + 0.3), c: [0.62, 0.6, 0.6], uvm: 'monde', s: 0.5, w });
-    let y = 0.2, ox = 0, oz = 0, ew = W, ed = D;
-    const fenAtlas = [[0, 0.5, 0.5, 1], [0.5, 0.5, 1, 1], [0, 0, 0.5, 0.5], [0.5, 0, 1, 0.5]];
-    for (let e = 0; e < nE; e++) {
-      if (e > 0) { ox += (rng() - 0.5) * 0.35; oz += (rng() - 0.5) * 0.25; ew += 0.18; ed += 0.12; }
-      L.get(matMur).add(G.base('boite'), { m: G.mat(ox, y + hE / 2, oz, ew, hE, ed), c: cMur, uvm: 'monde', s: 0.42, def, w });
-      // corniche de bois entre les étages
-      L.get('bois').add(G.base('cube'), { m: G.mat(ox, y + hE - 0.06, oz, ew + 0.24, 0.16, ed + 0.24), c: cBois, uvm: 'monde', s: 0.5, def, w });
-      // fenêtres : façade (+z) et côtés
-      const faces = [[0, ew, ed / 2], [Math.PI, ew, ed / 2], [Math.PI / 2, ed, ew / 2], [-Math.PI / 2, ed, ew / 2]];
-      for (let f = 0; f < 4; f++) {
-        const [ry, larg, prof] = faces[f];
-        if (f === 1 && rng() < 0.5) continue;
-        const nf = Math.max(1, Math.floor(larg / 1.7)), fw = 0.75 + rng() * 0.25, fh = 1.1 + rng() * 0.35;
-        const type = h.fenType;
-        for (let k = 0; k < nf; k++) {
-          const t = (k + 0.5) / nf - 0.5, lx = t * (larg - 1.2);
-          if (e === 0 && f === 0 && Math.abs(lx - h.porteX) < 1.1) continue; // place de la porte
-          const allume = rng() < h.pAllume, fy = y + hE * 0.55;
-          let px, pz; const cs = Math.cos(ry), sn = Math.sin(ry);
-          px = ox + cs * lx + sn * (prof + 0.04); pz = oz - sn * lx + cs * (prof + 0.04);
-          const col = allume ? pal.fenetre(rng) : [0.03, 0.035, 0.06];
-          L.get('fenetre').add(G.base('plan'), { m: G.mat(px, fy, pz, fw, fh, 1, 0, ry), c: col, uvr: fenAtlas[type], def, w });
-          // cadre + rebord (la neige s'y pose toute seule)
-          const fx = (dx, dy, sx, sy) => L.get('bois').add(G.base('cube'), { m: G.mat(px + cs * dx + sn * 0.05, fy + dy, pz - sn * dx + cs * 0.05, sx, sy, 0.1, 0, ry), c: cBois, uvm: 'monde', def, w });
-          fx(0, -fh / 2 - 0.05, fw + 0.3, 0.1); fx(0, fh / 2 + 0.04, fw + 0.2, 0.08);
-          if (allume && e === 0 && rng() < 0.6) out.flaques.push({ x: ox + cs * lx + sn * (prof + 1.6), z: oz - sn * lx + cs * (prof + 1.6), r: 2.2, c: [col[0] * 0.22, col[1] * 0.18, col[2] * 0.12] });
-          if (allume && rng() < 0.18) out.lumieres.push({ x: px + sn * 1.0, y: fy, z: pz + cs * 1.0, c: col, i: 0.6, r: 6, chaleur: 0.4 });
-        }
-      }
-      y += hE;
-    }
-    // porte, marches, lampe au-dessus, couronne
-    const pX = ox * 0 + h.porteX, pZ = D / 2;
-    L.get('porte').add(G.base('plan'), { m: G.mat(pX, 0.2 + 1.05, pZ + 0.05, 1.05, 2.1, 1), c: [1, 1, 1], def, w });
-    L.get('bois').add(G.base('cube'), { m: G.mat(pX, 1.25, pZ + 0.02, 1.35, 2.35, 0.08), c: cBois.map(v => v * 0.6), def, w });
-    L.get('pierre').add(G.base('cube'), { m: G.mat(pX, 0.08, pZ + 0.45, 1.6, 0.3, 0.8), c: [0.55, 0.55, 0.57], uvm: 'monde', w });
-    L.get('pierre').add(G.base('cube'), { m: G.mat(pX, -0.12, pZ + 0.9, 1.8, 0.3, 0.6), c: [0.5, 0.5, 0.52], uvm: 'monde', w });
-    L.get('aiguilles').add(G.base('couronne'), { m: G.mat(pX, 1.62, pZ + 0.12, 0.27, 0.27, 0.6), c: [0.5, 0.75, 0.55], def, w });
-    L.get('unie').add(G.base('sphereB'), { m: G.mat(pX, 1.4, pZ + 0.22, 0.08, 0.06, 0.05), c: [0.6, 0.04, 0.05], def, w });
-    for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; L.get('emis').add(G.base('ico'), { m: G.mat(pX + Math.cos(a) * 0.27, 1.62 + Math.sin(a) * 0.27, pZ + 0.24, 0.035, 0.035, 0.035), c: pal.guirlande[k % pal.guirlande.length], def, w }); }
-    L.get('emis').add(G.base('cube'), { m: G.mat(pX + 0.85, 2.15, pZ + 0.2, 0.16, 0.26, 0.16), c: [3.2, 2.0, 0.9], def, w });
-    L.get('metal').add(G.base('cube'), { m: G.mat(pX + 0.85, 2.33, pZ + 0.2, 0.24, 0.06, 0.24), c: [0.3, 0.3, 0.32], def, w });
-    out.flaques.push({ x: pX + 0.4, z: pZ + 1.8, r: 2.6, c: [0.45, 0.3, 0.14] });
-    out.lumieres.push({ x: pX + 0.85, y: 2.1, z: pZ + 0.6, c: [1, 0.66, 0.32], i: 1, r: 7, chaleur: 1 });
-    out.porte = { x: pX, z: pZ + 1.1 };
-    // toit
-    const yT = y, rw = ew + 0.7, rd = ed + 0.7, hT = h.hToit;
-    if (h.toit === 'pignon') {
-      L.get('tuiles').add(G.base('pignon'), { m: G.mat(ox, yT, oz, rw, hT, rd), c: cToit, uvm: 'monde', s: 0.6, def, w });
-      // pignon du dessus en bois (triangle de façade) : le prisme le couvre déjà ; épi de faîtage tordu
-      L.get('metal').add(G.base('cone8'), { m: G.mat(ox, yT + hT + 0.5, oz + rd / 2 - 0.2, 0.06, 1.2, 0.06), c: [0.25, 0.25, 0.27], def, w });
-    } else {
-      // pointe très haute qui s'enroule (chapeau de sorcière)
-      const cr = rng() < 0.5 ? 1 : -1, hP = hT * 1.25;
-      const defP = v => { const t = clamp((v.y - yT) / hP, 0, 1); v.x += cr * Math.pow(t, 3) * hP * 0.32; v.y -= Math.pow(t, 4) * hP * 0.12; def(v); };
-      L.get('tuiles').add(G.base(h.toit === 'tour' ? 'cone12' : 'cone4'), { m: G.mat(ox, yT + hP / 2, oz, rw * (h.toit === 'tour' ? 0.62 : 0.74), hP, rd * (h.toit === 'tour' ? 0.62 : 0.74)), c: cToit, uvm: 'monde', s: 0.6, def: defP, w });
-      L.get('emis').add(G.base('sphereB'), { m: G.mat(ox + cr * hP * 0.32, yT + hP * 0.88, oz, 0.13, 0.13, 0.13), c: pal.boule, def, w });
-    }
-    // lucarne et cheminée
-    if (rng() < 0.7) {
-      const cx2 = ox + (rng() - 0.5) * (ew - 1.6), cz2 = oz - ed * 0.2;
-      L.get('brique').add(G.base('boite'), { m: G.mat(cx2, yT + hT * 0.55, cz2, 0.75, hT * 0.9 + 0.8, 0.75), c: [0.85, 0.8, 0.78], uvm: 'monde', s: 0.6, def, w });
-      L.get('pierre').add(G.base('cube'), { m: G.mat(cx2, yT + hT + 0.4, cz2, 0.95, 0.18, 0.95), c: [0.5, 0.5, 0.5], def, w });
-      out.cheminee = { x: cx2, y: yT + hT + 0.6, z: cz2 };
-    }
-    // guirlandes sous l'avant-toit (façade), parfois tout autour
-    const yG = yT - 0.05, gw = rw / 2 - 0.15, gd = rd / 2 - 0.1;
-    const optG = { couleurs: pal.guirlande, def, w, rng };
-    if (rng() < h.pGuirlande) {
-      G.guirlande(L, [ox - gw, yG, oz + gd], [ox + gw, yG, oz + gd], optG);
-      if (rng() < 0.5) { G.guirlande(L, [ox - gw, yG, oz + gd], [ox - gw, yG, oz - gd], optG); G.guirlande(L, [ox + gw, yG, oz + gd], [ox + gw, yG, oz - gd], optG); }
-      if (h.toit === 'pignon' && rng() < 0.7) { G.guirlande(L, [ox - gw, yT + 0.05, oz + gd + 0.05], [ox, yT + hT - 0.05, oz + gd + 0.05], Object.assign({ creux: 0.02 }, optG)); G.guirlande(L, [ox, yT + hT - 0.05, oz + gd + 0.05], [ox + gw, yT + 0.05, oz + gd + 0.05], Object.assign({ creux: 0.02 }, optG)); }
-    }
-    // stalactites de glace sous l'avant-toit
-    const nG = Math.floor(rw / 0.35);
-    for (let k = 0; k < nG; k++) { if (rng() < 0.45) continue; const l = 0.15 + rng() * 0.55; L.get('verni').add(G.base('glacon'), { m: G.mat(ox - gw + (k / nG) * gw * 2, yT - 0.1 - l / 2, oz + gd + 0.06, 0.045, -l, 0.045), c: [0.62, 0.74, 0.86], def, w }); }
-    out.hauteur = Htot;
-    return out;
-  };
-
+  // une ampoule isolée (point lumineux qui scintille) ; o : { def, w, rng }
+  G.ampoule = function (L, x, y, z, c, o) { o = o || {}; L.get('ampoules', true).add(G.base('pt'), { m: G.mat(x, y, z, 1, 1, 1), c, def: o.def, w: o.w, x: o.rng ? o.rng() : Math.random() }); };
+  // un halo (lueur douce autour d'une source : lampe, bougie…) ; taille en mètres
+  G.halo = function (L, x, y, z, c, taille, o) { o = o || {}; L.get('halos', true).add(G.base('pt'), { m: G.mat(x, y, z, 1, 1, 1), c, x: taille || 2, def: o.def, w: o.w }); };
+  // ---- MAISON TORDUE : voir 14b_maison.js ----
   // ---- LAMPADAIRE en fer forgé, tête qui s'enroule ----
   G.lampadaire = function (L, w, col, haut) {
     const H = haut || 3.6;
@@ -217,6 +146,7 @@ const GEO = (() => {
     L.get('metal').add(G.base('cube'), { m: G.mat(0.42, H + 0.32, 0, 0.36, 0.06, 0.36), c: [0.18, 0.18, 0.2], w });
     L.get('metal').add(G.base('cone4'), { m: G.mat(0.42, H + 0.52, 0, 0.3, 0.32, 0.3), c: [0.18, 0.18, 0.2], w });
     L.get('emis').add(G.base('cube'), { m: G.mat(0.42, H + 0.08, 0, 0.26, 0.44, 0.26), c: col, w });
+    G.halo(L, 0.42, H + 0.08, 0, [col[0] * 0.12, col[1] * 0.11, col[2] * 0.1], 3.6, { w });
     return { x: 0.42, y: H, z: 0 };
   };
 
@@ -231,10 +161,10 @@ const GEO = (() => {
       L.get('aiguilles').add(G.base('etage'), { m: G.mat((rng() - 0.5) * 0.15, y0 + hc / 2, (rng() - 0.5) * 0.15, r, hc, r, (rng() - 0.5) * 0.12, rng() * 6, (rng() - 0.5) * 0.12), c: vert, uvm: 'monde', s: 0.9, def, w });
     }
     if (illum) { // guirlande en spirale autour du sapin
-      const n = Math.floor(H * 9), ico = G.base('ico');
+      const n = Math.floor(H * 9), pt = G.base('pt');
       for (let k = 0; k < n; k++) {
         const t = k / n, a = t * Math.PI * 2 * (3 + H * 0.25), y0 = H * (0.2 + t * 0.72), r = H * 0.3 * (1 - t * 0.78) + 0.05;
-        L.get('ampoules', true).add(ico, { m: G.mat(Math.cos(a) * r, y0, Math.sin(a) * r, 0.06, 0.08, 0.06), c: pal.guirlande[k % pal.guirlande.length], def, w, x: rng() });
+        L.get('ampoules', true).add(pt, { m: G.mat(Math.cos(a) * r, y0, Math.sin(a) * r, 1, 1, 1), c: pal.guirlande[k % pal.guirlande.length], def, w, x: rng() });
       }
       L.get('emis').add(G.base('ico'), { m: G.mat(0, H * 0.98, 0, 0.28, 0.36, 0.1), c: [4, 3.2, 1.2], def, w });
     }
@@ -243,17 +173,17 @@ const GEO = (() => {
 
   // ---- ARBRE MORT aux branches en spirale ----
   G.arbreMort = function (L, w, rng, H) {
+    const haut = new THREE.Vector3(0, 1, 0), dir = new THREE.Vector3(), q = new THREE.Quaternion();
     const br = (x, y, z, ang, inc, len, rad, prof) => {
       const ex = x + Math.sin(inc) * Math.cos(ang) * len, ey = y + Math.cos(inc) * len, ez = z + Math.sin(inc) * Math.sin(ang) * len;
-      const dir = new THREE.Vector3(ex - x, ey - y, ez - z), l = dir.length(); dir.normalize();
-      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
-      const m = new THREE.Matrix4().compose(new THREE.Vector3((x + ex) / 2, (y + ey) / 2, (z + ez) / 2), q, new THREE.Vector3(rad, l, rad));
-      L.get('ecorce').add(G.base('cyl6'), { m, c: [0.62, 0.6, 0.6], uvm: 'monde', s: 1.2, w });
+      dir.set(ex - x, ey - y, ez - z); const l = dir.length(); dir.normalize(); q.setFromUnitVectors(haut, dir);
+      const m = new THREE.Matrix4().compose(new THREE.Vector3((x + ex) / 2, (y + ey) / 2, (z + ez) / 2), q, new THREE.Vector3(rad, l * 1.04, rad));
+      L.get('ecorce').add(G.base('tronc'), { m, c: [0.6, 0.58, 0.58], uvm: 'monde', s: 1.2, w });
       if (prof <= 0) return;
-      const n = prof > 2 ? 2 : 2 + (rng() < 0.5 ? 1 : 0);
-      for (let i = 0; i < n; i++) br(ex, ey, ez, ang + (rng() - 0.5) * 2.4 + 0.9, Math.min(1.4, inc + 0.35 + rng() * 0.3), len * (0.62 + rng() * 0.15), rad * 0.62, prof - 1);
+      const n = prof > 3 ? 2 : 2 + (rng() < 0.6 ? 1 : 0);
+      for (let i = 0; i < n; i++) br(ex, ey, ez, ang + (rng() - 0.5) * 2.6 + (i ? 2.1 : 0), Math.min(1.5, inc + 0.25 + rng() * 0.45), len * (0.6 + rng() * 0.18), rad * 0.62, prof - 1);
     };
-    br(0, -0.3, 0, rng() * 6, 0.08, H * 0.45, H * 0.04, 4);
+    br(0, -0.3, 0, rng() * 6, 0.1, H * 0.4, H * 0.045, 5);
   };
 
   // ---- CITROUILLE (lanterne : visage lumineux) ----

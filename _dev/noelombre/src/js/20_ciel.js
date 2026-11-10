@@ -68,10 +68,10 @@ const CIEL = (() => {
     // lumières globales
     K.hemi = new THREE.HemisphereLight(0x3a4c7a, 0x141018, 0.42); scene.add(K.hemi);
     K.luneL = new THREE.DirectionalLight(0x9fb2ff, 0.75);
-    K.luneL.castShadow = Q >= 2;
-    K.luneL.shadow.mapSize.set(Q >= 3 ? 2048 : 1024, Q >= 3 ? 2048 : 1024);
-    const sc2 = K.luneL.shadow.camera; sc2.left = -30; sc2.right = 30; sc2.top = 30; sc2.bottom = -30; sc2.near = 1; sc2.far = 140;
-    K.luneL.shadow.bias = -0.0006; K.luneL.shadow.normalBias = 0.04;
+    K.luneL.castShadow = Q >= 1; K.luneL.shadow.autoUpdate = false; // la ville est immobile : l'ombre n'est recalculée que si l'on s'éloigne
+    K.luneL.shadow.mapSize.set(Q >= 2 ? 2048 : 1024, Q >= 2 ? 2048 : 1024);
+    const sc2 = K.luneL.shadow.camera; sc2.left = -48; sc2.right = 48; sc2.top = 48; sc2.bottom = -48; sc2.near = 1; sc2.far = 220;
+    K.luneL.shadow.bias = -0.0008; K.luneL.shadow.normalBias = 0.09;
     scene.add(K.luneL); scene.add(K.luneL.target);
     // neige qui tombe
     const N = Q >= 2 ? 3200 : Q >= 1 ? 2000 : 1100, pos = new Float32Array(N * 3), gr = new Float32Array(N);
@@ -99,15 +99,20 @@ const CIEL = (() => {
     });
     K.neige = new THREE.Points(g, K.matNeige); K.neige.frustumCulled = false; K.neige.renderOrder = 8; scene.add(K.neige);
   };
-  K.maj = function (t, cam, joueur, ev) {
+  // m : cibles de la météo { aurore: 0..1, tempete: 0..1, neige: 0..1 (densité des flocons), nuages: 0..1 }
+  K.maj = function (t, cam, m) {
     UA.uTemps.value = t; K.matNeige.uniforms.uTemps.value = t; K.matNeige.uniforms.uCam.value.copy(cam);
     K.dome.position.copy(cam);
-    UA.uAurore.value += ((ev.aurore || (S && S.jeu && S.jeu.fini) ? 1 : 0) - UA.uAurore.value) * 0.01;
-    UA.uTempete.value += ((ev.tempete ? 1 : 0) - UA.uTempete.value) * 0.004;
-    K.matNeige.uniforms.uDens.value = 0.45 + UA.uTempete.value * 0.55;
-    K.matNeige.uniforms.uVent.value.set(0.6 + UA.uTempete.value * 5, 0.2 + UA.uTempete.value * 2);
-    K.luneL.position.set(joueur.x + K.dirLune.x * 70, joueur.y + K.dirLune.y * 70, joueur.z + K.dirLune.z * 70);
-    K.luneL.target.position.set(joueur.x, joueur.y, joueur.z);
+    UA.uAurore.value += (m.aurore - UA.uAurore.value) * 0.008;
+    UA.uTempete.value += (m.tempete - UA.uTempete.value) * 0.004;
+    UA.uNuages.value += (m.nuages - UA.uNuages.value) * 0.004;
+    const u = K.matNeige.uniforms; u.uDens.value += (m.neige - u.uDens.value) * 0.005;
+    u.uVent.value.set(0.5 + UA.uTempete.value * 5, 0.2 + UA.uTempete.value * 2);
+  };
+  // recentre l'ombre de la lune sur le promeneur (appelé seulement quand il s'est assez déplacé)
+  K.ombreVers = function (x, y, z) {
+    K.luneL.position.set(x + K.dirLune.x * 110, y + K.dirLune.y * 110, z + K.dirLune.z * 110);
+    K.luneL.target.position.set(x, y, z); K.luneL.target.updateMatrixWorld(); K.luneL.shadow.needsUpdate = true;
   };
   K.filante = function (t) { UA.uFilante.value.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random(), t); };
   return K;

@@ -1,0 +1,73 @@
+/* Coquille éprouvée sur iPhone (voir references/ios-webapp.md) : pas de « inset », pas de body en position fixe,
+   tout ce qui flotte sans action propre en pointer-events:none, cibles ≥ 44 px, champs ≥ 16 px.
+   Polices : celles du système par défaut ; une police intégrée se déclare ici (--police) et va dans fonts/. */
+:root{--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);
+  --police:"Im Fell English",Georgia,"Times New Roman",serif;--titre:"Im Fell English Sc","Im Fell English",Georgia,serif;--police-nombres:ui-monospace,Menlo,monospace;
+  --bg:#05060d;--panel:#141625;--bord:#2c2f4a;--txt:#efe8da;--fort:#ffc97a;--ok:#7fe0a0;--mal:#ff6f7d;--pale:#a6a9c8}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--txt)}
+body{font:17px var(--police);touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;font:16px var(--police-nombres)}
+.num{font-family:var(--police-nombres);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:var(--panel);border:2px solid var(--bord);border-radius:6px;min-height:44px;min-width:44px;padding:4px 10px;touch-action:manipulation}
+button:active{transform:translateY(1px)}
+#boot{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;font-size:22px}
+#app{position:fixed;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;padding-left:var(--sl);padding-right:var(--sr)}
+#top{display:flex;align-items:center;gap:6px;padding:calc(4px + var(--st)) 8px 4px;background:var(--panel);border-bottom:2px solid var(--bord)}
+#titreZone{flex:1;min-width:0;line-height:1.15}
+#titre{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#statut{font-size:15px;color:var(--pale);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#godBadge{background:var(--mal);color:#fff;padding:2px 6px;font-weight:700;border-radius:4px;pointer-events:none;font-size:14px}
+.hbtn{width:44px;height:44px;padding:0;display:flex;align-items:center;justify-content:center}
+#game{position:relative;flex:1;min-height:0;overflow:hidden;padding-bottom:var(--sb)}
+#toasts{position:fixed;left:8px;right:8px;bottom:calc(8px + var(--sb));display:flex;flex-direction:column;gap:4px;align-items:center;pointer-events:none;z-index:50}
+.toast{background:rgba(10,10,18,.92);border:2px solid var(--pale);padding:6px 10px;border-radius:6px;max-width:440px;pointer-events:none;transition:opacity .4s}
+.toast.warn{border-color:var(--mal)}.toast.save{border-color:var(--ok)}
+#modal{position:fixed;top:0;right:0;bottom:0;left:0;z-index:80;background:rgba(5,5,10,.75);display:flex;align-items:center;justify-content:center;padding:calc(8px + var(--st)) calc(8px + var(--sr)) calc(8px + var(--sb)) calc(8px + var(--sl))}
+[hidden]{display:none !important}
+.mbox{background:var(--panel);border:3px solid var(--bord);border-radius:8px;width:100%;max-width:460px;max-height:100%;display:flex;flex-direction:column}
+.mhead{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-bottom:2px solid var(--bord)}
+.mhead b{flex:1}
+.mbody{padding:10px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.mbtns{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px 12px}
+.mbtns button{flex:1 1 40%}
+textarea{width:100%;box-sizing:border-box;height:110px}
+#devCode{width:100%;box-sizing:border-box;font-size:20px;text-transform:uppercase;padding:6px}
+.sect{margin:12px 0 4px;color:var(--fort);font-weight:700}
+.log{font-size:15px;color:var(--pale);margin:2px 0}
+
+/* ===================== Noëlombre : une promenade (presque aucune interface) ===================== */
+/* la barre du haut de la coquille devient un simple bouton de menu discret, posé sur l'image */
+#top{position:absolute;top:0;right:0;left:auto;z-index:20;background:none;border:none;padding:calc(8px + var(--st)) 8px 0 0;pointer-events:none}
+#titreZone,#btnSave{display:none}
+#godBadge{font-size:11px;padding:1px 5px;background:rgba(190,70,90,.75)}
+#btnOpts{pointer-events:auto;width:44px;height:44px;border-radius:50%;background:rgba(10,12,24,.28);border:1px solid rgba(255,255,255,.14);color:rgba(255,240,215,.6)}
+#btnOpts svg{width:20px;height:20px}
+button{background:#1b1e33;border:1px solid #3a3e60;border-radius:10px}
+.mbox{background:linear-gradient(#171a2c,#0f1120);border:1px solid #3a3e60;border-radius:14px;box-shadow:0 10px 60px #000c,0 0 0 1px #ffffff10 inset}
+.mhead b{font-family:var(--titre);font-weight:400;font-size:21px;color:var(--fort);letter-spacing:.04em}
+.mbody{font-size:17px;line-height:1.38}
+.sect{font-family:var(--titre);font-weight:400;font-size:18px}
+.grand{font-family:var(--titre);font-size:22px;color:var(--fort);margin:6px 0}
+#cv3d{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+#voile{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;background:radial-gradient(ellipse at 50% 52%,transparent 58%,rgba(3,4,12,.42) 88%,rgba(2,2,8,.8) 100%)}
+#flash{position:absolute;top:0;right:0;bottom:0;left:0;pointer-events:none;opacity:0}
+#ctrl{position:absolute;top:0;right:0;bottom:0;left:0;touch-action:none;-webkit-user-select:none;user-select:none}
+#stickBase{position:absolute;width:120px;height:120px;border-radius:50%;border:1.5px solid rgba(255,230,190,.2);background:radial-gradient(rgba(255,220,170,.07),rgba(255,220,170,.02));pointer-events:none}
+#stickBtn{position:absolute;left:37px;top:37px;width:46px;height:46px;border-radius:50%;background:radial-gradient(rgba(255,235,200,.5),rgba(255,190,120,.18));box-shadow:0 0 16px rgba(255,190,120,.3)}
+/* titre d'un lieu, façon carton de cinéma */
+#banniere{position:absolute;left:8%;right:8%;top:24%;text-align:center;pointer-events:none;opacity:0;transition:opacity 2.2s}
+#banniere.vu{opacity:1;transition:opacity 1.6s}
+#bTitre{font-family:var(--titre);font-size:31px;line-height:1.15;color:#ffe9c2;letter-spacing:.06em;text-shadow:0 0 22px rgba(255,160,70,.55),0 2px 5px #000}
+#bTrait{width:0;height:1px;margin:10px auto 9px;background:linear-gradient(90deg,transparent,#ffd9a0,transparent);transition:width 2.4s .4s}
+#banniere.vu #bTrait{width:62%}
+#bSous{font-style:italic;font-size:18px;line-height:1.3;color:#f1e7d2;text-shadow:0 1px 5px #000,0 0 12px #000}
+.rond{width:52px;height:52px;border-radius:50%;padding:0;font-size:20px;background:rgba(20,22,40,.5);border:1px solid rgba(255,255,255,.2);color:#ffe9c4}
+#vol{position:absolute;right:14px;bottom:calc(22px + var(--sb));display:flex;flex-direction:column;gap:12px}
+#chargement{position:absolute;top:0;right:0;bottom:0;left:0;background:#04050b;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1.6s;pointer-events:none;z-index:5}
+#chTitre{font-family:var(--titre);font-size:46px;color:var(--fort);letter-spacing:.08em;text-shadow:0 0 34px #ff9a3c66}
+#chSous{font-style:italic;color:var(--pale);margin-top:10px}
+.pasgl{position:absolute;top:40%;left:10%;right:10%;text-align:center}
+.cur{margin:8px 0}.cur.inconnu{color:#6a6e90;font-style:italic}
+.regs{display:flex;flex-wrap:wrap;gap:6px;margin:5px 0}.reg{flex:1 1 30%;font-size:15px}.reg.on{border-color:var(--fort);color:var(--fort)}
+#toasts{bottom:calc(14px + var(--sb))}.toast{background:rgba(8,9,18,.8);border:1px solid rgba(255,255,255,.2);font-size:15px}
+@media (orientation:landscape) and (max-height:500px){#banniere{top:16%}#bTitre{font-size:26px}}

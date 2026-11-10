@@ -2,15 +2,13 @@
    Chaque repère : plan(P, rng) ajoute obstacles, lumières et le « point de curiosité » (P.spot) ; construire(L, P,
    rng, groupe, Q) ajoute sa géométrie aux lots de la parcelle et renvoie ses animations [fonction(t, dt)].
    Les pièces qui bougent (aiguilles, carrousel, train…) sont des maillages à part dans un sous-groupe. */
+const REPERES_OUTILS = {};
 const REPERES = (() => {
   const C = MONDE.C, M = C / 2;
   const R = {};
   // maillages d'un lot à part (pièces animées)
-  function maill(L2) {
-    const gr = new THREE.Group();
-    for (const k in L2.tous) { const geo = L2.tous[k].geometrie(k === 'ampoules' ? 'phase' : null); if (!geo) continue; geo.boundingSphere.radius += 14; const m = new THREE.Mesh(geo, MAT[k]); if (k !== 'ampoules' && k !== 'emis' && k !== 'fenetre') { m.castShadow = true; m.receiveShadow = true; } gr.add(m); }
-    return gr;
-  }
+  function maill(L2) { const gr = new THREE.Group(); for (const k in L2.tous) { const m = GEO.maillage(k, L2.tous[k], false); if (m) gr.add(m); } return gr; }
+  REPERES_OUTILS.maill = maill;
   const lum = (P, x, y, z, c, i, r, ch) => P.lumieres.push({ x, y, z, c, i, r, chaleur: ch == null ? 1 : ch });
   const fl = (P, x, z, r, c) => P.flaques.push({ x, z, r, c });
   const G = GEO;
@@ -52,7 +50,8 @@ const REPERES = (() => {
 
   // 2. COLLINE EN SPIRALE — on peut la gravir ; la pointe s'enroule au sommet
   R.colline = {
-    maisons: false,
+    maisons: false, sansPlace: true,
+    relief(lx, lz, t) { const r = Math.hypot(lx - M, lz - M), Rr = 19; if (r < Rr) { const k = 1 - r / Rr; return t + 13.5 * k * k * (3 - 2 * k); } return t; },
     plan(P, rng) {
       const top = P.sol(M, M); P.spot = { x: M + 1.2, z: M + 1.2, dy: 1.2 }; P.cyl(M - 1.2, M - 0.4, 1.0);
       for (let i = 0; i < 9; i++) { const t = i / 9, a = t * Math.PI * 5, r = 17 - t * 15; const x = M + Math.cos(a) * r, z = M + Math.sin(a) * r; if (i % 2 === 0) MONDE.ajLampe(P, x + Math.cos(a) * 1.5, z + Math.sin(a) * 1.5, -a + Math.PI, [2.6, 2.6, 3.2], 2.8); }
@@ -74,7 +73,7 @@ const REPERES = (() => {
       for (let i = 0; i < pa.count; i++) { const seg = Math.floor(i / 11), t = seg / 80; const p = new THREE.Vector3().fromBufferAttribute(pa, i); const c = csC[Math.min(80, seg)]; ce.copy(p).sub(c).multiplyScalar(1.15 * (1 - t * 0.88)); pa.setXYZ(i, c.x + ce.x, c.y + ce.y, c.z + ce.z); }
       tube.computeVertexNormals();
       L.get('pierre').add(tube, { c: [0.42, 0.42, 0.48], uvm: 'monde', s: 0.5 });
-      L.get('emis').add(G.base('ico'), { m: G.mat(pts[50].x, pts[50].y + 0.4, pts[50].z, 0.35, 0.35, 0.35), c: [3, 3, 4] });
+      L.get('emis').add(G.base('ico'), { m: G.mat(pts[50].x, pts[50].y + 0.4, pts[50].z, 0.35, 0.35, 0.35), c: [3, 3, 4] }); G.halo(L, pts[50].x, pts[50].y + 0.4, pts[50].z, [0.3, 0.3, 0.5], 5);
       return [];
     },
   };
@@ -139,7 +138,9 @@ const REPERES = (() => {
 
   // 5. KIOSQUE DU LAC MUET — kiosque sur la glace, patineurs fantômes
   R.kiosque = {
-    maisons: false,
+    maisons: false, sansPlace: true,
+    relief(lx, lz, t, tc) { const r = Math.hypot(lx - M, lz - M), Rr = 15.5, niv = tc - 0.5; if (r < Rr) return niv; if (r < Rr + 4) return lerp(niv, t, sstep(Rr, Rr + 4, r)); return t; },
+    glace(lx, lz) { return Math.hypot(lx - M, lz - M) < 15.5; },
     plan(P, rng) {
       P.lac = { x: M, z: M, r: 15.5 }; P.spot = { x: M, z: M, dy: 0.9 };
       for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; P.cyl(M + Math.cos(a) * 4, M + Math.sin(a) * 4, 0.22); }
@@ -329,6 +330,8 @@ const REPERES = (() => {
       return [];
     },
   };
+  for (const k in R) if (TXT.reperes[k]) { R[k].nom = TXT.reperes[k].nom; R[k].desc = TXT.reperes[k].desc; }
+  R.carrousel.boucle = 'manege'; R.mausolee.boucle = 'orgue'; R.kiosque.boucle = 'choeur';
   function GEO_prep(g) { if (!g.index) { const n = g.attributes.position.count, ix = new Uint32Array(n); for (let i = 0; i < n; i++) ix[i] = i; g.setIndex(new THREE.BufferAttribute(ix, 1)); } return g; }
   return R;
 })();

@@ -1,0 +1,89 @@
+CONSIGNE — nouvelle bande-son de « Noëlombre » (vraie musique rendue avec de vrais instruments échantillonnés)
+
+CONTEXTE. Noëlombre est une EXPÉRIENCE contemplative sur iPhone (web, Three.js, un seul fichier HTML) : on marche de nuit,
+en vue subjective, dans une ville de Noël infinie, sombre, biscornue et féerique (conte gothique façon cinéma
+d'animation image par image). L'utilisateur a jugé la musique actuelle (synthèse WebAudio en direct, fichier
+/home/user/LABO_INFINI/_dev/noelombre/src/js/19_audio.js) très mauvaise (« music is shit »). Il veut une expérience
+immersive, belle, cinématographique. Ta mission : produire une bande-son de vraie qualité, et réécrire le module audio.
+
+MOYENS DISPONIBLES (déjà installés) : `fluidsynth` + la banque `/usr/share/sounds/sf2/FluidR3_GM.sf2` (licence MIT),
+`ffmpeg` (avec libmp3lame), Python 3 (numpy disponible ; `pip install` possible : mido, scipy, pedalboard… si utile),
+Node + Playwright (NODE_PATH=$(npm root -g)), Chromium headless.
+
+1) COMPOSER des pièces 100 % ORIGINALES (aucune mélodie existante, aucun chant de Noël connu, aucune musique de film :
+   surtout rien qui cite « L'Étrange Noël de monsieur Jack » / Danny Elfman ; on veut seulement la COULEUR : valse
+   mineure, célesta, boîte à musique, harpe, cordes, chœur sans paroles, clochettes, cor, basson, glockenspiel,
+   pizzicati, orgue lointain). Écris les partitions par programme (Python → fichiers MIDI, par ex. avec `mido`) :
+   de vraies compositions structurées (thème, réponse, développement, cadence), harmonie soignée (mineur, emprunts
+   napolitains, chromatismes, pédales), nuances (vélocités humanisées, léger rubato/swing de valse, ralentis de fin),
+   orchestration en couches (mélodie, contre-chant, basse, nappe, ponctuations). PAS de boucles mécaniques de 4 mesures.
+   Pièces demandées :
+   - 5 pièces principales de 60 à 80 s chacune, d'humeurs différentes mais du même univers :
+     « reveil » (boîte à musique seule qui s'ouvre, puis cordes : émerveillement), « valse » (valse mineure espiègle,
+     pizzicati + célesta + basson), « neige » (très lent, harpe + cordes + chœur, apaisé, large), « ombres » (mystère :
+     célesta grave, cordes en trémolo doux, cor lointain, inquiétant mais beau), « fete » (plus animé, orgue de
+     barbarie / accordéon / glockenspiel, joie étrange). Chacune se termine proprement (résonance qui s'éteint) : elles
+     seront jouées une fois, espacées par du silence (vent seul), jamais en boucle.
+   - 3 boucles « dans le décor » de 16 à 24 s, bouclables SANS couture audible (queue de réverbération repliée sur le
+     début, ou fondu enchaîné interne) : « manege » (boîte à musique / orgue de foire, pour un carrousel),
+     « orgue » (orgue d'église grave et lent, pour une chapelle/mausolée), « choeur » (chœur fantôme « ooh » lent, 2-3 voix).
+2) RENDRE avec FluidSynth (44,1 kHz stéréo) puis MASTERISER en Python/ffmpeg : réverbération de qualité (salle ample,
+   2-3 s : convolution avec une réponse impulsionnelle que tu synthétises, ou filtre ffmpeg/pedalboard), égalisation
+   douce (couper l'aigu agressif, un peu de chaleur), léger compresseur/limiteur, normalisation cohérente entre pièces
+   (≈ −16 LUFS pour les pièces, −20 pour les boucles), fondus d'entrée/sortie. ÉCOUTE PAR LA MESURE : comme tu ne peux pas
+   entendre, vérifie par analyse (spectrogramme/énergie par bande, crêtes, pas d'écrêtage, pas de silence anormal, densité
+   de notes, tessitures correctes : pas de mélodie au-dessus de do7 ni de bouillie dans le grave) et relis tes partitions
+   d'un œil critique (voix qui se croisent, dissonances non voulues : vérifie par script que les notes simultanées
+   appartiennent aux accords prévus, hors notes de passage volontaires).
+3) ENCODER en MP3 (libmp3lame, stéréo joint) : pièces ≈ 80 kbit/s (essaie `-q:a 6` VBR ou CBR 80k ; 32 kHz accepté si
+   l'aigu est doux), boucles en mono 56 kbit/s. BUDGET TOTAL STRICT : ≤ 2,6 Mo pour les 8 fichiers. Fichiers dans
+   /home/user/LABO_INFINI/_dev/noelombre/audio/ : reveil.mp3, valse.mp3, neige.mp3, ombres.mp3, fete.mp3, manege.mp3,
+   orgue.mp3, choeur.mp3. Garde tes scripts de composition/rendu dans /home/user/LABO_INFINI/_dev/noelombre/audio/src/
+   (reproductibles : `python3 audio/src/tout.py` régénère tout). Attention : le MP3 ajoute un silence au début/à la fin
+   (retard d'encodeur) : pour les boucles, le lecteur bouclera par FONDU ENCHAÎNÉ de deux sources (voir 4), donc prévois
+   ~1,5 s de recouvrement musicalement compatible entre fin et début.
+4) GÉNÉRER le fichier JS des sons : écris l'outil /home/user/LABO_INFINI/_dev/noelombre/tools/sons.js (Node) qui lit
+   audio/*.mp3 et écrit src/js/05_sons.js contenant `const SONS = { reveil: [ '…', '…' ].join(''), … };` en base64, avec
+   des lignes de 200 caractères AU PLUS (obligatoire : aucune ligne > 300 caractères dans le dépôt). Lance-le.
+5) RÉÉCRIRE /home/user/LABO_INFINI/_dev/noelombre/src/js/19_audio.js (une seule globale `const AUDIO = {…}` ; fichiers
+   concaténés dans un seul <script> "use strict" ; globales existantes à ne PAS redéclarer : SFXK (SFXK.ctx AudioContext
+   ou null, SFXK.master GainNode, SFXK.init()), S (S.jeu.reg = { musique: bool, mvol: 0..1, sons: bool, svol: 0..1 }),
+   SONS). Lis l'ancien fichier : GARDE ce qui marche (ambiance continue : vent, pas dans la neige/glace/pavé, feu ;
+   bruitages synthétisés ; robustesse iOS : rien si SFXK.ctx absent ou pas 'running', compresseur de sortie, coupure en
+   arrière-plan) et REMPLACE toute la musique synthétisée par la lecture des MP3 :
+   - décodage À LA DEMANDE avec `ctx.decodeAudioData` (base64 → ArrayBuffer), UNE pièce principale en mémoire à la fois
+     (libérer le tampon de la précédente : ~25 Mo chacune une fois décodée), boucles décodées seulement quand demandées ;
+     gérer les deux formes de decodeAudioData (promesse et rappels) et l'échec (silence, pas d'erreur).
+   API EXACTE (le moteur l'appelle ainsi ; toute méthode sans effet et sans erreur si l'audio n'est pas prêt) :
+   - AUDIO.maj(dt, e) à chaque image, e = { marche: 0..1, surface: 'neige'|'glace'|'pave', courir: bool, feu: 0..1,
+     vent: 0..1, hauteur: m, enPause: bool, calme: 0..1 }. Gère l'ambiance ET le « chef d'orchestre » : après un
+     silence initial de ~4 s, jouer une pièce ; puis silence (vent seul) de 35 à 80 s ; puis une autre pièce (ordre
+     mélangé, jamais deux fois la même de suite ; « reveil » en premier lors du tout premier lancement de la session).
+   - AUDIO.musique(nom) : demande de jouer telle pièce maintenant (fondu de 2 s sur celle en cours) ; AUDIO.musique(null)
+     = fondu vers le silence. AUDIO.humeur(nom) : indice du moteur ('ombres' près d'un cimetière, 'fete' près d'une
+     foire, 'neige' au calme…) dont le chef d'orchestre tient compte pour choisir la PROCHAINE pièce (sans interrompre).
+   - AUDIO.boucle(nom, volume) : son de décor ('manege' | 'orgue' | 'choeur') joué en boucle tant que volume > 0
+     (le moteur l'appelle à chaque image avec un volume 0..1 selon la distance ; 0 = arrêt en fondu et libération).
+     Boucle sans couture par fondu enchaîné de deux AudioBufferSourceNode. Quand une boucle est audible (> 0,25), baisser
+     la musique principale (ducking) pour ne pas mélanger deux musiques.
+   - AUDIO.sfx(nom, opt) : garder les bruitages existants utiles à une expérience ('lanterne', 'eclat', 'decouverte',
+     'etoile', 'carillon' {coups}, 'traineau', 'menu', 'glace_craque', 'corbeau', 'hibou', 'boite_a_musique', 'voyage',
+     'atterrir', 'saut') et AMÉLIORE leur qualité (réverbération commune via un ConvolverNode à réponse synthétisée,
+     enveloppes plus douces, moins « bip »). Ajoute : 'apparition' (un fantôme apparaît : souffle + harmonique aiguë
+     douce), 'cloche' (cloche d'église lointaine, une frappe), 'souffle' (rafale de vent courte), 'porte' (grincement
+     grave discret), 'pas_fantome' (très léger), 'carte' (titre d'un lieu qui s'affiche : accord de célesta doux, 2 s).
+   - AUDIO.appliquerReglages(), AUDIO.suspendre(bool) : comme avant (musique et bruitages réglables séparément).
+   Les pas dans la neige doivent sonner RÉALISTES (craquement granuleux grave + crissement, variations aléatoires de
+   chaque pas, gauche/droite), pas un « pschit » : soigne-les, c'est le son le plus entendu.
+6) TESTER dans Chromium headless (Playwright, `--autoplay-policy=no-user-gesture-required`) avec un harnais dans
+   /home/user/LABO_INFINI/_dev/noelombre/preview/audio2/ : faux SFXK/S, chargement de 05_sons.js + 19_audio.js, vérifier
+   avec un AnalyserNode que chaque pièce et chaque boucle se décode et sonne (niveau non nul, pas de saturation), que le
+   chef d'orchestre enchaîne (accélère le temps via dt), que boucle() démarre/s'arrête, que rien ne plante sans
+   contexte audio, et que la mémoire ne grossit pas (une seule pièce décodée à la fois). Si le Chromium de Playwright
+   ne décode pas le MP3, signale-le clairement (et teste le décodage avec un WAV pour le reste).
+   `node --check` sur les fichiers JS écrits.
+
+INTERDITS : ne modifie AUCUN autre fichier du dépôt (surtout pas index.html ni les autres src/js) ; pas de git commit ;
+ne lance pas tools/build.js (il écrase index.html ; d'autres agents travaillent en parallèle).
+RAPPORT FINAL (court, en français) : liste des fichiers avec durée/poids, description musicale de chaque pièce (tonalité,
+tempo, instruments), ce qui a été vérifié, limites connues, et le poids total.

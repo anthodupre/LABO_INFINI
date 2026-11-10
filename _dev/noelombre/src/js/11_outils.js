@@ -30,3 +30,5 @@ const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t 
 const angDiff = (a, b) => { let d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; };
 const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 function snd(nom, opt) { try { if (typeof AUDIO !== 'undefined' && AUDIO.sfx) AUDIO.sfx(nom, opt); } catch (e) { } }
+// Torsion du monde (rendu) : amplitudes, fréquences et phases des ondes qui font serpenter les rues (voir MONDE.tordre)
+const TORS = [9.5, 0.031, 1.3, 7.0, 0.019, 4.1, 8.5, 0.027, 2.2, 6.5, 0.023, 0.7];

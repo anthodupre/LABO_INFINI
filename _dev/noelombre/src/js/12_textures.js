@@ -179,6 +179,38 @@ const TEX = (() => {
       c.fillStyle = '#f2c14e'; c.fillRect(W / 2 - 9, 0, 18, W); c.fillRect(0, W / 2 - 9, W, 18);
       c.fillStyle = 'rgba(255,255,255,.5)'; c.fillRect(W / 2 - 9, 0, 4, W); c.fillRect(0, W / 2 - 9, W, 4);
     });
+    // --- pièces vues par les fenêtres (atlas 2×2 de murs du fond : sapin, cheminée, bibliothèque, tablée) ---
+    T.pieces = canvasTex(512, 512, (c, W) => {
+      const h = W / 2;
+      const mur = (x, y, c1, c2) => { c.fillStyle = c1; c.fillRect(x, y, h, h); c.fillStyle = c2; for (let i = 0; i < 8; i++) c.fillRect(x + i * h / 8, y, h / 16, h * 0.74); c.fillStyle = '#3a2416'; c.fillRect(x, y + h * 0.74, h, h * 0.05); c.fillStyle = '#5a3a22'; c.fillRect(x, y + h * 0.79, h, h * 0.21); };
+      // 0 : le sapin et ses cadeaux
+      mur(0, 0, '#7a3a34', '#6a2e2a');
+      c.fillStyle = '#16402a'; for (let i = 0; i < 4; i++) { const yy = 40 + i * 38, ww = 34 + i * 20; c.beginPath(); c.moveTo(128, yy - 22); c.lineTo(128 + ww, yy + 34); c.lineTo(128 - ww, yy + 34); c.fill(); }
+      const cl = ['#ff5040', '#ffd24a', '#5ab0ff', '#ff7ae0', '#7aff8a'];
+      for (let i = 0; i < 26; i++) { const yy = 46 + (i * 37 % 140), ww = (yy - 20) * 0.5, xx = 128 + ((i * 53 % 100) / 50 - 1) * ww * 0.8; c.fillStyle = cl[i % 5]; c.beginPath(); c.arc(xx, yy, 4, 0, 7); c.fill(); }
+      c.fillStyle = '#fff2a0'; c.beginPath(); c.arc(128, 18, 9, 0, 7); c.fill();
+      c.fillStyle = '#b02a2a'; c.fillRect(60, 196, 34, 28); c.fillStyle = '#2a6ab0'; c.fillRect(168, 204, 28, 22); c.fillStyle = '#e8d070'; c.fillRect(74, 196, 6, 28); c.fillRect(180, 204, 5, 22);
+      // 1 : la cheminée, ses chaussettes et ses bougies
+      mur(h, 0, '#4a5a48', '#40503f');
+      c.fillStyle = '#6a625c'; c.fillRect(h + 60, 70, 136, 132); c.fillStyle = '#1a0e08'; c.fillRect(h + 84, 108, 88, 94);
+      let g = c.createRadialGradient(h + 128, 190, 4, h + 128, 180, 60); g.addColorStop(0, '#fff0a0'); g.addColorStop(0.4, '#ff8a20'); g.addColorStop(1, 'rgba(120,20,0,0)'); c.fillStyle = g; c.fillRect(h + 84, 108, 88, 94);
+      c.fillStyle = '#8a8078'; c.fillRect(h + 48, 58, 160, 14);
+      for (let i = 0; i < 3; i++) { c.fillStyle = i % 2 ? '#e8e0d0' : '#c02a2a'; c.fillRect(h + 78 + i * 40, 72, 14, 26); c.fillRect(h + 78 + i * 40, 90, 22, 10); }
+      for (let i = 0; i < 2; i++) { c.fillStyle = '#f0e8d8'; c.fillRect(h + 60 + i * 130, 34, 6, 24); c.fillStyle = '#ffd860'; c.beginPath(); c.arc(h + 63 + i * 130, 28, 6, 0, 7); c.fill(); }
+      // 2 : la bibliothèque, le fauteuil et la lampe
+      mur(0, h, '#5a4a6a', '#50405e');
+      c.fillStyle = '#2a1a10'; c.fillRect(20, h + 20, 130, 170);
+      for (let r = 0; r < 4; r++) for (let i = 0; i < 12; i++) { c.fillStyle = ['#a03a2a', '#2a5a8a', '#c0a040', '#3a7a4a', '#7a3a7a', '#d0c8b8'][(i * 7 + r * 3) % 6]; c.fillRect(26 + i * 10, h + 26 + r * 41, 8, 32 - (i * 5 % 9)); }
+      c.fillStyle = '#3a1418'; c.beginPath(); c.ellipse(196, h + 176, 38, 30, 0, 0, 7); c.fill(); c.fillRect(164, h + 130, 66, 60); c.beginPath(); c.arc(197, h + 130, 33, Math.PI, 0); c.fill();
+      g = c.createRadialGradient(232, h + 60, 3, 232, h + 60, 54); g.addColorStop(0, '#fff6c0'); g.addColorStop(1, 'rgba(255,200,90,0)'); c.fillStyle = g; c.fillRect(170, h, 86, 120);
+      // 3 : la tablée aux chandelles, quelqu'un debout
+      mur(h, h, '#6a5a3a', '#5e5034');
+      c.fillStyle = '#c8b890'; c.fillRect(h + 30, 30 + h, 60, 46); c.fillStyle = '#4a6a7a'; c.fillRect(h + 36, 36 + h, 48, 34);
+      c.fillStyle = '#1c1210'; c.beginPath(); c.ellipse(h + 190, h + 150, 22, 62, 0, 0, 7); c.fill(); c.beginPath(); c.arc(h + 190, h + 76, 17, 0, 7); c.fill();
+      c.fillStyle = '#e8e0d0'; c.fillRect(h + 20, h + 170, 150, 12); c.fillStyle = '#3a2416'; c.fillRect(h + 40, h + 182, 8, 40); c.fillRect(h + 140, h + 182, 8, 40);
+      for (let i = 0; i < 3; i++) { c.fillStyle = '#f0e8d8'; c.fillRect(h + 52 + i * 40, h + 146, 5, 24); g = c.createRadialGradient(h + 54 + i * 40, h + 140, 1, h + 54 + i * 40, h + 140, 18); g.addColorStop(0, '#fff8c0'); g.addColorStop(1, 'rgba(255,190,60,0)'); c.fillStyle = g; c.fillRect(h + 34 + i * 40, h + 120, 40, 40); }
+    });
+    T.pieces.wrapS = T.pieces.wrapT = THREE.ClampToEdgeWrapping;
     T.flocon = canvasTex(64, 64, (c, W) => { const g = c.createRadialGradient(W / 2, W / 2, 0, W / 2, W / 2, W / 2); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.4, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, W, W); });
     // --- flamme (particules de feu)
     T.flamme = canvasTex(64, 64, (c, W) => { const g = c.createRadialGradient(W / 2, W * 0.6, 0, W / 2, W * 0.55, W / 2); g.addColorStop(0, 'rgba(255,240,200,1)'); g.addColorStop(0.3, 'rgba(255,170,60,.85)'); g.addColorStop(0.7, 'rgba(200,60,10,.25)'); g.addColorStop(1, 'rgba(120,20,0,0)'); c.fillStyle = g; c.fillRect(0, 0, W, W); });

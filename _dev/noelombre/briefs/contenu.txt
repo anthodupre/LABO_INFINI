@@ -1,0 +1,177 @@
+CONSIGNE — créer des LIEUX pour « Noëlombre » (merveilles et blocs de ville)
+
+LE PROJET. Noëlombre est une EXPÉRIENCE contemplative sur iPhone (web, Three.js, un seul fichier HTML) : on marche de
+nuit, en vue subjective, lanterne à la main, dans une ville de Noël infinie, sombre, biscornue et féerique (conte gothique
+façon cinéma d'animation image par image — MAIS 100 % ORIGINAL : aucun personnage, nom, lieu ou objet reconnaissable d'un
+film ou d'un livre existant ; en particulier rien de « L'Étrange Noël de monsieur Jack »). Pas de jeu : pas de score, pas
+d'objets à ramasser. L'utilisateur s'est plaint : « j'ai croisé la même chose 5 fois », « graphismes laids, pas
+photoréalistes ». Ta mission : fabriquer des lieux VARIÉS, BEAUX et MÉMORABLES. La ville est une grille de parcelles de
+44 × 44 m ; chaque parcelle a un TYPE : un BLOC (pâté ordinaire) ou une MERVEILLE (grand lieu unique, avec un nom affiché
+comme un carton de cinéma quand on arrive). Une pioche garantit qu'on ne revoit pas une merveille avant de les avoir
+toutes vues, et deux blocs voisins ne sont jamais du même type : chaque type que tu crées ajoute de la variété.
+
+TON LOT (liste précise d'ids, thèmes et intentions) est donné dans le message qui t'a lancé. Tu écris UN SEUL fichier :
+/home/user/LABO_INFINI/_dev/noelombre/contenu/18m_<lettre>.js (la lettre t'est donnée), de la forme :
+
+  (() => {
+    const C = MONDE.C, M = C / 2, G = GEO;           // C = 44, M = 22 (centre de la parcelle)
+    const maill = REPERES_OUTILS.maill;               // lots -> groupe de maillages (pour les pièces animées)
+    Object.assign(REPERES, {
+      mon_id: { ...fiche... },
+      ...
+    });
+  })();
+
+Aucune autre déclaration globale (tout est concaténé dans un seul <script> "use strict"). Ne modifie AUCUN autre fichier
+du dépôt (ni src/, ni gel/, ni index.html), pas de git commit, ne lance pas tools/build.js.
+
+=== FICHE D'UN LIEU ===
+  {
+    genre: 'bloc',            // SEULEMENT pour un bloc ; absent pour une merveille
+    nom: 'La Baleine de Neige', desc: '…',   // merveilles seulement : nom ≤ 34 caractères ; desc = 1-2 phrases poétiques,
+                              // un brin drôles ou inquiétantes, ≤ 150 caractères, typographie française (apostrophe ’,
+                              // espaces insécables   avant : ; ! ?), tutoiement possible
+    maisons: 0.8,             // densité de maisons sur le pourtour : nombre 0..1, ou [sud, nord, est, ouest] ; défaut 0.
+                              // Les maisons sont posées automatiquement dans une bande de ~10 m le long des 4 rues
+                              // (elles évitent tes obstacles déjà déclarés). Une merveille garde toujours une entrée
+                              // dégagée au milieu du côté sud. IMPORTANT : ce que tu construis au cœur du pâté doit SE
+                              // VOIR depuis la rue : laisse au moins un côté ouvert (0) ou peu dense, ou fais du grand.
+    route: 1,                 // 0..1 : pavés visibles dans les demi-rues (0,4 = chemin de neige) ; défaut 1
+    lampes: 1,                // multiplicateur des lampadaires de trottoir (0 = aucun) ; défaut 1
+    sansPlace: true,          // merveille sans dallage pavé au centre (sinon une place pavée ronde de ~13 m est tracée)
+    boucle: 'manege'|'orgue'|'choeur',  // musique « dans le décor » jouée quand on est près (au plus un des trois)
+    humeur: 'ombres'|'fete'|'neige',    // couleur musicale suggérée au chef d'orchestre
+    fantomes: true,           // davantage de fantômes errants ici
+    relief(lx, lz, t, tCentre) { … return hauteur; },  // optionnel : modifie le relief. t = hauteur naturelle en (lx, lz)
+                              // (coordonnées locales 0..44), tCentre = hauteur naturelle au centre. DOIT renvoyer t
+                              // tel quel dès qu'on est à plus de 19 m du centre (sinon couture visible aux bords).
+                              // Appelée très souvent : pas d'allocation, calcul court. On marche sur ce relief.
+    glace(lx, lz) { … return bool; },   // optionnel : vrai là où le sol est de la glace (on glisse, bruit de pas)
+    plan(P, rng) { … },       // DONNÉES : obstacles, lumières, objets standard (voir plus bas). Pas de géométrie ici.
+    construire(L, P, rng, groupe, Q) { … return [animations]; },  // GÉOMÉTRIE ; renvoie [] ou des fonctions (t, dt, ctx)
+  }
+rng() = hasard déterministe 0..1 (rng.r(a,b) réel, rng.i(a,b) entier, rng.p(tableau) élément). N'utilise JAMAIS
+Math.random() dans plan/construire (la ville doit être identique à chaque visite).
+
+=== REPÈRE ET UNITÉS ===
+Coordonnées locales de la parcelle : x et z de 0 à 44 m, y vers le haut. Rues : bandes de 3,6 m le long des 4 bords
+(x<3,6, x>40,4, z<3,6, z>40,4) ; le SUD est z = 0 (entrée des merveilles en (22, 0) : garde un couloir libre de (22, 0)
+jusqu'à ton centre d'intérêt). Hauteur du sol : P.sol(x, z) (le terrain ondule de plusieurs mètres : pose TOUJOURS tes
+objets à y = P.sol(x, z), et fais descendre les socles 1 à 2 m sous le sol). Le cœur libre du pâté va d'environ 14 à
+30 m si maisons sur tous les côtés ; sans maisons tu disposes de ~5 à 39 m. Un promeneur mesure 1,62 m (yeux).
+Angles : G.mat/G.monde, rotation ry autour de y : l'axe local +z pointe vers (sin ry, 0, cos ry) ; ry = Math.PI = face au sud.
+
+=== plan(P, rng) : ce que tu peux déclarer ===
+  P.cyl(x, z, rayon, hauteur?)            obstacle rond (hauteur < 2 = on peut monter dessus ; défaut = infranchissable)
+  P.boite(x, z, demiLargeurX, demiLargeurZ, angle?, hauteur?)   obstacle rectangulaire tourné de `angle`
+  P.libre(x, z, r) -> bool                vrai si rien ne gêne (teste avant de semer des objets)
+  P.sol(x, z) -> y                        hauteur du sol
+  P.lampe(x, z, ang?, couleur?, hauteur?) lampadaire de fer forgé complet (modèle + halo + flaque + collision + lumière)
+  P.feu(x, z)                             brasero avec flammes animées, lumière vacillante, crépitement
+  P.lum(x, y, z, [r,g,b] 0..1, intensité≈1, portée≈10)   vraie lumière ponctuelle. AU PLUS 4 par parcelle (le moteur
+                                          n'allume que les 5 plus proches du promeneur). Pour « éclairer » le décor de
+                                          façon crédible, combine : P.flaque + matière 'emis' + G.halo.
+  P.flaque(x, z, rayon, [r,g,b])          flaque de lumière additive au sol (ex. [0.45, 0.3, 0.14] chaude, rayon 2-9)
+  P.lac = { x, z, r }                     dessine un disque de glace (à combiner avec relief + glace)
+  Objets standard (modèles déjà faits, posés au sol automatiquement) — pousse dans ces listes ET déclare l'obstacle :
+    P.sapins.push({ x, z, h: 4..28, illum: bool })      sapin tordu (illum = guirlande lumineuse en spirale)
+    P.morts.push({ x, z, h: 4..11 })                    arbre mort aux branches tortueuses
+    P.citrouilles.push({ x, z, s: 0.3..0.8, lant: bool, a })   citrouille (lant = visage lumineux)
+    P.tombes.push({ x, z, a, pen })                     pierre tombale (pen = inclinaison ±0.25)
+    P.bancs.push({ x, z, a }) · P.bonshommes.push({ x, z, a }) · P.epouvantails.push({ x, z, a })
+    P.tentes.push({ x, z, r: 2..3.6, h: 2.2..3.2, hc: 2..3.5, coul: 0..3, a }) · P.poteaux.push({ x, z, a }) (sucre d'orge)
+    P.cadeauxDeco.push({ x, z, s: 0.4..1 }) · P.clotures.push({ a: [x, z], b: [x, z] }) (grille de fer)
+    P.maisons.push(MONDE.maison(P, rng, x, z, largeur, profondeur, ang, { style: 'colombage'|'pierre'|'brique'|
+      'boutique'|'chalet'|'tour', etages: n })) puis P.boite(x, z, largeur/2+0.25, profondeur/2+0.25, ang) : une maison
+      complète (fenêtres habitées, porte, toit enneigé, guirlandes) où tu veux ; ang = direction de la façade.
+  P.pal = palette du quartier : P.pal.guirlande (tableau de couleurs vives d'ampoules), P.pal.lampe ([r,g,b] forte),
+    P.pal.murs, P.pal.toits, P.pal.fenetre(rng) -> couleur de lumière d'une fenêtre allumée. P.q = nom du quartier.
+  Tu peux ranger tes propres données dans P (ex. P.mesTrucs = […]) pour les relire dans construire.
+
+=== construire(L, P, rng, groupe, Q) : la géométrie ===
+Tout passe par des LOTS (un maillage par matière) : L.get('<matière>').add(G.base('<forme>'), { options }).
+  Formes G.base (taille 1, centrées à l'origine sauf indication) : 'cube', 'boite' (cube avec 4 segments en hauteur :
+    pour les pièces hautes déformées par `def`), 'cyl6', 'cyl8', 'cyl12', 'cyl16' (cylindres rayon 1, hauteur 1),
+    'cone4' (pyramide), 'cone8', 'cone12' (pointe en haut, rayon 1, hauteur 1), 'sphere', 'sphereB' (moins de faces),
+    'bosse' (demi-sphère : congère, dôme), 'ico' (petit cristal), 'plan' (carré 1×1 face à +z), 'tore' (anneau épais,
+    rayon 1), 'toreFin' (anneau fin), 'couronne', 'pignon' (prisme triangulaire : base 1, hauteur 1 de y=0 à 1,
+    profondeur 1 : toits à deux pentes), 'boucle' (volute de fer forgé), 'crochet' (canne de sucre d'orge, hauteur ~1.2),
+    'etage' (étage de sapin déchiqueté), 'glacon' (stalactite : utiliser une hauteur négative), 'tronc' (cylindre qui
+    s'affine), 'dalle' (cube subdivisé pour onduler). Tu peux aussi passer TA géométrie Three.js (TubeGeometry,
+    LatheGeometry, ExtrudeGeometry, SphereGeometry partielle…) : elle doit avoir un index, des normales et des uv
+    (ajoute `g.setIndex([...Array(n).keys()])` si elle n'en a pas ; calcule les courbes UNE fois, jamais par sommet).
+  Options de add : m: G.mat(x, y, z, sx, sy, sz, rx?, ry?, rz?) (position, échelle, rotations d'Euler XYZ) ;
+    c: [r, g, b] couleur (multiplie la texture ; pour 'emis' des valeurs > 1 brillent et font un halo : [3, 2, 0.9]) ;
+    uvm: 'monde' (texture répétée en mètres : à mettre sur murs, sols, grandes pièces), s: répétitions par mètre (0.4-1) ;
+    def: v => { … } déforme chaque sommet (Vector3, après m) : torsion, courbure, bosses — c'est LA clé du style biscornu ;
+    w: G.monde(x, y, z, ry) matrice appliquée en dernier (pour poser un objet construit autour de l'origine) ;
+    ao: v => facteur 0..1 d'assombrissement (ombre de contact au pied des murs : ex. v => 0.55 + 0.45 * sstep(y0, y0 + 1.5, v.y)).
+  Matières (clés de L.get) : 'pierre', 'brique', 'platre', 'planche', 'bois', 'tuiles', 'metal' (fer sombre),
+    'ecorce', 'aiguilles' (sapin), 'neige' (neige pure, scintille), 'glace' (reflets), 'verni' (peinture brillante, boules,
+    jouets : couleur par c), 'unie' (mat, couleur par c), 'tissu' (rayé, double face), 'citrouille', 'sucre' (rayures
+    rouges et blanches), 'cadeau' (papier cadeau), 'porte' (un 'plan' 1×2), 'emis' (lumineux, non éclairé : braises,
+    vitraux, yeux, lampions), 'cadran' (cadran d'horloge lumineux, sur 'cyl16' aplati),
+    'fenetre' (vitre avec PIÈCE EN RELIEF derrière ; sur un 'plan', avec OBLIGATOIREMENT uvr: l'une de
+    [0,0.5,0.5,1] | [0.5,0.5,1,1] | [0,0,0.5,0.5] | [0.5,0,1,0.5] (4 styles de croisillons) et c = couleur de lumière,
+    ex. P.pal.fenetre(rng), ou [0.03,0.035,0.05] pour une fenêtre éteinte).
+    La neige se dépose TOUTE SEULE sur les faces tournées vers le ciel de presque toutes les matières : profites-en
+    (rebords, toits, statues enneigés sans rien faire). Pas de neige sur 'emis', 'verni', 'glace', 'fenetre'.
+  Lumières décoratives : G.ampoule(L, x, y, z, [r,g,b], { rng }) (point lumineux qui scintille ; couleurs fortes ~3),
+    G.guirlande(L, [x,y,z], [x,y,z], { couleurs: P.pal.guirlande, rng, creux: 0.2, pas: 0.45 }) (rangée d'ampoules),
+    G.halo(L, x, y, z, [r,g,b] faible ~0.1-0.4, tailleEnMètres) (lueur douce autour d'une source : INDISPENSABLE sur
+    chaque lampion/bougie/vitrail pour qu'il « rayonne » dans la brume).
+  Modèles prêts : G.sapin(L, w, rng, hauteur, P.pal, illum), G.arbreMort(L, w, rng, hauteur), G.citrouille(L, w, rng,
+    taille, lanterne), G.tombe(L, w, rng), G.brasero(L, w), G.banc(L, w), G.cloture(L, [x,z], [x,z], w),
+    G.cadeauDeco(L, w, rng, taille), G.lampadaire(L, w, couleur, hauteur) (préférer P.lampe dans plan),
+    G.maison(L, fiche, w, rng, P.pal) (préférer MONDE.maison + P.maisons dans plan). w = G.monde(x, P.sol(x, z), z, ry).
+  PIÈCES ANIMÉES : construis-les dans des lots À PART autour de l'origine : `const L2 = G.Lots(); L2.get('verni').add(…);
+    const piece = maill(L2); piece.position.set(x, y, z); groupe.add(piece);` puis renvoie
+    `[(t, dt, ctx) => { piece.rotation.y = t * 0.3; }]`. t = temps en secondes ; ctx = { d: distance du promeneur au
+    centre de la parcelle (m), jx, jz: position locale du promeneur, eclat: 0..1 (vaut 1 juste après une TAPE = éclat de
+    lanterne à moins de 32 m, puis retombe en ~1,5 s), vu: bool (lieu déjà découvert), son(nom) } ; sons permis :
+    'cloche', 'carillon', 'boite_a_musique', 'hibou', 'corbeau', 'glace_craque', 'apparition', 'porte', 'souffle'
+    (rarement ! jamais à chaque image : garde un minuteur). Les animations tournent à chaque image quand le promeneur
+    est à moins de 115 m : AUCUNE allocation dedans (pas de new, pas de tableaux créés), calculs courts.
+    Fais RÉAGIR le lieu : à l'approche (ctx.d) ou à l'éclat (ctx.eclat) — têtes qui se tournent, lumières qui
+    s'allument une à une, fantômes qui apparaissent (maillage avec MAT.spectre, voir « kiosque » dans
+    gel/src/js/18_reperes.js : m.material.uniforms.uAlpha.value pour le fondu — clone la matière avec
+    MAT.lier(MAT.spectre.clone()) si tu changes son alpha, et mets m.userData.matPropre = true).
+  Matière sur mesure (verre transparent, lueur dont l'intensité change…) : crée-la avec Three.js PUIS passe-la
+    OBLIGATOIREMENT dans MAT.patch(mat, { cle: 'nomUnique' }) (sinon elle ne suit pas le monde tordu/courbé), ex.
+    `const mat = MAT.patch(new THREE.MeshBasicMaterial({ color: new THREE.Color(2, 1.4, 0.6), toneMapped: false }), { cle: 'lampion' });`
+    et `mesh.userData.matPropre = true` pour qu'elle soit libérée. Change ensuite mat.color/opacity dans l'animation.
+
+=== DIRECTION ARTISTIQUE (c'est LE critère) ===
+- Nuit, brume (on ne voit bien qu'à ~50 m), lune énorme, neige. Ce qui marche : de GRANDES SILHOUETTES lisibles
+  (8 à 30 m de haut pour une merveille), tordues, penchées, pointues, en spirale ; des LUMIÈRES chaudes (ambre) ou
+  froides (cyan, violet) en accents avec leur halo ; du contraste ; un détail qui BOUGE lentement ; une surprise à
+  l'approche ou à l'éclat. Pense « décor de film d'animation gothique photographié de nuit », pas « jouet en plastique ».
+- Évite l'aspect « empilement de cubes » : déforme (def), incline, varie les tailles, casse les symétries, ajoute des
+  détails fins (grilles, cordes, glaçons 'glacon', lierre, lanternes suspendues), pose de la neige ('bosse' en 'neige').
+- Couleurs des matières éclairées : sourdes et sombres (0.2-0.7) ; la couleur vive vient des lumières ('emis', ampoules).
+- Chaque lieu doit être reconnaissable d'un coup d'œil et NE RESSEMBLER À AUCUN AUTRE (ni aux 12 existants : horloge,
+  colline en spirale, mausolée, carrousel, kiosque sur lac, grand sapin, fontaine gelée, atelier de jouets, puits,
+  grande roue, gare du train jouet, observatoire — lis-les dans gel/src/js/18_reperes.js comme exemples de code, et
+  gel/src/js/18a_blocs.js pour les blocs).
+- BLOCS : ce sont des pâtés de ville ordinaires mais chacun avec SON idée forte, visible depuis la rue ; la plupart
+  gardent des maisons sur 2 ou 3 côtés (c'est une ville) et ouvrent un côté sur leur cœur.
+- BUDGET par lieu (mesuré par l'outil) : merveille ≤ 14 000 triangles et ≤ 30 ms de construction ; bloc ≤ 6 000
+  triangles (hors maisons) et ≤ 20 ms ; ≤ 4 P.lum ; animations légères.
+
+=== TESTER (obligatoire pour CHAQUE lieu, et regarder les images) ===
+Depuis /home/user/LABO_INFINI :
+  NODE_PATH=$(npm root -g) node _dev/noelombre/tools/essai.js _dev/noelombre/contenu/18m_<lettre>.js <id>
+→ vérifie la fiche, mesure (ms, triangles, obstacles, entreeLibre, ecartBord qui doit être 0), signale les erreurs JS, et
+écrit 5 captures dans _dev/noelombre/preview/essais/<id>_a.png … _e.png (a : depuis la rue au sud ; b : de près ;
+c : de biais, regard levé ; d : vue d'en haut par ciel clair ; e : au centre après un éclat de lanterne). Le rendu
+logiciel est LENT (~1 min par essai) : c'est normal. `--vues a,d` pour n'en faire que certaines ; `--js "code"` pour
+exécuter du JS avant chaque capture (ex. déplacer JOUEUR.x/z/yaw/pitch — coordonnées MONDE = 176 + local).
+REGARDE chaque capture (outil Read sur le PNG) avec un œil de directeur artistique sévère : est-ce beau ? lisible de
+loin ? est-ce que ça flotte au-dessus du sol ou s'y enfonce ? des pièces mal orientées ? trop sombre, trop « cubes » ?
+Corrige et recommence jusqu'à ce que ce soit vraiment réussi (2 à 4 itérations par lieu sont normales). Un essai ne
+teste qu'un type à la fois, mais ton fichier doit rester valide en entier à chaque essai.
+Le banc d'essai tourne sur un cœur gelé (_dev/noelombre/gel/src) : n'y touche pas.
+
+RAPPORT FINAL (court, en français) : pour chaque lieu : id, nom, une ligne de description, triangles/ms mesurés,
+animation/réaction, et ce qui reste imparfait. Signale tout manque de l'API qui t'a bloqué.
+Fonctions globales utiles : clamp(v, a, b), lerp(a, b, t), sstep(a, b, x) (lissage 0..1), NZ.vn(x, z, graine) (bruit lisse 0..1).
