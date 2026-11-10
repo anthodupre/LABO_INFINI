@@ -169,7 +169,7 @@ const TXT = {
   intro: {
     titre: 'Noëlombre',
     sous: 'Une nuit de Noël qui ne finit jamais.',
-    histoire: 'Tu te réveilles dans une ville de Noël sans fin, sous une lune énorme, au creux d’une bulle de lumière. Ta lanterne te garde au chaud, mais la nuit, elle, a froid. Trouve les 12 Étoiles d’ombre avant que le givre t’oublie.'
+    histoire: 'Tu te réveilles dans une ville de Noël sans fin, sous une lune énorme, au creux d’une bulle de lumière. Personne ne t’attend, rien ne presse. Marche, regarde, écoute : la nuit a des merveilles à te montrer.'
   },
 
   ameliorations: {

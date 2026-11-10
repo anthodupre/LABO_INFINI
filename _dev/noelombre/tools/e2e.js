@@ -59,6 +59,11 @@ const verif = (c, m) => { if (c) { ok++; console.log('  ✔ ' + m); } else { ko+
   const jr = await E(() => S.jeu.journal.slice());
   const NJ = jr.length;
   verif(NJ >= 7 && new Set(jr).size === NJ, NJ + ' merveilles visitées, toutes différentes : ' + jr.join(', '));
+  // musique : une pièce enregistrée joue, et le manège a sa propre musique quand on s'en approche
+  verif(await attendre(() => !!AUDIO._musique().piece || AUDIO._musique().attente > 20, 90000), 'la musique enregistrée (MP3) se décode et joue');
+  await E(() => { MONDE.essai = { cx: 6, cz: 6, type: 'carrousel' }; MONDE.viderCaches(); JEU._aller(6, 6); JOUEUR.z += 8; });
+  verif(await attendre(() => /manege/.test(AUDIO._musique().boucles), 60000), 'près du carrousel, sa musique de manège se fait entendre');
+  await E(() => { MONDE.essai = null; MONDE.viderCaches(); });
   // lanterne de carrefour qui se rallume toute seule
   await E(() => { const C = MONDE.C; for (let r = 1; r < 12; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) { if (MONDE.relais(dx, dz) && !S.jeu.lanternes[MONDE.cle(dx, dz)]) { JOUEUR.x = dx * C + 2; JOUEUR.z = dz * C + 2; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z); window.__rel = MONDE.cle(dx, dz); return; } } });
   verif(await attendre(() => S.jeu.lanternes[window.__rel] === 1, 30000), 'une lanterne de carrefour se rallume à ton passage');

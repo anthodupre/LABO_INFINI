@@ -389,7 +389,7 @@ const JEU = (() => {
     const I = TXT.intro;
     modal(I.titre, '<div class="grand">' + esc(I.sous) + '</div><div>' + esc(I.histoire) + '</div>' +
       '<div class="log" style="margin-top:10px">Pouce gauche : marcher. Glisse à droite : regarder. Une tape : ta lanterne lance un éclat.<br>Suis la petite lueur… ou perds-toi.</div>',
-      [['Entrer dans la nuit', () => { j().intro = true; save(false); }]]);
+      [['Entrer dans la nuit', () => { j().intro = true; save(false); setTimeout(() => HUD.banniere('Noëlombre', TXT.intro.sous, 6500), 900); }]]);
   }
   function placer() { const s = j(); JOUEUR.x = s.x; JOUEUR.z = s.z; JOUEUR.y = Math.max(s.y, MONDE.sol(s.x, s.z)); JOUEUR.yaw = s.yaw; JOUEUR.pitch = s.pitch; JOUEUR.vx = JOUEUR.vy = JOUEUR.vz = 0; dernierCh = null; guide.ok = false; guide.init = false; }
   function allerVers(cx, cz) { const C = MONDE.C; JOUEUR.x = cx * C + C / 2; JOUEUR.z = cz * C + 2; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z) + 0.5; { const jc = MONDE.jacob(JOUEUR.x, JOUEUR.z); JOUEUR.yaw = Math.atan2(-jc[1], -jc[3]); } JOUEUR.vx = JOUEUR.vz = 0; dernierCh = null; guide.init = false; }

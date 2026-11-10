@@ -64,7 +64,7 @@ catch (e) { console.error('ERREUR de construction :\n' + String(e.stdout || '') 
     if (v === 'e') { await E(() => JEU._eclat()); await p.waitForTimeout(2200); }
     if (opt('js')) { await E(opt('js')); await p.waitForTimeout(2500); }
     await E(() => { while (MODAL_OPEN) closeModal(); });
-    const f = path.join(out, type + '_' + v + '.png'); await p.screenshot({ path: f }); console.log('capture :', f);
+    const f = path.join(out, type + '_' + v + '.png'); await p.screenshot({ path: f, timeout: 180000 }); console.log('capture :', f);
   }
   const boite = await E(() => [...document.querySelectorAll('div')].filter(d => /^Erreur/.test(d.textContent)).map(d => d.textContent).join(' | '));
   if (boite) errs.push('boîte d’erreur du jeu : ' + boite);
