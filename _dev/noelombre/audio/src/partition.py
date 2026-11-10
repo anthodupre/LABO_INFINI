@@ -296,6 +296,14 @@ class Partition:
         self.parties.append(p)
         return p
 
+    def double(self, src, nom, prog, tr=0, dv=0, filtre=None, **kw):
+        """Nouvelle partie qui double `src` (mêmes notes, autre timbre), éventuellement transposée."""
+        p = self.partie(nom, prog, **kw)
+        for n in src.notes:
+            if filtre is None or filtre(n):
+                p.notes.append(Note(n.b, n.d, n.p + tr, n.v + dv, n.f, n.voix))
+        return p
+
     def m(self, mes, temps=0.0):
         """Temps (en noires) du début de la mesure `mes` (numérotée à partir de 1)."""
         return (mes - 1) * self.mesure + temps

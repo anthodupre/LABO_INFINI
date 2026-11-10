@@ -29,12 +29,14 @@ const JEU = (() => {
   // ---------- état sauvegardé ----------
   function etatInitial() {
     return {
-      graine: (Math.random() * 1e9) | 0, x: 3.5, y: 0, z: 2.2, yaw: -Math.PI / 2 - 0.08, pitch: 0.08,
+      graine: (Math.random() * 1e9) | 0, x: 3.5, y: 0, z: 2.2, yaw: regardRue(3.5, 2.2), pitch: 0.1,
       sites: {}, pioche: [], tours: 0, dernier: null, sitesVus: {}, journal: [], lanternes: { '0,0': 1 },
       stats: { distance: 0, temps: 0 }, intro: false,
       reg: { musique: true, mvol: 0.7, sons: true, svol: 0.85, qualite: 'auto', sens: 1, inverser: false, guide: true },
     };
   }
+  // cap qui regarde le long de la rue est-ouest (la grille est tordue : l'axe x de la grille n'est pas l'axe x du monde vu)
+  function regardRue(x, z) { const jc = MONDE.jacob(x, z); return Math.atan2(-jc[0], -jc[2]); }
   function valider(s) {
     const d = etatInitial();
     for (const k of ['x', 'y', 'z', 'yaw', 'pitch', 'graine']) if (!Number.isFinite(s[k])) s[k] = d[k];
@@ -141,7 +143,7 @@ const JEU = (() => {
     fl.scale.set(1, 1.7, 1); g.add(fl); g.userData.flamme = fl;
     g.add(new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.2, 0.11), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.1, 0.7, 0.32), transparent: true, opacity: 0.16, depthWrite: false, toneMapped: false })));
     g.scale.setScalar(0.62); cam.add(g); lanterne = g;
-    lanterneL = new THREE.PointLight(0xffb070, 1.6, 11, 1.6); lanterneL.position.set(0.3, -0.1, -0.9); cam.add(lanterneL);
+    lanterneL = new THREE.PointLight(0xffb070, 1.0, 10, 1.7); lanterneL.position.set(0.3, -0.1, -0.9); cam.add(lanterneL);
   }
 
   // ---------- parcelles ----------
@@ -389,7 +391,7 @@ const JEU = (() => {
       [['Entrer dans la nuit', () => { j().intro = true; save(false); }]]);
   }
   function placer() { const s = j(); JOUEUR.x = s.x; JOUEUR.z = s.z; JOUEUR.y = Math.max(s.y, MONDE.sol(s.x, s.z)); JOUEUR.yaw = s.yaw; JOUEUR.pitch = s.pitch; JOUEUR.vx = JOUEUR.vy = JOUEUR.vz = 0; dernierCh = null; guide.ok = false; guide.init = false; }
-  function allerVers(cx, cz) { const C = MONDE.C; JOUEUR.x = cx * C + C / 2; JOUEUR.z = cz * C + 2; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z) + 0.5; JOUEUR.yaw = Math.PI; JOUEUR.vx = JOUEUR.vz = 0; dernierCh = null; guide.init = false; }
+  function allerVers(cx, cz) { const C = MONDE.C; JOUEUR.x = cx * C + C / 2; JOUEUR.z = cz * C + 2; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z) + 0.5; { const jc = MONDE.jacob(JOUEUR.x, JOUEUR.z); JOUEUR.yaw = Math.atan2(-jc[1], -jc[3]); } JOUEUR.vx = JOUEUR.vz = 0; dernierCh = null; guide.init = false; }
 
   // ======================= objet JEU (contrat de la coquille) =======================
   let modalVu = 0, tBoucles = 0;
@@ -402,7 +404,7 @@ const JEU = (() => {
       ['Aller à la prochaine merveille', () => { const b = chercherSite(); if (b) allerVers(b.cx, b.cz); }],
       ['Météo suivante (' + meteo.mode + ')', () => { changerMeteo(); }], ['Aurore', () => changerMeteo('aurore')], ['Tempête', () => changerMeteo('tempete')],
       ['Traîneau de minuit', () => { ev.prochMinuit = 0; }], ['Envol de lanternes', () => { ev.prochEnvol = 0; }],
-      ['Retour au départ', () => { JOUEUR.x = 3.5; JOUEUR.z = 2.2; JOUEUR.y = MONDE.sol(3.5, 2.2); dernierCh = null; guide.init = false; }],
+      ['Retour au départ', () => { JOUEUR.x = 3.5; JOUEUR.z = 2.2; JOUEUR.y = MONDE.sol(3.5, 2.2); JOUEUR.yaw = regardRue(3.5, 2.2); dernierCh = null; guide.init = false; }],
     ],
     demarrer(zone) {
       HUD.creer(zone);
@@ -480,7 +482,7 @@ const JEU = (() => {
         lanterne.position.set(LPOS.x + Math.sin(JOUEUR.bob * 0.5) * 0.014 * v, LPOS.y + Math.abs(Math.cos(JOUEUR.bob * 0.5)) * 0.018 * v, -0.62);
         lanterne.rotation.z = Math.sin(t * 1.3) * 0.04 + Math.sin(JOUEUR.bob * 0.5) * 0.08 * v;
         const fl = 0.85 + Math.sin(t * 17) * 0.06 + Math.sin(t * 7.3) * 0.08; lanterne.userData.flamme.scale.set(fl, 1.7 * fl, fl);
-        lanterneL.intensity = 1.5 * fl * (1 + eclatK * 9); lanterneL.distance = 11 + eclatK * 22;
+        lanterneL.intensity = 0.95 * fl * (1 + eclatK * 12); lanterneL.distance = 10 + eclatK * 24;
       }
       // anime ce qui bouge dans les parcelles proches
       const C = MONDE.C;
@@ -499,6 +501,8 @@ const JEU = (() => {
     _tris: () => { const o = {}; scene.traverse(m => { if ((m.isMesh || m.isPoints) && m.geometry.index) o[m.name || '?'] = (o[m.name || '?'] || 0) + m.geometry.index.count / (m.isPoints ? 1 : 3); }); return o; },
     _info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, parcelles: parcelles.size, geo: renderer.info.memory.geometries, prog: renderer.info.programs.length, Q, pr: pr.v }),
     _pr: v => { pr.fixe = true; pr.v = v; renderer.setPixelRatio(v); redimensionner(); },
+    _etat: () => ({ eclat: eclatK, guide: guide.ok ? { cx: guide.cx, cz: guide.cz, x: guide.x, z: guide.z } : null, meteo: meteo.mode, fantomes: ENT.spectres.filter(q => q.actif).length, parcelles: parcelles.size, prete }),
+    _site: chercherSite,
     _meteo: changerMeteo, _eclat: eclat, _aller: allerVers,
   };
 })();

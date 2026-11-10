@@ -193,6 +193,15 @@ const MONDE = (() => {
       if (!P.libre(x, z, 0.4)) continue;
       ajLampe(P, x, z, ang, pal.lampe);
     }
+    // --- guirlandes tendues au-dessus des rues SUD et OUEST (chaque rue touche deux parcelles : une seule la décore) ---
+    const nFils = { bourg: 2, foire: 3, citrouilles: 1, lac: 1, sapins: 1, cimetiere: 0 }[q]; P.fils = [];
+    for (let i = 0; i < nFils; i++) for (const axe of ['x', 'z']) {
+      if (rng() < 0.4) continue;
+      const t = 6 + rng() * (C - 12), o = RUE + 0.2, dec = (rng() - 0.5) * 3;
+      const a = axe === 'x' ? [t, o] : [o, t], b = axe === 'x' ? [t + dec, -o] : [-o, t + dec];
+      if (!P.libre(a[0], a[1], 0.5)) continue;
+      P.fils.push({ a, b, etoile: rng() < 0.5 }); P.cyl(a[0], a[1], 0.12); P.cyl(b[0], b[1], 0.12);
+    }
     return P;
   }
   // Fiche d'une maison (le modèle 3D est fait par GEO.maison à partir de cette fiche)
@@ -205,7 +214,7 @@ const MONDE = (() => {
     const H = {
       id: P.maisons.length, x, z, w, d, ang, etages, style: st, hE: 2.7 + rng() * 0.5, hToit: w * (basse ? 0.55 + rng() * 0.3 : 0.75 + rng() * 0.85),
       toit: st === 'tour' ? 'tour' : st === 'chalet' ? 'pignon' : toitR < 0.6 ? 'pignon' : toitR < 0.85 ? 'pointe' : 'croupe',
-      mur: st === 'brique' ? 'brique' : st === 'pierre' ? 'pierre' : st === 'chalet' ? 'planche' : 'platre',
+      mur: st === 'brique' ? 'brique' : st === 'pierre' ? 'moellon' : st === 'chalet' ? 'planche' : 'platre',
       cMur: st === 'brique' ? [0.9, 0.85, 0.82] : st === 'pierre' ? [0.78, 0.76, 0.76] : rng.p(pal.murs), cBois: rng() < 0.6 ? [0.3, 0.22, 0.18] : [0.2, 0.18, 0.17], cToit: rng.p(pal.toits),
       porteX: (rng() - 0.5) * (w - 2.4), fenType: Math.floor(rng() * 4), pAllume: 0.4 + rng() * 0.5, pGuirlande: P.q === 'cimetiere' ? 0.35 : 0.8,
       torsion: (rng() - 0.5) * 0.22, courbe: [(rng() - 0.5) * 1.6, (rng() - 0.5) * 1.0], graine: Math.floor(rng() * 1e9),

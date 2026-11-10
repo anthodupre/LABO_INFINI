@@ -6,10 +6,10 @@ const CIEL = (() => {
   const K = {};
   K.dirLune = new THREE.Vector3(0.9, 0.37, 0.19).normalize();
   K.horizon = new THREE.Color(0.03, 0.05, 0.075);
-  const UA = { uTemps: { value: 0 }, uLune: { value: K.dirLune }, uAurore: { value: 0 }, uNuages: { value: 0.5 }, uFilante: { value: new THREE.Vector4(0, 0, 0, -10) }, uHorizon: { value: K.horizon }, uTempete: { value: 0 } };
+  const UA = { uTemps: { value: 0 }, uLune: { value: K.dirLune }, uAurore: { value: 0 }, uNuages: { value: 0.5 }, uFilante: { value: new THREE.Vector4(0, 0, 0, -10) }, uHorizon: { value: K.horizon }, uTempete: { value: 0 }, tLune: { value: null }, uLuneOk: { value: 0 } };
   K.U = UA;
   const vs = `varying vec3 vDir; void main(){ vDir = position; vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9999; }`;
-  const fs = `uniform float uTemps; uniform vec3 uLune; uniform float uAurore; uniform float uNuages; uniform vec4 uFilante; uniform vec3 uHorizon; uniform float uTempete; varying vec3 vDir;
+  const fs = `uniform float uTemps; uniform vec3 uLune; uniform float uAurore; uniform float uNuages; uniform vec4 uFilante; uniform vec3 uHorizon; uniform float uTempete; uniform sampler2D tLune; uniform float uLuneOk; varying vec3 vDir;
     float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float n2(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y); }
     float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ v += a * n2(p); p = p * 2.03 + 1.7; a *= 0.5; } return v; }
@@ -36,6 +36,7 @@ const CIEL = (() => {
       float crat = fbm(lp * 2.4 + 3.0) * 0.55 + fbm(lp * 7.0) * 0.25;
       float limbe = sqrt(max(0.0, 1.0 - dot(lp, lp)));
       vec3 lune = vec3(1.0, 0.96, 0.86) * (0.45 + crat * 0.75) * (0.6 + 0.4 * limbe) * 1.05;
+      if (uLuneOk > 0.5) lune = vec3(1.0, 0.95, 0.85) * (0.12 + texture2D(tLune, clamp(lp * 0.5 + 0.5, 0.0, 1.0)).rgb * 1.3) * (0.78 + 0.22 * limbe);
       col += vec3(0.4, 0.45, 0.6) * exp(-ang * 6.0) * 0.22 + vec3(0.9, 0.85, 0.7) * exp(-max(0.0, ang - R) * 30.0) * 0.18;
       col = mix(col, lune, disque);
       // nuages qui défilent (devant la lune), éclairés par elle
@@ -114,6 +115,7 @@ const CIEL = (() => {
     K.luneL.position.set(x + K.dirLune.x * 110, y + K.dirLune.y * 110, z + K.dirLune.z * 110);
     K.luneL.target.position.set(x, y, z); K.luneL.target.updateMatrixWorld(); K.luneL.shadow.needsUpdate = true;
   };
+  K.lune = function (tex) { UA.tLune.value = tex; UA.uLuneOk.value = 1; };
   K.filante = function (t) { UA.uFilante.value.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random(), t); };
   return K;
 })();

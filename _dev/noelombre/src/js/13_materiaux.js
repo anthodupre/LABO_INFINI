@@ -118,7 +118,7 @@ const MAT = (() => {
         .replace('#include <map_fragment>', `
           vec4 cNeige = texture2D(map, vMapUv); vec4 cPave = texture2D(tPave, vUvP);
           float hP = dot(cPave.rgb, vec3(0.5)); float gros = texture2D(map, vMapUv * 0.13).g;
-          float kP = smoothstep(0.05, 0.4, vRoute * 1.5 - 0.42 + (hP - 0.3) * 0.7 - (gros - 0.5) * 0.5);
+          float kP = smoothstep(0.05, 0.4, vRoute * 1.25 - 0.62 + (hP - 0.5) * 0.55 - (gros - 0.5) * 1.5);
           float neigeK = 1.0 - kP;
           diffuseColor *= mix(cNeige * vec4(0.9, 0.93, 1.0, 1.0), cPave * vec4(0.62, 0.62, 0.66, 1.0), kP);`)
         .replace('#include <normal_fragment_maps>', `
@@ -136,6 +136,7 @@ const MAT = (() => {
     M.tuiles = std(X.tuiles, { neige: 1, seuil: 0.2, cle: 'tu', r: 0.75, ns: 1.3 });
     M.bois = std(X.planche, { neige: 1, cle: 'bo', r: 0.8 });
     M.pierre = std(X.pierre, { neige: 1, seuil: 0.5, cle: 'pi', r: 0.9 });
+    M.moellon = std(X.pierre, { neige: 1, seuil: 0.5, cle: 'mo', r: 0.92, ns: 1.2 });   // mur de pierres (photo)
     M.metal = std(X.metal, { r: 0.45, m: 0.85, neige: 0.8, seuil: 0.6, cle: 'me', env: 1 });
     M.ecorce = std(X.ecorce, { neige: 1, seuil: 0.45, cle: 'ec' });
     M.aiguilles = std(X.aiguilles, { neige: 1, seuil: 0.6, cle: 'ai', r: 0.95, ns: 1.2 });
@@ -230,7 +231,7 @@ const MAT = (() => {
   };
   // Remplace une texture peinte par une photo (quand elle a fini de se décoder) : mêmes réglages de répétition
   M.photo = function (cle, map, nrm) {
-    const cibles = { neige: ['sol', 'neige'], platre: ['platre'], brique: ['brique'], tuiles: ['tuiles'], planche: ['planche', 'bois'], ecorce: ['ecorce'], pierre: ['pierre'] }[cle] || [];
+    const cibles = { neige: ['sol', 'neige'], platre: ['platre'], brique: ['brique'], tuiles: ['tuiles'], planche: ['planche', 'bois'], ecorce: ['ecorce'], moellon: ['moellon'] }[cle] || [];
     for (const k of cibles) { const m = M[k]; if (!m) continue; if (map) m.map = map; if (nrm) m.normalMap = nrm; m.needsUpdate = true; }
     if (cle === 'pave' && M.sol.userData.sh) { const sh = M.sol.userData.sh; if (map) sh.uniforms.tPave.value = map; if (nrm) sh.uniforms.tPaveN.value = nrm; }
     if (cle === 'pave') { if (map) TEX.pave.map = map; if (nrm) TEX.pave.nrm = nrm; }

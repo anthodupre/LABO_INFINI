@@ -10,7 +10,7 @@ const { chromium } = require('playwright'); const path = require('path');
   if (pre) { await p.evaluate(pre); await p.waitForTimeout(4000); }
   await p.evaluate(() => { if (typeof MODAL_OPEN !== 'undefined' && MODAL_OPEN) closeModal(); });
   await p.waitForTimeout(3000);
-  const out = path.join(__dirname, '../preview', nom + '.png'); await p.screenshot({ path: out });
+  const out = path.join(__dirname, '../preview', nom + '.png'); await p.screenshot({ path: out, timeout: 180000 });
   const info = await p.evaluate(() => ({ fps: 0, info: (()=>{try{return JEU._info()}catch(e){return null}})(), err: [...document.querySelectorAll('div')].filter(d => /^Erreur/.test(d.textContent)).map(d => d.textContent).join(' | '), calls: typeof JEU !== 'undefined' ? 1 : 0 }));
   console.log(out, JSON.stringify(info)); console.log(errs.slice(0, 15).join('\n'));
   await b.close();

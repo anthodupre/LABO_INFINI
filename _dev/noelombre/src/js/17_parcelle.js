@@ -151,6 +151,13 @@ const PARCELLE = (() => {
     if (P.liens) for (const [a, b] of P.liens) GEO.guirlande(L, [a.x, sol(a.x, a.z) + 3.3, a.z], [b.x, sol(b.x, b.z) + 3.3, b.z], { couleurs: P.pal.guirlande, rng, creux: 0.9, pas: 0.5 });
     for (const t of P.cadeauxDeco) GEO.cadeauDeco(L, GEO.monde(t.x, sol(t.x, t.z), t.z, 0), rng, t.s);
     for (const c of P.clotures) GEO.cloture(L, c.a, c.b, GEO.monde(0, sol((c.a[0] + c.b[0]) / 2, (c.a[1] + c.b[1]) / 2) - 0.1, 0, 0));
+    // ---- guirlandes au-dessus des rues : deux mâts de fer, un fil d'ampoules qui pend, parfois une étoile au milieu ----
+    for (const f of P.fils || []) {
+      const ya = sol(f.a[0], f.a[1]), yb = sol(f.b[0], f.b[1]), h = 5.4;
+      for (const [q, y] of [[f.a, ya], [f.b, yb]]) L.get('metal').add(GEO.base('cyl8'), { m: GEO.mat(q[0], y + h / 2 - 0.3, q[1], 0.05, h + 0.6, 0.05), c: [0.16, 0.16, 0.18], def: v => { v.x += Math.sin(v.y * 1.3) * 0.04; } });
+      GEO.guirlande(L, [f.a[0], ya + h, f.a[1]], [f.b[0], yb + h, f.b[1]], { couleurs: P.pal.guirlande, rng, creux: 0.85, pas: 0.38 });
+      if (f.etoile) { const mx = (f.a[0] + f.b[0]) / 2, mz = (f.a[1] + f.b[1]) / 2, my = (ya + yb) / 2 + h - 1.15; L.get('emis').add(GEO.base('ico'), { m: GEO.mat(mx, my, mz, 0.22, 0.3, 0.22), c: [3.2, 2.4, 1.0] }); GEO.halo(L, mx, my, mz, [0.32, 0.22, 0.1], 3); }
+    }
     // ---- glace (lac) ----
     if (P.lac) {
       const gi = new THREE.CircleGeometry(P.lac.r + 0.6, 48); gi.rotateX(-Math.PI / 2);

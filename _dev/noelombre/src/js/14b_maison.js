@@ -15,14 +15,14 @@ GEO.maison = function (L, h, w, rng, pal) {
   const boutique = st === 'boutique', cote = h.porteX >= 0 ? 1 : -1;
   const pX = boutique ? cote * (W / 2 - 0.95) : h.porteX;
   // soubassement de pierre (descend sous le sol pour les pentes)
-  add('pierre', 'cube', G.mat(0, -1.25, 0, W + 0.3, 3.4, D + 0.3), [0.6, 0.58, 0.58], { uvm: 'monde', s: 0.5 });
+  add('moellon', 'cube', G.mat(0, -1.25, 0, W + 0.3, 3.4, D + 0.3), [0.62, 0.6, 0.6], { uvm: 'monde', s: 0.4 });
   let y = Y0, ew = W, ed = D;
   const jet = st === 'colombage' ? 0.2 : boutique ? 0.12 : 0;
   const atlas = [[0, 0.5, 0.5, 1], [0.5, 0.5, 1, 1], [0, 0, 0.5, 0.5], [0.5, 0, 1, 0.5]];
   const volets = (st === 'pierre' || st === 'chalet' || st === 'brique') && rng() < 0.6, cVolet = rng.p([[0.25, 0.4, 0.3], [0.45, 0.2, 0.2], [0.25, 0.3, 0.5], [0.5, 0.42, 0.3]]);
   for (let e = 0; e < nE; e++) {
     if (e > 0) { ew += jet; ed += jet * 0.6; }
-    const socle = e === 0 && (st === 'colombage' || boutique) && gr % 2 === 0, matE = socle ? 'pierre' : h.mur, cE = socle ? [0.7, 0.68, 0.68] : cMur, y0 = y;
+    const socle = e === 0 && (st === 'colombage' || boutique) && gr % 2 === 0, matE = socle ? 'moellon' : (h.mur === 'pierre' ? 'moellon' : h.mur), cE = socle ? [0.72, 0.7, 0.7] : cMur, y0 = y;
     const ao = e === 0 ? (v => 0.5 + 0.5 * sstep(y0 - 0.2, y0 + 1.5, v.y)) : (v => 1 - 0.28 * sstep(y0 + hE - 0.7, y0 + hE, v.y) - 0.15 * (1 - sstep(y0, y0 + 0.4, v.y)));
     add(matE, 'boite', G.mat(0, y + hE / 2, 0, ew, hE, ed), cE, { uvm: 'monde', s: 0.4, ao });
     // ceintures de bois (une boîte fait le tour) + poteaux d'angle
@@ -89,7 +89,7 @@ GEO.maison = function (L, h, w, rng, pal) {
   const og = { couleurs: pal.guirlande, def, w, rng };
   if (h.toit === 'pignon') {
     const Ls = Math.hypot(rw / 2, hT), an = Math.atan2(hT, rw / 2);
-    add(h.mur, 'pignon', G.mat(0, yT - 0.02, 0, ew, hT * (ew / rw), ed), cMur, { uvm: 'monde', s: 0.4, ao: v => 1 - 0.3 * sstep(yT, yT + hT * 0.9, v.y) });
+    add(h.mur === 'pierre' ? 'moellon' : h.mur, 'pignon', G.mat(0, yT - 0.02, 0, ew, hT * (ew / rw), ed), cMur, { uvm: 'monde', s: 0.4, ao: v => 1 - 0.3 * sstep(yT, yT + hT * 0.9, v.y) });
     for (const sd of [-1, 1]) {
       const cx = sd * rw / 4, cy = yT + hT / 2;
       add('tuiles', 'cube', G.mat(cx, cy, 0, Ls + 0.25, 0.12, rd, 0, 0, -sd * an), cT, { uve: [Ls * 0.55, rd * 0.55] });

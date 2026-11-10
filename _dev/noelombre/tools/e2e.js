@@ -1,4 +1,6 @@
-// Tests de bout en bout de Noëlombre (lit index.html) : NODE_PATH=$(npm root -g) node _dev/noelombre/tools/e2e.js
+// Tests de bout en bout de Noëlombre, version « promenade » (lit index.html) :
+//   NODE_PATH=$(npm root -g) node _dev/noelombre/tools/e2e.js
+// Le rendu logiciel (SwiftShader) est très lent : on ATTEND des conditions au lieu de délais fixes.
 const { chromium } = require('playwright'); const path = require('path');
 const ARGS = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'];
 let ok = 0, ko = 0;
@@ -7,126 +9,96 @@ const verif = (c, m) => { if (c) { ok++; console.log('  ✔ ' + m); } else { ko+
   const b = await chromium.launch({ args: ARGS });
   const ctx = await b.newContext({ viewport: { width: 390, height: 760 }, hasTouch: true });
   const p = await ctx.newPage();
-  const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text().slice(0, 300)); });
   const url = 'file://' + path.resolve('index.html');
-  await p.goto(url); await p.waitForTimeout(5000);
   const E = (f, a) => p.evaluate(f, a);
-  const attendre = async (f, ms) => { const t0 = Date.now(); while (Date.now() - t0 < (ms || 8000)) { if (await E(f)) return true; await p.waitForTimeout(150); } return false; };
-  verif(await E(() => MODAL_OPEN && /Noëlombre/.test(document.getElementById('mtitle').textContent)), 'introduction affichée au premier lancement');
+  const attendre = async (f, ms, a) => { const t0 = Date.now(); while (Date.now() - t0 < (ms || 20000)) { try { if (await E(f, a)) return true; } catch (e) { } await p.waitForTimeout(250); } return false; };
+  // --- une ancienne sauvegarde (version « jeu ») ne doit rien casser ---
+  await p.addInitScript(() => { if (!localStorage.getItem('noelombre.save.v1') && !sessionStorage.getItem('vu')) { sessionStorage.setItem('vu', '1'); localStorage.setItem('noelombre.save.v1', JSON.stringify({ v: 1, jeu: { graine: 4242, x: 10, y: 0, z: 2, yaw: 0, pitch: 0, bonbons: 55, chaleur: 40, niv: { lanterne: 2 }, quetes: [{ type: 'bonbons', n: 25, prog: 3 }], reg: { musique: true, mvol: 0.6, sons: true, svol: 0.8, qualite: 3 }, intro: true }, dev: false, god: false, last: Date.now() })); } });
+  await p.goto(url);
+  verif(await attendre(() => typeof JEU !== 'undefined' && S && JEU._etat().prete, 60000), 'démarrage avec une ancienne sauvegarde du jeu (sans erreur)');
+  verif(await E(() => S.jeu.graine === 4242 && S.jeu.reg.qualite === 2 && Array.isArray(S.jeu.journal)), 'ancienne sauvegarde convertie (monde gardé, réglages bornés)');
+  await E(() => { S.dev = true; confirmReset(); }); await p.click('#mbtns button >> nth=0');
+  verif(await attendre(() => MODAL_OPEN && /Noëlombre/.test(document.getElementById('mtitle').textContent)), 'nouvelle promenade : introduction affichée');
   await p.click('#mbtns button'); await p.waitForTimeout(300);
   verif(await E(() => !MODAL_OPEN && S.jeu.intro === true), 'introduction fermée et retenue');
-  await E(() => { S.jeu.graine = 4242; JEU.recharger(); });
-  await p.waitForTimeout(2500);
-  // marcher
-  const x0 = await E(() => JOUEUR.x);
-  await p.keyboard.down('w'); await p.waitForTimeout(2500); await p.keyboard.up('w');
-  const x1 = await E(() => JOUEUR.x);
-  verif(Math.abs(x1 - x0) > 2, 'le clavier fait avancer (' + (x1 - x0).toFixed(1) + ' m)');
-  verif(await E(() => S.jeu.stats.distance > 2), 'distance comptée');
-  // manette tactile (glisser du pouce gauche vers le haut)
-  const z0 = await E(() => [JOUEUR.x, JOUEUR.z]);
+  verif(await E(() => !document.getElementById('hud') && !document.getElementById('mini') && !document.getElementById('bSaut') && getComputedStyle(document.getElementById('titreZone')).display === 'none'), 'aucune interface de jeu à l’écran (ni jauge, ni carte, ni boutons)');
+  await E(() => { S.jeu.graine = 4242; JEU.recharger(); JEU._pr(0.7); });
+  await attendre(() => JEU._etat().parcelles >= 9, 60000);
+  // marcher (clavier)
+  const p0 = await E(() => [JOUEUR.x, JOUEUR.z]);
+  await p.keyboard.down('w'); await attendre(([x, z]) => Math.hypot(JOUEUR.x - x, JOUEUR.z - z) > 2, 20000, p0); await p.keyboard.up('w');
+  verif(await E(([x, z]) => Math.hypot(JOUEUR.x - x, JOUEUR.z - z) > 2, p0), 'le clavier fait avancer');
+  verif(await E(() => S.jeu.stats.distance > 1), 'distance comptée');
+  // manette tactile + regard
   const cdp = await ctx.newCDPSession(p);
+  const p1 = await E(() => [JOUEUR.x, JOUEUR.z]);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 90, y: 560 }] });
   for (let i = 1; i <= 6; i++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 90, y: 560 - i * 12 }] }); await p.waitForTimeout(40); }
-  await p.waitForTimeout(1500);
+  const marche = await attendre(([x, z]) => Math.hypot(JOUEUR.x - x, JOUEUR.z - z) > 1.5, 20000, p1);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  const z1 = await E(() => [JOUEUR.x, JOUEUR.z]);
-  verif(Math.hypot(z1[0] - z0[0], z1[1] - z0[1]) > 1.5, 'la manette tactile fait marcher');
-  // regarder (glisser à droite)
+  verif(marche, 'la manette tactile fait marcher');
   const y0 = await E(() => JOUEUR.yaw);
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 300, y: 400 }] });
   for (let i = 1; i <= 5; i++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 300 - i * 15, y: 400 }] }); await p.waitForTimeout(30); }
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await p.waitForTimeout(200);
-  verif(Math.abs((await E(() => JOUEUR.yaw)) - y0) > 0.1, 'glisser à droite fait tourner la vue');
-  // bouton Sauter (vraie tape)
-  await p.tap('#bSaut');
-  verif(await attendre(() => JOUEUR.sauts > 0 || !JOUEUR.sol), 'le bouton Sauter fait sauter');
-  await p.waitForTimeout(1200);
-  // bonbon : se placer dessus
-  const b0 = await E(() => S.jeu.bonbons);
-  await E(() => { const C = MONDE.C, cx = Math.floor(JOUEUR.x / C), cz = Math.floor(JOUEUR.z / C), P = MONDE.plan(cx, cz); const bb = P.bonbons[0]; JOUEUR.x = P.X0 + bb.x; JOUEUR.z = P.Z0 + bb.z; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z); JOUEUR.vx = JOUEUR.vz = 0; });
-  await p.waitForTimeout(800);
-  verif((await E(() => S.jeu.bonbons)) > b0, 'ramasser un bonbon');
-  // cadeau puis livraison
-  const cad = await E(() => {
-    const C = MONDE.C; for (let r = 0; r < 6; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) { const P = MONDE.plan(dx, dz); if (P.cadeaux.length) { const c = P.cadeaux[0]; JOUEUR.x = P.X0 + c.x; JOUEUR.z = P.Z0 + c.z; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z); return true; } } return false; });
-  await p.waitForTimeout(2500);
-  verif(cad && (await E(() => S.jeu.sac)) === 1, 'ramasser un cadeau (sac 1)');
-  await E(() => { for (let r = 0; r < 6; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) { const P = MONDE.plan(dx, dz); const m = P.maisons.find(m => m.attente); if (m) { JOUEUR.x = P.X0 + m.porte.x; JOUEUR.z = P.Z0 + m.porte.z; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z); return; } } });
-  await p.waitForTimeout(2500);
-  verif(await E(() => !document.getElementById('bAction').hidden && /Livrer/.test(document.getElementById('bAction').textContent)), 'bouton « Livrer le cadeau » près d’une porte à couronne verte');
-  await p.tap('#bAction'); await p.waitForTimeout(1800);
-  verif(await E(() => S.jeu.stats.livraisons === 1 && S.jeu.sac === 0), 'livraison réussie');
-  // lanterne-relais
-  await E(() => { const C = MONDE.C; for (let r = 1; r < 10; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) { if (MONDE.relais(dx, dz) && !S.jeu.relais[MONDE.cle(dx, dz)]) { JOUEUR.x = dx * C + 1.6; JOUEUR.z = dz * C + 1.2; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z); window.__rel = MONDE.cle(dx, dz); return; } } });
-  await p.waitForTimeout(2500);
-  verif(await E(() => /Allumer/.test(document.getElementById('bAction').textContent) && !document.getElementById('bAction').hidden), 'bouton « Allumer la lanterne »');
-  await p.tap('#bAction'); await p.waitForTimeout(1800);
-  verif(await E(() => S.jeu.relais[window.__rel] && S.jeu.dernierRelais === window.__rel), 'lanterne allumée = point de retour');
-  // évanouissement
-  await E(() => { S.god = false; JOUEUR.x += 60; JOUEUR.z += 60; S.jeu.chaleur = 0.2; S.jeu.bonbons = 100; });
-  await p.waitForTimeout(6000);
-  verif(await E(() => S.jeu.stats.evanouis === 1 && S.jeu.chaleur > 50 && G.log.some(m => /évanoui.*−\d+ bonbons/.test(m))), 'évanoui de froid : retour à la lanterne, −20 % de bonbons');
-  verif(await E(() => { const [x, z] = window.__rel.split(',').map(Number); return Math.hypot(JOUEUR.x - x * MONDE.C, JOUEUR.z - z * MONDE.C) < 6; }), 'réveil près de la dernière lanterne');
-  // spectre + éclat
-  await E(() => { const sp = ENT.spectres[0]; Object.assign(sp, { actif: true, x: JOUEUR.x + 3, z: JOUEUR.z, y: JOUEUR.y, t: 0, fuite: 0, alpha: 1, ax: 0, az: 0 }); sp.g.visible = true; });
-  await p.tap('#bEclat'); await p.waitForTimeout(1800);
-  verif(await E(() => S.jeu.stats.spectres >= 1), 'l’Éclat dissipe un spectre');
-  // repère + curiosité
-  await E(() => { const C = MONDE.C; for (let r = 1; r < 30; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) { const t = MONDE.repere(dx, dz); if (t && t !== 'horloge') { const P = MONDE.plan(dx, dz); JOUEUR.x = P.X0 + P.spot.x; JOUEUR.z = P.Z0 + P.spot.z; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z) + 0.2; window.__rep = t; return; } } });
-  await p.waitForTimeout(4000);
-  verif(await E(() => Object.keys(S.jeu.reperes).length >= 1), 'repère découvert (' + (await E(() => window.__rep)) + ')');
-  verif(await E(() => Object.keys(S.jeu.curiosites).length === 1), 'curiosité ramassée au repère');
-  await E(() => { while (MODAL_OPEN) closeModal(); });
-  // Atelier
-  await E(() => { S.jeu.bonbons = 500; });
-  await p.click('#bAtelier'); await p.waitForTimeout(200);
-  verif(await E(() => MODAL_OPEN && document.querySelectorAll('.acheter').length === 8), 'Atelier : 8 améliorations');
-  await p.click('.acheter >> nth=1'); await p.waitForTimeout(200);
-  verif(await E(() => S.jeu.niv.bottes === 1 && S.jeu.bonbons === 475), 'achat des Bottes (25 bonbons)');
+  verif(await attendre(y => Math.abs(JOUEUR.yaw - y) > 0.1, 8000, y0), 'glisser à droite fait tourner la vue');
+  // tape brève = éclat de la lanterne (et pas après un glissement)
+  verif(await E(() => JEU._etat().eclat < 0.05), 'glisser pour regarder ne déclenche pas l’éclat');
+  await p.touchscreen.tap(300, 420);
+  verif(await attendre(() => JEU._etat().eclat > 0.2, 8000), 'une tape brève lance l’éclat de la lanterne');
+  verif(await attendre(() => JEU._etat().fantomes >= 1, 8000), 'l’éclat révèle des fantômes');
+  // lueur-guide puis découverte d'une merveille
+  verif(await attendre(() => !!JEU._etat().guide, 10000), 'la lueur-guide a trouvé une merveille à montrer');
+  const cible = await E(() => JEU._etat().guide);
+  await E(c => { JEU._aller(c.cx, c.cz); JOUEUR.z += 6; }, cible);
+  verif(await attendre(() => S.jeu.journal.length === 1, 30000), 'merveille découverte en arrivant (carnet : 1)');
+  verif(await E(() => document.getElementById('banniere').classList.contains('vu') && document.getElementById('bTitre').textContent.length > 3), 'son titre s’affiche comme un carton de cinéma : « ' + (await E(() => document.getElementById('bTitre').textContent)) + ' »');
+  // pioche : 9 merveilles d'affilée, toutes différentes
+  for (let i = 0; i < 8; i++) { const n = await E(() => S.jeu.journal.length); await E(() => { const b = JEU._site(); JEU._aller(b.cx, b.cz); JOUEUR.z += 6; }); await attendre(n0 => S.jeu.journal.length > n0, 30000, n); }
+  const jr = await E(() => S.jeu.journal.slice());
+  verif(jr.length === 9 && new Set(jr).size === 9, '9 merveilles visitées, 9 différentes : ' + jr.join(', '));
+  // lanterne de carrefour qui se rallume toute seule
+  await E(() => { const C = MONDE.C; for (let r = 1; r < 12; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) { if (MONDE.relais(dx, dz) && !S.jeu.lanternes[MONDE.cle(dx, dz)]) { JOUEUR.x = dx * C + 2; JOUEUR.z = dz * C + 2; JOUEUR.y = MONDE.sol(JOUEUR.x, JOUEUR.z); window.__rel = MONDE.cle(dx, dz); return; } } });
+  verif(await attendre(() => S.jeu.lanternes[window.__rel] === 1, 30000), 'une lanterne de carrefour se rallume à ton passage');
+  // menu : Options, Carnet, réglages
+  await p.tap('#btnOpts');
+  verif(await attendre(() => MODAL_OPEN && document.querySelectorAll('.reg').length >= 10, 8000), 'le petit bouton de menu ouvre les Options');
+  verif(await E(() => [...document.querySelectorAll('#mbtns button')].some(x => /Sauvegarder/.test(x.textContent))), 'bouton Sauvegarder présent dans le menu');
+  await E(() => ui_carnet());
+  verif(await E(() => MODAL_OPEN && document.querySelectorAll('.cur').length >= 9 && /9 merveilles sur/.test(document.getElementById('mbody').textContent)), 'Carnet : les 9 merveilles vues y sont');
   await E(() => closeModal());
-  // Quêtes / Album / Carte
-  await p.click('#bQuetes'); await p.waitForTimeout(150); verif(await E(() => MODAL_OPEN && document.querySelectorAll('.quete').length === 3), 'Quêtes : 3 vœux'); await E(() => closeModal());
-  await p.click('#bAlbum'); await p.waitForTimeout(150); verif(await E(() => MODAL_OPEN && document.querySelectorAll('.cur').length === 48), 'Album : 48 curiosités'); await E(() => closeModal());
-  await p.click('#mini'); await p.waitForTimeout(300); verif(await E(() => MODAL_OPEN && !!document.getElementById('grandeCarte')), 'carte ouverte en touchant la mini-carte');
-  const voy = await E(() => [...document.querySelectorAll('#mbtns button')].map(x => x.textContent));
-  await E(() => closeModal());
-  verif(voy.some(t => /Lanterne/.test(t)) || true, 'boutons de voyage : ' + voy.length);
-  // Options : qualité et sons
-  await p.click('#btnOpts'); await p.waitForTimeout(200);
-  verif(await E(() => document.querySelectorAll('.reg').length >= 10), 'Options : réglages présents');
-  for (const q of ['0', '2', '3', 'auto']) { await E(q => ui_reglage('qualite', q), q); await p.waitForTimeout(1500); }
-  verif(errs.length === 0, 'changement de qualité sans erreur');
-  await E(() => ui_reglage('musique', '0')); verif(await E(() => S.jeu.reg.musique === false), 'musique coupée');
-  await E(() => ui_reglage('musique', '1'));
-  await E(() => closeModal());
-  // BURGER
+  for (const q of ['0', '2', 'auto']) { await E(q => ui_reglage('qualite', q), q); await attendre(() => JEU._etat().parcelles >= 5, 40000); }
+  verif(errs.length === 0, 'changement de qualité d’image sans erreur');
+  await E(() => { ui_reglage('guide', '0'); }); verif(await E(() => S.jeu.reg.guide === false), 'lueur-guide désactivable'); await E(() => { ui_reglage('guide', '1'); closeModal(); });
+  // BURGER = mode esprit
   await E(() => { S.dev = false; S.god = false; openDev(); });
-  await p.fill('#devCode', 'burger '); await p.press('#devCode', 'Enter'); await p.waitForTimeout(200);
-  verif(await E(() => S.god === true && !document.getElementById('godBadge').hidden), 'code BURGER : mode Dieu');
-  await E(() => { closeModal(); S.jeu.chaleur = 5; }); await p.waitForTimeout(500);
-  verif(await E(() => S.jeu.chaleur === 100), 'mode Dieu : jamais froid');
+  await p.fill('#devCode', 'burger '); await p.press('#devCode', 'Enter');
+  verif(await attendre(() => S.god === true && !document.getElementById('godBadge').hidden, 5000), 'code BURGER : mode esprit');
+  await E(() => closeModal());
+  verif(await attendre(() => !document.getElementById('vol').hidden, 8000), 'mode esprit : boutons monter / descendre visibles');
+  const h0 = await E(() => JOUEUR.y);
+  await p.keyboard.down(' '); const vole = await attendre(h => JOUEUR.y > h + 2, 20000, h0); await p.keyboard.up(' ');
+  verif(vole, 'mode esprit : on vole');
   await E(() => { S.god = false; });
-  // Sauvegarde + rechargement
-  const avant = await E(() => { S.jeu.bonbons = 321; save(true); return { x: JOUEUR.x, z: JOUEUR.z, g: S.jeu.graine }; });
-  await p.reload(); await p.waitForTimeout(5000);
-  const apres = await E(() => ({ x: JOUEUR.x, z: JOUEUR.z, b: S.jeu.bonbons, g: S.jeu.graine, l: S.jeu.stats.livraisons, intro: MODAL_OPEN }));
-  verif(apres.b === 321 && apres.g === avant.g && Math.hypot(apres.x - avant.x, apres.z - avant.z) < 1 && apres.l === 1, 'sauvegarde et rechargement (position, bonbons, monde, livraisons)');
-  verif(!apres.intro, 'pas de nouvelle intro après rechargement');
-  // Export / import
+  // sauvegarde + rechargement
+  await attendre(() => JOUEUR.sol, 20000);
+  const avant = await E(() => { save(true); return { x: JOUEUR.x, z: JOUEUR.z, g: S.jeu.graine, j: S.jeu.journal.length, s: JSON.stringify(S.jeu.sites) }; });
+  await p.reload();
+  await attendre(() => typeof JEU !== 'undefined' && S && JEU._etat().prete, 60000);
+  const apres = await E(() => ({ x: JOUEUR.x, z: JOUEUR.z, g: S.jeu.graine, j: S.jeu.journal.length, s: JSON.stringify(S.jeu.sites), intro: MODAL_OPEN }));
+  verif(apres.g === avant.g && apres.j === avant.j && apres.s === avant.s && Math.hypot(apres.x - avant.x, apres.z - avant.z) < 1.5, 'sauvegarde et rechargement (position, monde, merveilles vues et à venir)');
+  verif(!apres.intro, 'pas de nouvelle introduction après rechargement');
+  // export / import
   const code = await E(() => kitExport(S));
-  await E(() => { S.jeu.bonbons = 1; });
-  await E(c => doImport('voici :\n' + c.slice(0, 20) + '\n' + c.slice(20) + ' merci'), code); await p.waitForTimeout(800);
-  verif(await E(() => S.jeu.bonbons === 321), 'export puis import (texte collé abîmé)');
-  // Tout effacer
-  await E(() => { S.dev = true; confirmReset(); }); await p.click('#mbtns button >> nth=0'); await p.waitForTimeout(1500);
-  verif(await E(() => S.jeu.bonbons === 0 && S.jeu.stats.livraisons === 0), 'Tout effacer : nouvelle partie');
+  await E(() => { S.jeu.journal = []; });
+  await E(c => doImport('voici :\n' + c.slice(0, 20) + '\n' + c.slice(20) + ' merci'), code);
+  verif(await attendre(() => S.jeu.journal.length === 9, 20000), 'export puis import (texte collé abîmé)');
   // paysage
-  await p.setViewportSize({ width: 844, height: 390 }); await p.waitForTimeout(1500);
+  await p.setViewportSize({ width: 844, height: 390 }); await p.waitForTimeout(3000);
   await E(() => { while (MODAL_OPEN) closeModal(); });
-  await p.screenshot({ path: path.join(__dirname, '../preview/e2e_paysage.png') });
-  verif(await E(() => { const r = document.getElementById('bSaut').getBoundingClientRect(); return r.right <= innerWidth && r.bottom <= innerHeight; }), 'paysage : boutons visibles');
+  await p.screenshot({ path: path.join(__dirname, '../preview/e2e_paysage.png'), timeout: 180000 });
+  verif(await E(() => { const r = document.getElementById('btnOpts').getBoundingClientRect(); return r.right <= innerWidth && r.top >= 0; }), 'paysage : bouton de menu visible');
   const boite = await E(() => [...document.querySelectorAll('div')].filter(d => /^Erreur/.test(d.textContent)).map(d => d.textContent).join(' | '));
   if (boite) errs.push('BOÎTE : ' + boite);
   verif(errs.length === 0, 'aucune erreur JS' + (errs.length ? ' : ' + errs.slice(0, 5).join(' | ') : ''));

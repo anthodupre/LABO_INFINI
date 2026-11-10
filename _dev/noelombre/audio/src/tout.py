@@ -9,8 +9,9 @@ Besoin de : python3 + numpy, fluidsynth + /usr/share/sounds/sf2/FluidR3_GM.sf2 (
 Fichiers de travail (MIDI, WAV) dans $NOEL_TMP ou un dossier temporaire. Ensuite : node tools/sons.js
 """
 import importlib
-import os
 import sys
+sys.dont_write_bytecode = True
+import os
 import tempfile
 import time
 
@@ -34,7 +35,7 @@ BUDGET = 2600000
 
 def masteriser(x, cible, bandes=(), seuil=-21.0, ratio=1.7, plafond=-1.5):
     """Égalisation douce, compresseur de bus léger, normalisation de sonie, limiteur."""
-    x = rendu.eq(x, [('hp', 34, 2), ('bas', 170, 1.0), ('cloche', 3200, -1.2, 1.6), ('haut', 7500, -3.0), ('lp', 15000, 3)] + list(bandes))
+    x = rendu.eq(x, [('hp', 34, 2), ('bas', 160, 0.8), ('lp', 15500, 3)] + list(bandes))
     x = x * 10 ** ((cible - rendu.lufs(x)) / 20.0)
     x, red = rendu.compresseur(x, seuil=seuil, ratio=ratio)
     lim = (0.0, 0.0, 0.0)

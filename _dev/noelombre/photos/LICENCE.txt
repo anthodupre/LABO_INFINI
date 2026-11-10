@@ -1,0 +1,5 @@
+Textures photographiques : Poly Haven (polyhaven.com), licence CC0 (domaine public).
+neige = snow_02, pave = cobblestone_floor_08, platre = white_rough_plaster, brique = medieval_red_brick,
+tuiles = roof_slates_03, planche = old_planks_02, ecorce = pine_bark, moellon = old_stone_wall.
+Réduites à 512 px (couleur) et 384-512 px (relief), luminosité normalisée (voir briefs / tools/photos.js).
+lune = face visible projetée depuis la carte LROC de la NASA (SVS 4720, domaine public).
